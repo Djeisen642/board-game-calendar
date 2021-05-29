@@ -77,5 +77,8 @@ export default {
   },
   router: {
     base
+  },
+  env: {
+    base
   }
 }

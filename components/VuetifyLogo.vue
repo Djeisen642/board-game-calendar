@@ -8,11 +8,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import Config from '../nuxt.config.js'
 
 @Component
 export default class VuetifyLogo extends Vue {
-  base = Config.router.base;
+  base = process.env.base;
 }
 </script>
 
