@@ -2,6 +2,8 @@
 
 A calendar to suggest board game nights and board games
 
+###Types?
+
 GatheringState
 - pending
 - confirmed
@@ -21,7 +23,7 @@ Guest
 - confirmed:boolean
 - id:uuidj
 
-Tables:
+###Tables
 
 user
 - id:uuid
