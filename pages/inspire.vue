@@ -2,7 +2,7 @@
   <v-row>
     <v-col class="text-center">
       <img
-        src="/v.png"
+        :src="`${base}/v.png`"
         alt="Vuetify.js"
         class="mb-5"
       >
@@ -17,3 +17,13 @@
     </v-col>
   </v-row>
 </template>
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import Config from '../nuxt.config.js'
+
+@Component
+export default class InspirePage extends Vue {
+  base = Config.router.base;
+}
+</script>

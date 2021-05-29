@@ -2,9 +2,19 @@
   <img
     class="VuetifyLogo"
     alt="Vuetify Logo"
-    src="/vuetify-logo.svg"
+    :src="`${base}/vuetify-logo.svg`"
   >
 </template>
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import Config from '../nuxt.config.js'
+
+@Component
+export default class VuetifyLogo extends Vue {
+  base = Config.router.base;
+}
+</script>
 
 <style>
 .VuetifyLogo {

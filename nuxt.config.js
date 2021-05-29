@@ -1,5 +1,6 @@
 import colors from 'vuetify/es5/util/colors'
 
+const base = process.env.BASE_URL || '/board-game-calendar/dist/'
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
@@ -20,7 +21,7 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: `${base}favicon.ico` }
     ]
   },
 
@@ -75,6 +76,6 @@ export default {
   build: {
   },
   router: {
-    base: '/board-game-calendar/'
+    base
   }
 }
