@@ -1,6 +1,6 @@
 import colors from 'vuetify/es5/util/colors'
 
-const base = process.env.BASE_URL || '/board-game-calendar/dist/'
+const base = process.env.BASE_URL || '/board-game-calendar/'
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,

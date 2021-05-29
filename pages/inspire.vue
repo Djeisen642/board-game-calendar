@@ -2,7 +2,7 @@
   <v-row>
     <v-col class="text-center">
       <img
-        :src="`${base}/v.png`"
+        :src="`${base}v.png`"
         alt="Vuetify.js"
         class="mb-5"
       >

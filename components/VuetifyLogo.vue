@@ -2,7 +2,7 @@
   <img
     class="VuetifyLogo"
     alt="Vuetify Logo"
-    :src="`${base}/vuetify-logo.svg`"
+    :src="`${base}vuetify-logo.svg`"
   >
 </template>
 <script lang="ts">
