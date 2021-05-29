@@ -1,5 +1,46 @@
 # board-game-calendar
 
+A calendar to suggest board game nights and board games
+
+GatheringState
+- pending
+- confirmed
+- canceled
+
+Game
+- id:number
+- rating:number
+- privateNote:string
+- publicNote:string
+
+Contact
+- id:uuid
+- privateNote
+
+Guest
+- confirmed:boolean
+- id:uuidj
+
+Tables:
+
+user
+- id:uuid
+- name:string
+- email:string
+- collection:Game[]
+- contact:Contact[]
+- sharesWith:uuid[]
+
+gathering
+- state:GatheringState
+- datetime:DateTime
+- initiator:uuid
+- host:uuid
+- open:boolean
+- maxGuests:number
+- guests:Guest[]
+- games:id
+
 ## Build Setup
 
 ```bash
