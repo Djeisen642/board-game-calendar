@@ -89,7 +89,11 @@
 </template>
 
 <script>
-export default {
+import Vue from 'vue'
+import Component from 'vue-class-component'
+
+@Component
+export default class Default extends Vue {
   data () {
     return {
       clipped: false,
@@ -105,6 +109,11 @@ export default {
           icon: 'mdi-chart-bubble',
           title: 'Inspire',
           to: '/inspire'
+        },
+        {
+          icon: 'mdi-chart-bubble',
+          title: 'Login',
+          to: '/login'
         }
       ],
       miniVariant: false,
