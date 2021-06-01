@@ -1,5 +1,5 @@
 module.exports = {
-  apiKey: process.env.FIREBASE_SECRET,
+  apiKey: process.env.FIREBASE_SECRET || 'AIzaSyDybqGTKLaLM4kzX6jkma68EjapWItEgYI',
   authDomain: 'board-game-calendar-315218.firebaseapp.com',
   projectId: 'board-game-calendar-315218',
   storageBucket: 'board-game-calendar-315218.appspot.com',
