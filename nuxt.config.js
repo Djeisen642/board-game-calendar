@@ -1,4 +1,4 @@
-import colors from 'vuetify/es5/util/colors'
+import colors from 'vuetify/lib/util/colors'
 
 const base = process.env.BASE_URL || '/board-game-calendar/'
 export default {
@@ -42,14 +42,17 @@ export default {
     // https://go.nuxtjs.dev/typescript
     '@nuxt/typescript-build',
     // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify'
+    '@nuxtjs/vuetify',
+    '@nuxtjs/dotenv'
   ],
+  dotenv: {
+    systemvars: true
+  },
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
-    '@nuxtjs/dotenv'
+    '@nuxtjs/axios'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
