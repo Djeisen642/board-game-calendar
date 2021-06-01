@@ -128,15 +128,15 @@ export default class Default extends Vue {
   title='Vuetify.js'
 
   mounted ():void {
-    this.onLoginState(this.user)
+    this.onSignInState(this.user)
   }
 
   @Watch('user')
-  onUserLogin (newState:firebase.User|null):void {
-    this.onLoginState(newState)
+  onUserSignIn (newState:firebase.User|null):void {
+    this.onSignInState(newState)
   }
 
-  onLoginState (user:firebase.User|null):void {
+  onSignInState (user:firebase.User|null):void {
     if (user === null) {
       const mainIndex = this.items.findIndex(item => item.title === 'Inspire')
       if (mainIndex > -1) {
@@ -144,15 +144,15 @@ export default class Default extends Vue {
       }
       this.items.push({
         icon: 'mdi-chart-bubble',
-        title: 'Login',
-        to: '/login'
+        title: 'SignIn',
+        to: '/signin'
       })
       return
     }
 
-    const loginIndex = this.items.findIndex(item => item.title === 'Login')
-    if (loginIndex > -1) {
-      this.items.splice(loginIndex, 1)
+    const signinIndex = this.items.findIndex(item => item.title === 'SignIn')
+    if (signinIndex > -1) {
+      this.items.splice(signinIndex, 1)
     }
     this.items.push({
       icon: 'mdi-chart-bubble',

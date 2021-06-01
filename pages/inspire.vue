@@ -14,9 +14,9 @@
           </small>
         </footer>
         <v-btn
-          @click="logout"
+          @click="signOutClicked"
         >
-          Logout
+          Sign out
         </v-btn>
       </blockquote>
     </v-col>
@@ -32,10 +32,10 @@ export default class InspirePage extends Vue {
   @Action('signOut')
   signOut!: () => Promise<void>
 
-  async logout ():Promise<void> {
+  async signOutClicked ():Promise<void> {
     try {
       await this.signOut()
-      await this.$router.push('login')
+      await this.$router.push('signin')
     } catch (err) {
       // TODO deal with the error
     }

@@ -10,7 +10,7 @@ import * as firebaseui from 'firebaseui'
 import { auth, authProviders } from '~/plugins/firebase'
 
 @Component
-export default class Login extends Vue {
+export default class SignIn extends Vue {
   mounted ():void {
     try {
       const ui =
