@@ -5,18 +5,17 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import Vue from 'vue'
+import { Vue, Component } from 'nuxt-property-decorator'
 import * as firebaseui from 'firebaseui'
-import { fireAuth, authProviders } from '~/plugins/firebase'
+import { auth, authProviders } from '~/plugins/firebase'
 
 @Component
 export default class Login extends Vue {
-  mounted () {
+  mounted ():void {
     try {
       const ui =
         firebaseui.auth.AuthUI.getInstance() ||
-        new firebaseui.auth.AuthUI(fireAuth)
+        new firebaseui.auth.AuthUI(auth)
       const uiConfig:firebaseui.auth.Config = {
         signInFlow: 'popup',
         signInOptions: [authProviders.Google, authProviders.Email],
@@ -30,9 +29,10 @@ export default class Login extends Vue {
     }
   }
 
-  signInResult () {
+  signInResult ():boolean {
     // TODO signin result
-    return true
+    this.$router.push('inspire')
+    return false
   }
 }
 </script>

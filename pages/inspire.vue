@@ -13,16 +13,32 @@
             <em>&mdash;John Johnson</em>
           </small>
         </footer>
+        <v-btn
+          @click="logout"
+        >
+          Logout
+        </v-btn>
       </blockquote>
     </v-col>
   </v-row>
 </template>
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { Action, Component, Vue } from 'nuxt-property-decorator'
 
 @Component
 export default class InspirePage extends Vue {
   base = process.env.base;
+
+  @Action('signOut')
+  signOut!: () => Promise<void>
+
+  async logout ():Promise<void> {
+    try {
+      await this.signOut()
+      await this.$router.push('login')
+    } catch (err) {
+      // TODO deal with the error
+    }
+  }
 }
 </script>

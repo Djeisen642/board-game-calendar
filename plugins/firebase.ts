@@ -1,15 +1,23 @@
 import firebase from 'firebase/app'
 import firebaseConf from '~/firebase.config.js'
-import 'firebase/firestore'
+import 'firebase/database'
 import 'firebase/auth'
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConf)
-}
+!firebase.apps.length && firebase.initializeApp(firebaseConf)
 
 export const authProviders = {
-  Google: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-  Email: firebase.auth.EmailAuthProvider.PROVIDER_ID
+  Google: {
+    provider: firebase
+      .auth.GoogleAuthProvider.PROVIDER_ID,
+    providerId: firebase
+      .auth.GoogleAuthProvider.PROVIDER_ID
+  },
+  Email: {
+    provider: firebase
+      .auth.EmailAuthProvider.PROVIDER_ID,
+    providerId: firebase
+      .auth.EmailAuthProvider.PROVIDER_ID
+  }
 }
-export const fireDb = firebase.firestore()
-export const fireAuth = firebase.auth()
+export const db = firebase.database()
+export const auth = firebase.auth()

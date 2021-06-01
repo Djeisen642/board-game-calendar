@@ -88,39 +88,77 @@
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
+import { State, Watch } from 'nuxt-property-decorator'
+import firebase from 'firebase/app'
+
+type SidebarItemType = {
+  icon:string
+  title:string
+  to:string
+}
 
 @Component
 export default class Default extends Vue {
-  data () {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      items: [
-        {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/'
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Login',
-          to: '/login'
-        }
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
+  @State('user')
+  user!:firebase.User
+
+  clipped=false
+
+  drawer=false
+
+  fixed=false
+
+  items:SidebarItemType[]=[
+    {
+      icon: 'mdi-apps',
+      title: 'Welcome',
+      to: '/'
     }
+  ]
+
+  miniVariant=false
+
+  right=true
+
+  rightDrawer=false
+
+  title='Vuetify.js'
+
+  mounted ():void {
+    this.onLoginState(this.user)
+  }
+
+  @Watch('user')
+  onUserLogin (newState:firebase.User|null):void {
+    this.onLoginState(newState)
+  }
+
+  onLoginState (user:firebase.User|null):void {
+    if (user === null) {
+      const mainIndex = this.items.findIndex(item => item.title === 'Inspire')
+      if (mainIndex > -1) {
+        this.items.splice(mainIndex, 1)
+      }
+      this.items.push({
+        icon: 'mdi-chart-bubble',
+        title: 'Login',
+        to: '/login'
+      })
+      return
+    }
+
+    const loginIndex = this.items.findIndex(item => item.title === 'Login')
+    if (loginIndex > -1) {
+      this.items.splice(loginIndex, 1)
+    }
+    this.items.push({
+      icon: 'mdi-chart-bubble',
+      title: 'Inspire',
+      to: '/inspire'
+    })
   }
 }
 </script>

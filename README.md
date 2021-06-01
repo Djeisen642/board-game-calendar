@@ -43,6 +43,9 @@ gathering
 - guests:Guest[]
 - games:id
 
+
+Sorry people... I can't get the jsdoc to lint... Sooo... No jsdocs. 🤣
+
 ## Build Setup
 
 ```bash

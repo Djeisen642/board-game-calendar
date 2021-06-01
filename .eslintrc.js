@@ -8,15 +8,15 @@ module.exports = {
     '@nuxtjs/eslint-config-typescript',
     'plugin:nuxt/recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:jsdoc/recommended'
+    'plugin:vue/recommended'
   ],
+  parser: 'vue-eslint-parser',
   parserOptions: {
-    project: './tsconfig.json'
+    parser: '@typescript-eslint/parser'
   },
   plugins: [
     '@typescript-eslint',
-    'jsdoc'
+    'vue'
   ],
   // add your custom rules here
   rules: {}
