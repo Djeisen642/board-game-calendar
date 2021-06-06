@@ -36,7 +36,7 @@ export default class SignIn extends Vue {
 
   signInResult (authResult:AuthResultType):boolean {
     const user:firebase.User = authResult.user
-    db.ref(`users/${user.uid}`).set({
+    db.ref(`users/${user.uid}`).update({
       name: user.displayName,
       email: user.email
     })
