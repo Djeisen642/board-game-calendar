@@ -24,7 +24,7 @@
     "@types/xml2js": "^0.4.8",
     "@nuxtjs/axios": "^5.13.1",
     "core-js": "^3.9.1",
-    "firebase": "^8.6.3",
+    "firebase": "^8.6.5",
     "firebaseui": "^4.8.0",
     "nuxt": "^2.15.3",
     "nuxt-property-decorator": "^2.9.1",
