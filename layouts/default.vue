@@ -3,7 +3,7 @@
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
-      :clipped="clipped"
+      clipped
       fixed
       app
     >
@@ -25,7 +25,7 @@
       </v-list>
     </v-navigation-drawer>
     <v-app-bar
-      :clipped-left="clipped"
+      clipped-left
       fixed
       app
     >
@@ -38,12 +38,6 @@
       </v-btn>
       <v-btn
         icon
-        @click.stop="clipped = !clipped"
-      >
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn
-        icon
         @click.stop="fixed = !fixed"
       >
         <v-icon>mdi-minus</v-icon>
@@ -51,10 +45,14 @@
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn
-        icon
-        @click.stop="rightDrawer = !rightDrawer"
+        v-if="showSignOut"
+        text
+        @click.stop="onSignoutClicked"
       >
-        <v-icon>mdi-menu</v-icon>
+        Sign out
+        <v-icon class="ml-2">
+          mdi-logout
+        </v-icon>
       </v-btn>
     </v-app-bar>
     <v-main>
@@ -62,23 +60,6 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
-      temporary
-      fixed
-    >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
     <v-footer
       :absolute="!fixed"
       app
@@ -91,8 +72,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { State, Watch } from 'nuxt-property-decorator'
+import { Action, State, Watch } from 'nuxt-property-decorator'
 import firebase from 'firebase/app'
+import { PageTitle, PageRoute } from '~/constants/constants'
 
 type SidebarItemType = {
   icon:string
@@ -105,8 +87,6 @@ export default class Default extends Vue {
   @State('user')
   user!:firebase.User
 
-  clipped=false
-
   drawer=false
 
   fixed=false
@@ -114,18 +94,19 @@ export default class Default extends Vue {
   items:SidebarItemType[]=[
     {
       icon: 'mdi-apps',
-      title: 'Welcome',
-      to: '/'
+      title: PageTitle.Welcome,
+      to: PageRoute.Welcome
     }
   ]
 
   miniVariant=false
 
-  right=true
+  title='Board Game Calendar'
 
-  rightDrawer=false
+  showSignOut=false
 
-  title='Vuetify.js'
+  @Action('signOut')
+  signOut!: () => Promise<void>
 
   mounted ():void {
     this.onSignInState(this.user)
@@ -136,28 +117,34 @@ export default class Default extends Vue {
     this.onSignInState(newState)
   }
 
+  async onSignoutClicked ():Promise<void> {
+    await this.signOut()
+    await this.$router.push(PageRoute.SignIn)
+  }
+
   onSignInState (user:firebase.User|null):void {
+    this.showSignOut = !!user
     if (user === null) {
-      const mainIndex = this.items.findIndex(item => item.title === 'Inspire')
+      const mainIndex = this.items.findIndex(item => item.title === PageTitle.GameCollection)
       if (mainIndex > -1) {
         this.items.splice(mainIndex, 1)
       }
       this.items.push({
-        icon: 'mdi-chart-bubble',
-        title: 'SignIn',
-        to: '/signin'
+        icon: 'mdi-login',
+        title: PageTitle.SignIn,
+        to: PageRoute.SignIn
       })
       return
     }
 
-    const signinIndex = this.items.findIndex(item => item.title === 'SignIn')
+    const signinIndex = this.items.findIndex(item => item.title === PageTitle.SignIn)
     if (signinIndex > -1) {
       this.items.splice(signinIndex, 1)
     }
     this.items.push({
-      icon: 'mdi-chart-bubble',
-      title: 'Inspire',
-      to: '/inspire'
+      icon: 'mdi-rhombus-split',
+      title: PageTitle.GameCollection,
+      to: PageRoute.GameCollection
     })
   }
 }

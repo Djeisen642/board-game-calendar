@@ -7,7 +7,12 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import * as firebaseui from 'firebaseui'
-import { auth, authProviders } from '~/plugins/firebase'
+import firebase from 'firebase/app'
+import { auth, authProviders, db } from '~/plugins/firebase'
+
+type AuthResultType = {
+  user: firebase.User
+}
 
 @Component
 export default class SignIn extends Vue {
@@ -29,9 +34,13 @@ export default class SignIn extends Vue {
     }
   }
 
-  signInResult ():boolean {
-    // TODO signin result
-    this.$router.push('inspire')
+  signInResult (authResult:AuthResultType):boolean {
+    const user:firebase.User = authResult.user
+    db.ref(`users/${user.uid}`).set({
+      name: user.displayName,
+      email: user.email
+    })
+    this.$router.push('gamecollection')
     return false
   }
 }
