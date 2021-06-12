@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt --port 3005",
+    "analyze": "nuxt build --analyze",
     "build": "nuxt build",
-    "start": "nuxt start",
+    "dev": "nuxt --port 3005",
     "generate": "nuxt generate",
-    "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "lint": "yarn lint:js",
+    "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('yarn') === -1) throw new Error('You must use Yarn to install, not NPM')\"",
+    "start": "nuxt start",
     "test": "jest"
   },
   "lint-staged": {
-    "*.{js,vue}": "eslint"
+    "*.{js,ts,vue}": "eslint"
   },
   "husky": {
     "hooks": {
@@ -35,6 +36,9 @@
     "xml2js": "^0.4.23",
     "yup": "^0.32.9"
   },
+  "resolutions": {
+    "sass": "1.32.12"
+  },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
@@ -44,7 +48,7 @@
     "@nuxtjs/eslint-config-typescript": "^6.0.0",
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/vuetify": "^1.11.3",
-    "@types/vuelidate": "^0.7.14",
+    "@types/validator": "^13.1.4",
     "@types/xml2js": "^0.4.8",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@vue/test-utils": "^1.1.3",

@@ -72,7 +72,7 @@ export default class SignIn extends Vue {
       name: user.displayName,
       queryableName: user.displayName?.toLowerCase(),
       email: user.email,
-      phoneNumber: new PhoneNumber(user.phoneNumber, 'US').getNumber('national')
+      phoneNumber: user.phoneNumber && new PhoneNumber(user.phoneNumber, 'US').getNumber('national')
     })
     this.$router.push(GameCollection.route)
     return false

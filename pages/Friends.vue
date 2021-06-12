@@ -87,8 +87,11 @@ import { settings } from '~/pages/GameCollection.vue'
 type Person = {
   name:string
   email:string
-  userId?:string
   isFriend?:boolean
+}
+
+type Friend = Person & {
+  userId:string
 }
 
 @Component({
@@ -104,7 +107,7 @@ export default class Friends extends Vue {
 
   friendsAreaOpen = true
 
-  friends:Person[]|null = null
+  friends:Friend[] = []
 
   searchInput = ''
 
@@ -120,7 +123,10 @@ export default class Friends extends Vue {
     const friendsRef = db.ref(`users/${this.user.uid}/friends`)
     friendsRef.on('value', async (snapshot) => {
       const ids = snapshot.val()
-      if (!ids) { return }
+      if (!ids) {
+        this.friends = []
+        return
+      }
       const userPromises = Object.keys(ids)
         .map(userId =>
           db.ref(`users/${userId}`)
@@ -148,7 +154,7 @@ export default class Friends extends Vue {
 
   async addToFriends (id:string):Promise<void> {
     try {
-      const friendsRef = db.ref(`users/${this.user.uid}/friends`)
+      const friendsRef = (await db.ref(`users/${this.user.uid}/friends`).once('value')).val()
       friendsRef[id] = true
       await friendsRef.update({ [id]: true })
     } catch (err) {
@@ -174,8 +180,9 @@ export default class Friends extends Vue {
       }
       delete snapshot[this.user.uid]
       for (const friend of this.friends) {
-        if (snapshot[friend.userId]) {
-          snapshot[friend.userId].isFriend = true
+        const aFriendObject = snapshot[friend.userId]
+        if (aFriendObject) {
+          aFriendObject.isFriend = true
         }
       }
       this.searchResults = snapshot
