@@ -46,6 +46,11 @@
               </v-list-item-action>
             </v-list-item>
           </v-list>
+          <h4
+            v-if="!collection"
+          >
+            No Games in Collection. Please add games!
+          </h4>
         </v-card-text>
         <v-card-text
           v-else
@@ -110,6 +115,9 @@
         </v-card-text>
       </v-card>
     </v-col>
+    <Snackbar
+      ref="snackbar"
+    />
   </v-row>
 </template>
 <script lang="ts">
@@ -118,7 +126,9 @@ import queryString from 'querystring'
 import { Component, State, Vue, Watch } from 'nuxt-property-decorator'
 import firebase from 'firebase/app'
 import { Parser } from 'xml2js'
-import { db } from '~/plugins/firebase'
+import { db, log, LogLevel } from '~/plugins/firebase'
+import Snackbar from '~/components/Snackbar.vue'
+import { NuxtHeadType } from '~/constants/types'
 
 export type Game = {
   id:string
@@ -235,7 +245,9 @@ export const settings = {
   PrimaryNameType: 'primary'
 }
 
-@Component
+@Component({
+  components: { Snackbar }
+})
 export default class GameCollection extends Vue {
   @State('user')
   user!:firebase.User
@@ -258,13 +270,24 @@ export default class GameCollection extends Vue {
 
   $refs!: {
     boardGameSearch: HTMLFormElement
+    snackbar: Snackbar
   }
+
+  static route = '/gamecollection'
+
+  static title = 'Game Collection'
 
   created ():void {
     const collectionRef = db.ref(`users/${this.user.uid}/collection`)
     collectionRef.on('value', (snapshot) => {
       this.collection = snapshot.val()
     })
+  }
+
+  head ():NuxtHeadType {
+    return {
+      title: GameCollection.title
+    }
   }
 
   async addToCollection (item:DisplayableItemType):Promise<void> {
@@ -318,64 +341,69 @@ export default class GameCollection extends Vue {
   }
 
   async displayEntries ():Promise<void> {
-    const searchInputLower = this.searchInput.toLowerCase()
-    const entriesToShow = this.selectedItem
-      ? [this.selectedItem]
-      : this.searchResults
-        .slice(0)
-        .sort((a, b) => {
-          if (a.name.toLowerCase().startsWith(searchInputLower)) {
-            if (b.name.toLowerCase().startsWith(searchInputLower)) {
-              const nameLengthComparison = a.name.length - b.name.length
-              if (nameLengthComparison !== 0) {
-                return nameLengthComparison
+    try {
+      const searchInputLower = this.searchInput.toLowerCase()
+      const entriesToShow = this.selectedItem
+        ? [this.selectedItem]
+        : this.searchResults
+          .slice(0)
+          .sort((a, b) => {
+            if (a.name.toLowerCase().startsWith(searchInputLower)) {
+              if (b.name.toLowerCase().startsWith(searchInputLower)) {
+                const nameLengthComparison = a.name.length - b.name.length
+                if (nameLengthComparison !== 0) {
+                  return nameLengthComparison
+                }
+              } else {
+                return -1
               }
-            } else {
-              return -1
+            } else if (b.name.toLowerCase().startsWith(searchInputLower)) {
+              return 1
             }
-          } else if (b.name.toLowerCase().startsWith(searchInputLower)) {
-            return 1
-          }
-          return (+b.yearpublished) - (+a.yearpublished)
-        })
-        .slice(0, settings.NumberToShow)
+            return (+b.yearpublished) - (+a.yearpublished)
+          })
+          .slice(0, settings.NumberToShow)
 
-    const url = new URL('thing', settings.BoardGameGeekBaseUrl)
-    const resultingEntries:BoardGameGeekThingItemType[] = await Promise.all(entriesToShow.map(async (entry) => {
-      url.search = queryString.stringify({
-        id: entry.id
-      })
-      const response = await fetch(url.toString())
-      const string = await response.text()
-      const parser = new Parser({ explicitArray: false })
-      return parser.parseStringPromise(string)
-    }))
-    this.queriedEntries = []
-    for (const entry of resultingEntries) {
-      const item = entry.items.item
-      if (!item) { continue }
-      const primaryName = Array.isArray(item.name)
-        ? item.name.find(nameObject => nameObject.$.type === settings.PrimaryNameType)
-        : item.name
-      if (!primaryName) { continue }
-      this.queriedEntries.push({
-        id: item.$.id,
-        name: primaryName.$.value,
-        description: this._decodeHtml(item.description),
-        image: item.image,
-        url: `https://boardgamegeek.com/boardgame/${item.$.id}`,
-        maxplayers: item.maxplayers.$.value,
-        maxplaytime: item.maxplaytime.$.value,
-        minage: item.minage.$.value,
-        minplayers: item.minplayers.$.value,
-        minplaytime: item.minplaytime.$.value,
-        yearpublished: item.yearpublished.$.value,
-        incollection: false
-      })
+      const url = new URL('thing', settings.BoardGameGeekBaseUrl)
+      const resultingEntries:BoardGameGeekThingItemType[] = await Promise.all(entriesToShow.map(async (entry) => {
+        url.search = queryString.stringify({
+          id: entry.id
+        })
+        const response = await fetch(url.toString())
+        const string = await response.text()
+        const parser = new Parser({ explicitArray: false })
+        return parser.parseStringPromise(string)
+      }))
+      this.queriedEntries = []
+      for (const entry of resultingEntries) {
+        const item = entry.items.item
+        if (!item) { continue }
+        const primaryName = Array.isArray(item.name)
+          ? item.name.find(nameObject => nameObject.$.type === settings.PrimaryNameType)
+          : item.name
+        if (!primaryName) { continue }
+        this.queriedEntries.push({
+          id: item.$.id,
+          name: primaryName.$.value,
+          description: GameCollection._decodeHtml(item.description),
+          image: item.image,
+          url: `https://boardgamegeek.com/boardgame/${item.$.id}`,
+          maxplayers: item.maxplayers.$.value,
+          maxplaytime: item.maxplaytime.$.value,
+          minage: item.minage.$.value,
+          minplayers: item.minplayers.$.value,
+          minplaytime: item.minplaytime.$.value,
+          yearpublished: item.yearpublished.$.value,
+          incollection: false
+        })
+      }
+    } catch (err) {
+      log(LogLevel.ERROR, err.message, { stack: err.stack })
+      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
     }
   }
 
-  private _decodeHtml (string:string) {
+  private static _decodeHtml (string:string) {
     const txt = document.createElement('textarea')
     txt.innerHTML = string
     return txt.value
@@ -418,7 +446,8 @@ export default class GameCollection extends Vue {
         }
       })
     } catch (err) {
-      console.log(input, err)
+      log(LogLevel.ERROR, err.message, { stack: err.stack })
+      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
     } finally {
       this.isLoading = false
     }

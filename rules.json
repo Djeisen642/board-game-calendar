@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".write": "$uid === auth.uid",
+        ".read": true,
+        "collection": {
+          ".write": "$uid === auth.uid",
+          ".read": "$uid === auth.uid"
+        }
+      },
+      ".indexOn": "queryableName",
+      ".read": true
+    },
+    ".read": false,
+    ".write": false
+  }
+}

@@ -1,46 +1,80 @@
 <template>
   <div>
     <section id="firebaseui-auth-container" />
+    <Snackbar
+      ref="snackbar"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'nuxt-property-decorator'
+import { Component, State, Vue } from 'nuxt-property-decorator'
 import * as firebaseui from 'firebaseui'
 import firebase from 'firebase/app'
-import { auth, authProviders, db } from '~/plugins/firebase'
+import PhoneNumber from 'awesome-phonenumber'
+import { auth, authProviders, db, log, logEvent, LogLevel } from '~/plugins/firebase'
+import Snackbar from '~/components/Snackbar.vue'
+import { NuxtHeadType } from '~/constants/types'
+import GameCollection from '~/pages/GameCollection.vue'
 
 type AuthResultType = {
   user: firebase.User
 }
 
-@Component
+@Component({
+  components: { Snackbar }
+})
 export default class SignIn extends Vue {
+  @State('user')
+  user!:firebase.User
+
+  $refs !: {
+    snackbar: Snackbar
+  }
+
+  static route = '/signin'
+
+  static title = 'Sign In'
+
+  head ():NuxtHeadType {
+    return {
+      title: SignIn.title
+    }
+  }
+
   mounted ():void {
+    if (this.user) {
+      this.$router.push(GameCollection.route)
+      return
+    }
     try {
       const ui =
         firebaseui.auth.AuthUI.getInstance() ||
         new firebaseui.auth.AuthUI(auth)
       const uiConfig:firebaseui.auth.Config = {
         signInFlow: 'popup',
-        signInOptions: [authProviders.Google, authProviders.Email],
+        signInOptions: [authProviders.Google, authProviders.Facebook, authProviders.Email],
         callbacks: {
           signInSuccessWithAuthResult: this.signInResult.bind(this)
         }
       }
       ui.start('#firebaseui-auth-container', uiConfig)
     } catch (err) {
-      // TODO add error
+      log(LogLevel.ERROR, err.message, { stack: err.stack })
+      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
     }
   }
 
   signInResult (authResult:AuthResultType):boolean {
+    logEvent('login')
     const user:firebase.User = authResult.user
     db.ref(`users/${user.uid}`).update({
       name: user.displayName,
-      email: user.email
+      queryableName: user.displayName?.toLowerCase(),
+      email: user.email,
+      phoneNumber: new PhoneNumber(user.phoneNumber, 'US').getNumber('national')
     })
-    this.$router.push('gamecollection')
+    this.$router.push(GameCollection.route)
     return false
   }
 }

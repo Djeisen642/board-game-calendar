@@ -44,6 +44,7 @@ jobs:
         run: yarn run generate
         env:
           BASE_URL: /board-game-calendar/
+          NODE_ENV: production
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

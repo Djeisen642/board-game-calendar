@@ -2,14 +2,13 @@
   <v-app dark>
     <v-navigation-drawer
       v-model="drawer"
-      :mini-variant="miniVariant"
       clipped
       fixed
       app
     >
       <v-list>
         <v-list-item
-          v-for="(item, i) in items"
+          v-for="(item, i) in activeItems"
           :key="i"
           :to="item.to"
           router
@@ -30,18 +29,6 @@
       app
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn
-        icon
-        @click.stop="miniVariant = !miniVariant"
-      >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="fixed = !fixed"
-      >
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn
@@ -61,10 +48,10 @@
       </v-container>
     </v-main>
     <v-footer
-      :absolute="!fixed"
+      :absolute="false"
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span>Jason Suttles &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
@@ -72,14 +59,25 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Action, State, Watch } from 'nuxt-property-decorator'
+import { Action, State } from 'nuxt-property-decorator'
 import firebase from 'firebase/app'
-import { PageTitle, PageRoute } from '~/constants/constants'
+import index from '~/pages/index.vue'
+import GameCollection from '~/pages/GameCollection.vue'
+import SignIn from '~/pages/SignIn.vue'
+import Profile from '~/pages/Profile.vue'
+import Friends from '~/pages/Friends.vue'
+
+export enum PageType {
+  AlwaysShow,
+  NeedsAuth,
+  BeforeAuth
+}
 
 type SidebarItemType = {
   icon:string
   title:string
   to:string
+  type:PageType
 }
 
 @Component
@@ -87,65 +85,58 @@ export default class Default extends Vue {
   @State('user')
   user!:firebase.User
 
+  title='Board Game Calendar'
   drawer=false
-
-  fixed=false
-
   items:SidebarItemType[]=[
     {
       icon: 'mdi-apps',
-      title: PageTitle.Welcome,
-      to: PageRoute.Welcome
+      title: index.title,
+      to: index.route,
+      type: PageType.AlwaysShow
+    },
+    {
+      icon: 'mdi-login',
+      title: SignIn.title,
+      to: SignIn.route,
+      type: PageType.BeforeAuth
+    },
+    {
+      icon: 'mdi-rhombus-split',
+      title: GameCollection.title,
+      to: GameCollection.route,
+      type: PageType.NeedsAuth
+    },
+    {
+      icon: 'mdi-account-group',
+      title: Friends.title,
+      to: Friends.route,
+      type: PageType.NeedsAuth
+    },
+    {
+      icon: 'mdi-account',
+      title: Profile.title,
+      to: Profile.route,
+      type: PageType.NeedsAuth
     }
   ]
 
-  miniVariant=false
+  get activeItems ():SidebarItemType[] {
+    if (this.user) {
+      return this.items.filter(item => [PageType.AlwaysShow, PageType.NeedsAuth].includes(item.type))
+    }
+    return this.items.filter(item => [PageType.AlwaysShow, PageType.BeforeAuth].includes(item.type))
+  }
 
-  title='Board Game Calendar'
-
-  showSignOut=false
+  get showSignOut ():boolean {
+    return !!this.user
+  }
 
   @Action('signOut')
   signOut!: () => Promise<void>
 
-  mounted ():void {
-    this.onSignInState(this.user)
-  }
-
-  @Watch('user')
-  onUserSignIn (newState:firebase.User|null):void {
-    this.onSignInState(newState)
-  }
-
   async onSignoutClicked ():Promise<void> {
     await this.signOut()
-    await this.$router.push(PageRoute.SignIn)
-  }
-
-  onSignInState (user:firebase.User|null):void {
-    this.showSignOut = !!user
-    if (user === null) {
-      const mainIndex = this.items.findIndex(item => item.title === PageTitle.GameCollection)
-      if (mainIndex > -1) {
-        this.items.splice(mainIndex, 1)
-      }
-      this.items.push({
-        icon: 'mdi-login',
-        title: PageTitle.SignIn,
-        to: PageRoute.SignIn
-      })
-      return
-    }
-
-    const signinIndex = this.items.findIndex(item => item.title === PageTitle.SignIn)
-    if (signinIndex > -1) {
-      this.items.splice(signinIndex, 1)
-    }
-    this.items.push({
-      icon: 'mdi-rhombus-split',
-      title: PageTitle.GameCollection,
-      to: PageRoute.GameCollection
-    })
+    await this.$router.push(SignIn.route)
   }
 }
 </script>

@@ -10,8 +10,8 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - board-game-calendar',
-    title: 'board-game-calendar',
+    titleTemplate: '%s - Board Game Calendar',
+    title: 'Board Game Calendar',
     htmlAttrs: {
       lang: 'en'
     },
@@ -82,7 +82,7 @@ export default {
   },
   router: {
     base,
-    middleware: 'auth'
+    middleware: ['auth']
   },
   env: {
     base

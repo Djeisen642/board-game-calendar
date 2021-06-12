@@ -80,11 +80,20 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import Logo from '~/components/Logo.vue'
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
+import { NuxtHeadType } from '~/constants/types'
 
 @Component({
   components: { Logo, VuetifyLogo }
 })
-export default class IndexPage extends Vue {
+export default class index extends Vue {
+  static route = '/'
 
+  static title = 'Welcome'
+
+  head ():NuxtHeadType {
+    return {
+      title: index.title
+    }
+  }
 }
 </script>
