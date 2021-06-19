@@ -116,6 +116,7 @@ export type UserProfile = {
 })
 export default class Profile extends Vue {
   static route = '/profile'
+  static routeName = 'Profile'
   static title = 'Profile'
 
   @State('user')

@@ -249,6 +249,10 @@ export const settings = {
   components: { Snackbar }
 })
 export default class GameCollection extends Vue {
+  static route = '/gamecollection'
+  static routeName='GameCollection'
+  static title = 'Game Collection'
+
   @State('user')
   user!:firebase.User
 
@@ -272,10 +276,6 @@ export default class GameCollection extends Vue {
     boardGameSearch: HTMLFormElement
     snackbar: Snackbar
   }
-
-  static route = '/gamecollection'
-
-  static title = 'Game Collection'
 
   created ():void {
     const collectionRef = db.ref(`users/${this.user.uid}/collection`)

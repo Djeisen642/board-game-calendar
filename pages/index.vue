@@ -87,7 +87,7 @@ import { NuxtHeadType } from '~/constants/types'
 })
 export default class index extends Vue {
   static route = '/'
-
+  static routeName = 'index'
   static title = 'Welcome'
 
   head ():NuxtHeadType {

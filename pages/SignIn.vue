@@ -25,16 +25,16 @@ type AuthResultType = {
   components: { Snackbar }
 })
 export default class SignIn extends Vue {
+  static route = '/signin'
+  static routeName = 'SignIn'
+  static title = 'Sign In'
+
   @State('user')
   user!:firebase.User
 
   $refs !: {
     snackbar: Snackbar
   }
-
-  static route = '/signin'
-
-  static title = 'Sign In'
 
   head ():NuxtHeadType {
     return {

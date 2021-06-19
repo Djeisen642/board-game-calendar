@@ -5,8 +5,8 @@ import index from '~/pages/index.vue'
 
 export default function ({ store, redirect, route }:Context):void {
   if (store.state.user) {
-    route.name === SignIn.name && redirect(GameCollection.route)
+    route.name === SignIn.routeName && redirect(GameCollection.route)
   } else if (route.name) {
-    ![index.name, SignIn.name].includes(route.name) && redirect(SignIn.route)
+    ![index.routeName, SignIn.routeName].includes(route.name) && redirect(SignIn.route)
   }
 }

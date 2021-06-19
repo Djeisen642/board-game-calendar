@@ -98,12 +98,12 @@ type Friend = Person & {
   components: { Snackbar }
 })
 export default class Friends extends Vue {
+  static title = 'Friends'
+  static routeName = 'Friends'
+  static route = '/friends'
+
   @State('user')
   user!:firebase.User
-
-  static title = 'Friends'
-
-  static route = '/friends'
 
   friendsAreaOpen = true
 
