@@ -84,13 +84,13 @@ import Snackbar from '~/components/Snackbar.vue'
 import { db, log, LogLevel } from '~/plugins/firebase'
 import { settings } from '~/pages/GameCollection.vue'
 
-type Person = {
+export type Person = {
   name:string
   email:string
   isFriend?:boolean
 }
 
-type Friend = Person & {
+export type Friend = Person & {
   userId:string
 }
 

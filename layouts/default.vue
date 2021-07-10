@@ -66,6 +66,7 @@ import GameCollection from '~/pages/GameCollection.vue'
 import SignIn from '~/pages/SignIn.vue'
 import Profile from '~/pages/Profile.vue'
 import Friends from '~/pages/Friends.vue'
+import Calendar from '~/pages/Calendar.vue'
 
 export enum PageType {
   AlwaysShow,
@@ -99,6 +100,12 @@ export default class Default extends Vue {
       title: SignIn.title,
       to: SignIn.route,
       type: PageType.BeforeAuth
+    },
+    {
+      icon: 'mdi-calendar',
+      title: Calendar.title,
+      to: Calendar.route,
+      type: PageType.NeedsAuth
     },
     {
       icon: 'mdi-rhombus-split',

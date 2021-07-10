@@ -250,7 +250,7 @@ export const settings = {
 })
 export default class GameCollection extends Vue {
   static route = '/gamecollection'
-  static routeName='GameCollection'
+  static routeName ='GameCollection'
   static title = 'Game Collection'
 
   @State('user')
