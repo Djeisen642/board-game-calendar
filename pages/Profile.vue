@@ -13,22 +13,27 @@
           >
             <v-text-field
               v-model="profile.name"
-              label="Name"
+              :label="label.name"
               :rules="[validation.isRequired]"
             />
             <v-text-field
               v-model="profile.phoneNumber"
-              label="Phone Number"
+              :label="label.phoneNumber"
               :rules="[validation.isPhone]"
             />
             <v-text-field
               v-model="profile.email"
-              label="Email"
+              :label="label.email"
               :rules="[validation.isRequired, validation.isEmail]"
             />
             <v-textarea
               v-model="profile.address"
-              label="Address"
+              :label="label.address"
+            />
+            <v-text-field
+              v-model="profile.maxPeople"
+              type="number"
+              :label="label.maxPeople"
             />
           </v-form>
         </v-card-text>
@@ -36,24 +41,24 @@
           v-else
         >
           <p>
-            <v-icon class="mx-1">
+            <v-icon class="mx-2">
               mdi-account
-            </v-icon>Name: {{ profile.name || 'Empty' }}
+            </v-icon>{{ label.name }}: {{ profile.name || 'Empty' }}
           </p>
           <p>
-            <v-icon class="mx-1">
+            <v-icon class="mx-2">
               mdi-phone
-            </v-icon>Phone Number: {{ profile.phoneNumber || 'Empty' }}
+            </v-icon>{{ label.phoneNumber }}: {{ profile.phoneNumber || 'Empty' }}
           </p>
           <p>
-            <v-icon class="mx-1">
+            <v-icon class="mx-2">
               mdi-email
-            </v-icon>Email: {{ profile.email || 'Empty' }}
+            </v-icon>{{ label.email }}: {{ profile.email || 'Empty' }}
           </p>
           <p>
-            <v-icon class="mx-1">
+            <v-icon class="mx-2">
               mdi-google-maps
-            </v-icon>Address:
+            </v-icon>{{ label.address }}:
           </p>
           <div
             class="ml-4"
@@ -68,6 +73,11 @@
               Empty
             </div>
           </div>
+          <p>
+            <v-icon class="mx-2">
+              mdi-account-multiple-check
+            </v-icon>{{ label.maxPeople }}: {{ profile.maxPeople || 'Empty' }}
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-btn
@@ -108,7 +118,16 @@ export type UserProfile = {
   name:string
   email:string
   phoneNumber:string
-  address:string
+  address:string,
+  maxPeople:number
+}
+
+export const label = {
+  name: 'Name',
+  phoneNumber: 'Phone Number',
+  email: 'Email',
+  address: 'Address',
+  maxPeople: 'Max people at residence'
 }
 
 @Component({
@@ -133,13 +152,18 @@ export default class Profile extends Vue {
     name: 'empty',
     email: 'empty',
     phoneNumber: 'empty',
-    address: 'empty'
+    address: 'empty',
+    maxPeople: 0
   }
 
   validation = {
     isRequired: (v:string):boolean|string => !!v || 'Required',
-    isEmail: (v:string):boolean|string => isEmail(v) || 'Invalid email',
-    isPhone: (v:string):boolean|string => new PhoneNumber(v || '', 'US').isValid() || 'Invalid phone'
+    isEmail: (v:string):boolean|string => !v || isEmail(v) || 'Invalid email',
+    isPhone: (v:string):boolean|string => !v || new PhoneNumber(v || '', 'US').isValid() || 'Invalid phone'
+  }
+
+  get label ():typeof label {
+    return label
   }
 
   mounted ():void {
@@ -165,9 +189,10 @@ export default class Profile extends Vue {
       await userRef.update({
         name: this.profile.name,
         queryableName: this.profile.name.toLowerCase(),
-        phoneNumber: new PhoneNumber(this.profile.phoneNumber, 'US').getNumber('national'),
+        phoneNumber: this.profile.phoneNumber ? new PhoneNumber(this.profile.phoneNumber, 'US').getNumber('national') : null,
         address: this.profile.address,
-        email: this.profile.email
+        email: this.profile.email,
+        maxPeople: this.profile.maxPeople ?? null
       })
       this.editable = false
     } catch (err) {
