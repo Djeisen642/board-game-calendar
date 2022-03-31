@@ -1,12 +1,11 @@
 import { Context } from '@nuxt/types'
-import SignIn from '~/pages/SignIn.vue'
-import index from '~/pages/index.vue'
-import GameCollection from '~/pages/GameCollection.vue'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
 
 export default function ({ store, redirect, route }:Context):void {
   if (store.state.user) {
-    route.name === SignIn.routeName && redirect(GameCollection.route)
+    route.name === names.signIn && redirect(routes.gameCollection)
   } else if (route.name) {
-    ![index.routeName, SignIn.routeName].includes(route.name) && redirect(SignIn.route)
+    ![names.index, names.signIn].includes(route.name) && redirect(routes.signIn)
   }
 }

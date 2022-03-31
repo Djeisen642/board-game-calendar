@@ -77,30 +77,23 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import Component from 'vue-class-component'
-import { State, Watch } from 'nuxt-property-decorator'
+import { State, Watch, Component } from 'nuxt-property-decorator'
 import firebase from 'firebase'
 import Snackbar from '~/components/Snackbar.vue'
-import { db, log, LogLevel } from '~/plugins/firebase'
+import { db } from '~/plugins/firebase'
 import { settings } from '~/pages/GameCollection.vue'
-
-export type Person = {
-  name:string
-  email:string
-  isFriend?:boolean
-}
-
-export type Friend = Person & {
-  userId:string
-}
+import helpers from '~/helpers/helpers'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
+import { Friend, Person } from '~/helpers/types'
 
 @Component({
   components: { Snackbar }
 })
 export default class Friends extends Vue {
   static title = 'Friends'
-  static routeName = 'Friends'
-  static route = '/friends'
+  static routeName = names.friends
+  static route = routes.friends
 
   @State('user')
   user!:firebase.User
@@ -158,8 +151,8 @@ export default class Friends extends Vue {
       friendsRef[id] = true
       await friendsRef.update({ [id]: true })
     } catch (err) {
-      log(LogLevel.ERROR, err.message, { stack: err.stack })
-      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
+      const handledError = helpers.handleError(err)
+      this.$refs.snackbar.showSnackbarWithMessage(handledError.message, true)
     }
   }
 
@@ -187,8 +180,8 @@ export default class Friends extends Vue {
       }
       this.searchResults = snapshot
     } catch (err) {
-      log(LogLevel.ERROR, err.message, { stack: err.stack })
-      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
+      const handledError = helpers.handleError(err)
+      this.$refs.snackbar.showSnackbarWithMessage(handledError.message, true)
     }
   }
 }

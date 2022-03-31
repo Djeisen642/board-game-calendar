@@ -23,12 +23,12 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import Component from 'vue-class-component'
-import { State } from 'nuxt-property-decorator'
+import { State, Component } from 'nuxt-property-decorator'
 import firebase from 'firebase'
-import { NuxtHeadType } from '~/constants/types'
-import { Person } from '~/pages/Friends.vue'
+import { NuxtHeadType, Person } from '~/helpers/types'
 import { db } from '~/plugins/firebase'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
 
 export type EventType = {
   host: string
@@ -38,8 +38,8 @@ export type EventType = {
 
 @Component
 export default class Calendar extends Vue {
-  static route = '/calendar'
-  static routeName = 'Calendar'
+  static route = routes.calendar
+  static routeName = names.calendar
   static title = 'Calendar'
 
   @State('user')

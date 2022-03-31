@@ -12,21 +12,20 @@ import { Component, State, Vue } from 'nuxt-property-decorator'
 import * as firebaseui from 'firebaseui'
 import firebase from 'firebase/app'
 import PhoneNumber from 'awesome-phonenumber'
-import { auth, authProviders, db, log, logEvent, LogLevel } from '~/plugins/firebase'
+import { auth, authProviders, db, logEvent } from '~/plugins/firebase'
 import Snackbar from '~/components/Snackbar.vue'
-import { NuxtHeadType } from '~/constants/types'
+import { AuthResultType, NuxtHeadType } from '~/helpers/types'
 import GameCollection from '~/pages/GameCollection.vue'
-
-type AuthResultType = {
-  user: firebase.User
-}
+import helpers from '~/helpers/helpers'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
 
 @Component({
   components: { Snackbar }
 })
 export default class SignIn extends Vue {
-  static route = '/signin'
-  static routeName = 'SignIn'
+  static route = routes.signIn
+  static routeName = names.signIn
   static title = 'Sign In'
 
   @State('user')
@@ -60,8 +59,8 @@ export default class SignIn extends Vue {
       }
       ui.start('#firebaseui-auth-container', uiConfig)
     } catch (err) {
-      log(LogLevel.ERROR, err.message, { stack: err.stack })
-      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
+      const handledError = helpers.handleError(err)
+      this.$refs.snackbar.showSnackbarWithMessage(handledError.message, true)
     }
   }
 

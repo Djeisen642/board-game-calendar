@@ -67,7 +67,7 @@
               v-if="profile.address"
               style="white-space: pre-wrap"
               target="_blank"
-              :href="`https://www.google.com/maps/search/?api=1&query=${profile.address}`"
+              :href="`https://www.google.com/maps/search/?api=1&query=${removeNewLines(profile.address)}`"
             >{{ profile.address }}</a>
             <div v-else>
               Empty
@@ -110,9 +110,12 @@ import { Component, State, Vue } from 'nuxt-property-decorator'
 import firebase from 'firebase/app'
 import isEmail from 'validator/lib/isEmail'
 import PhoneNumber from 'awesome-phonenumber'
-import { db, log, LogLevel } from '~/plugins/firebase'
-import { NuxtHeadType, VForm } from '~/constants/types'
+import { db } from '~/plugins/firebase'
+import { NuxtHeadType, VForm } from '~/helpers/types'
 import Snackbar from '~/components/Snackbar.vue'
+import helpers from '~/helpers/helpers'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
 
 export type UserProfile = {
   name:string
@@ -134,8 +137,8 @@ export const label = {
   components: { Snackbar }
 })
 export default class Profile extends Vue {
-  static route = '/profile'
-  static routeName = 'Profile'
+  static route = routes.profile
+  static routeName = names.profile
   static title = 'Profile'
 
   @State('user')
@@ -179,6 +182,10 @@ export default class Profile extends Vue {
     }
   }
 
+  removeNewLines (str:string):string {
+    return str.replace(/\n/g, ' ')
+  }
+
   async update ():Promise<void> {
     try {
       if (!this.$refs.profileForm.validate()) {
@@ -196,8 +203,8 @@ export default class Profile extends Vue {
       })
       this.editable = false
     } catch (err) {
-      log(LogLevel.ERROR, err.message, { stack: err.stack })
-      this.$refs.snackbar.showSnackbarWithMessage(err.message, true)
+      const handledError = helpers.handleError(err)
+      this.$refs.snackbar.showSnackbarWithMessage(handledError.message, true)
     }
   }
 }

@@ -39,14 +39,16 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import Logo from '~/components/Logo.vue'
-import { NuxtHeadType } from '~/constants/types'
+import { NuxtHeadType } from '~/helpers/types'
+import names from '~/helpers/names'
+import routes from '~/helpers/routes'
 
 @Component({
   components: { Logo }
 })
 export default class index extends Vue {
-  static route = '/'
-  static routeName = 'index'
+  static route = routes.index
+  static routeName = names.index
   static title = 'Welcome'
 
   head ():NuxtHeadType {
