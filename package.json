@@ -23,14 +23,12 @@
     }
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.13.1",
     "awesome-phonenumber": "^2.52.0",
     "core-js": "^3.9.1",
     "firebase": "^8.6.7",
     "firebaseui": "^4.8.0",
     "nuxt": "^2.15.3",
     "nuxt-property-decorator": "^2.9.1",
-    "querystring": "^0.2.1",
     "validator": "^13.6.0",
     "vue": "^2.6.12",
     "xml2js": "^0.4.23",
@@ -40,7 +38,7 @@
     "sass": "1.32.12"
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.0.1",
+    "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^12.0.1",
     "@nuxt/types": "^2.15.3",
     "@nuxt/typescript-build": "^2.1.0",
