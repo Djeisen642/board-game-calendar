@@ -9,12 +9,12 @@ jobs:
   cd:
     runs-on: ${{ matrix.os }}
 
+    environment: production
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [16]
 
-    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
