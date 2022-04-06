@@ -50,7 +50,7 @@
     "@types/validator": "^13.1.4",
     "@types/xml2js": "^0.4.8",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
-    "@vue/test-utils": "^2.0.0-rc.19",
+    "@vue/test-utils": "^1.0.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^27.0.2",
