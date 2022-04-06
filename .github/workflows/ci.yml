@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   ci:
@@ -19,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout 🛎
-        uses: actions/checkout@master
+        uses: actions/checkout
 
       - name: Setup node env 🏗
-        uses: actions/setup-node@v2.1.5
+        uses: actions/setup-node
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
@@ -32,7 +29,7 @@ jobs:
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
       - name: Cache node_modules 📦
-        uses: actions/cache@v2
+        uses: actions/cache
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}

@@ -1,16 +1,9 @@
 <template>
-  <v-snackbar
-    v-model="showSnackbar"
-  >
+  <v-snackbar v-model="showSnackbar">
     {{ snackbarText }}
 
     <template #action="{ attrs }">
-      <v-btn
-        color="pink"
-        text
-        v-bind="attrs"
-        @click="showSnackbar = false"
-      >
+      <v-btn color="pink" text v-bind="attrs" @click="showSnackbar = false">
         Close
       </v-btn>
     </template>
@@ -28,13 +21,13 @@ export default class Snackbar extends Vue {
 
   showSnackbar = false
 
-  showSnackbarWithMessage (text:string, isError:boolean):void {
+  showSnackbarWithMessage(text: string, isError: boolean): void {
     this.snackbarText = text
     this.isError = isError
     this.showSnackbar = true
   }
 
-  hideSnackbar ():void {
+  hideSnackbar(): void {
     this.snackbarText = ''
     this.isError = false
     this.showSnackbar = false

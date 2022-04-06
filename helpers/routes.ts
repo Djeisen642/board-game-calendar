@@ -4,5 +4,5 @@ export default {
   gameCollection: '/gamecollection',
   calendar: '/calendar',
   index: '/',
-  profile: '/profile'
+  profile: '/profile',
 }

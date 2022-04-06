@@ -1,11 +1,6 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer
-      v-model="drawer"
-      clipped
-      fixed
-      app
-    >
+    <v-navigation-drawer v-model="drawer" clipped fixed app>
       <v-list>
         <v-list-item
           v-for="(item, i) in activeItems"
@@ -23,23 +18,13 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-app-bar
-      clipped-left
-      fixed
-      app
-    >
+    <v-app-bar clipped-left fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
       <v-spacer />
-      <v-btn
-        v-if="showSignOut"
-        text
-        @click.stop="onSignoutClicked"
-      >
+      <v-btn v-if="showSignOut" text @click.stop="onSignoutClicked">
+        <v-icon class="ml-2"> mdi-logout </v-icon>
         Sign out
-        <v-icon class="ml-2">
-          mdi-logout
-        </v-icon>
       </v-btn>
     </v-app-bar>
     <v-main>
@@ -47,10 +32,7 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-footer
-      :absolute="false"
-      app
-    >
+    <v-footer :absolute="false" app>
       <span>Jason Suttles &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
@@ -60,7 +42,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Action, State } from 'nuxt-property-decorator'
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 import index from '~/pages/index.vue'
 import GameCollection from '~/pages/GameCollection.vue'
 import SignIn from '~/pages/SignIn.vue'
@@ -71,77 +53,81 @@ import Calendar from '~/pages/Calendar.vue'
 export enum PageType {
   AlwaysShow,
   NeedsAuth,
-  BeforeAuth
+  BeforeAuth,
 }
 
 type SidebarItemType = {
-  icon:string
-  title:string
-  to:string
-  type:PageType
+  icon: string
+  title: string
+  to: string
+  type: PageType
 }
 
 @Component
 export default class Default extends Vue {
   @State('user')
-  user!:firebase.User
+  user!: firebase.User
 
-  title='Board Game Calendar'
-  drawer=false
-  items:SidebarItemType[]=[
+  title = 'Board Game Calendar'
+  drawer = false
+  items: SidebarItemType[] = [
     {
       icon: 'mdi-apps',
       title: index.title,
       to: index.route,
-      type: PageType.AlwaysShow
+      type: PageType.AlwaysShow,
     },
     {
       icon: 'mdi-login',
       title: SignIn.title,
       to: SignIn.route,
-      type: PageType.BeforeAuth
+      type: PageType.BeforeAuth,
     },
     {
       icon: 'mdi-calendar',
       title: Calendar.title,
       to: Calendar.route,
-      type: PageType.NeedsAuth
+      type: PageType.NeedsAuth,
     },
     {
       icon: 'mdi-rhombus-split',
       title: GameCollection.title,
       to: GameCollection.route,
-      type: PageType.NeedsAuth
+      type: PageType.NeedsAuth,
     },
     {
       icon: 'mdi-account-group',
       title: Friends.title,
       to: Friends.route,
-      type: PageType.NeedsAuth
+      type: PageType.NeedsAuth,
     },
     {
       icon: 'mdi-account',
       title: Profile.title,
       to: Profile.route,
-      type: PageType.NeedsAuth
-    }
+      type: PageType.NeedsAuth,
+    },
   ]
 
-  get activeItems ():SidebarItemType[] {
+  get activeItems(): SidebarItemType[] {
     if (this.user) {
-      return this.items.filter(item => [PageType.AlwaysShow, PageType.NeedsAuth].includes(item.type))
+      return this.items.filter((item) =>
+        [PageType.AlwaysShow, PageType.NeedsAuth].includes(item.type)
+      )
     }
-    return this.items.filter(item => [PageType.AlwaysShow, PageType.BeforeAuth].includes(item.type))
+    return this.items.filter((item) =>
+      [PageType.AlwaysShow, PageType.BeforeAuth].includes(item.type)
+    )
   }
 
-  get showSignOut ():boolean {
+  get showSignOut(): boolean {
     return !!this.user
   }
 
   @Action('signOut')
   signOut!: () => Promise<void>
 
-  async onSignoutClicked ():Promise<void> {
+  async onSignoutClicked(): Promise<void> {
     await this.signOut()
     await this.$router.push(SignIn.route)
   }

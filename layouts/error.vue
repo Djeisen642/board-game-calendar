@@ -6,9 +6,7 @@
     <h1 v-else>
       {{ otherError }}
     </h1>
-    <NuxtLink to="/">
-      Home page
-    </NuxtLink>
+    <NuxtLink to="/"> Home page </NuxtLink>
   </v-app>
 </template>
 
@@ -16,23 +14,22 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 
 interface IHttpError extends Error {
-  statusCode?:number
+  statusCode?: number
 }
 
 @Component
 export default class ErrorPage extends Vue {
   @Prop({ default: null, type: Object })
-  readonly error!:IHttpError
+  readonly error!: IHttpError
 
-  pageNotFound='404 Not Found'
-  otherError='An error occurred'
+  pageNotFound = '404 Not Found'
+  otherError = 'An error occurred'
 
-  head ():{title:string} {
-    const title = this.error.statusCode === 404
-      ? this.pageNotFound
-      : this.otherError
+  head(): { title: string } {
+    const title =
+      this.error.statusCode === 404 ? this.pageNotFound : this.otherError
     return {
-      title
+      title,
     }
   }
 }

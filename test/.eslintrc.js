@@ -1,8 +1,6 @@
 module.exports = {
   env: {
-    jest: true
+    jest: true,
   },
-  plugins: [
-    'jest'
-  ]
+  plugins: ['jest'],
 }

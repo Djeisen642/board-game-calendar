@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils'
-import Logo from '@/components/Logo.vue'
+import BGCLogo from '~/components/BGCLogo.vue'
 
-describe('Logo', () => {
+describe('BGCLogo', () => {
   test('is a Vue instance', () => {
-    const wrapper = mount(Logo)
+    const wrapper = mount(BGCLogo)
     expect(wrapper.vm).toBeTruthy()
   })
 })

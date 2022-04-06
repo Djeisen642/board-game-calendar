@@ -2,22 +2,22 @@ module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true
+    node: true,
   },
   extends: [
-    '@nuxtjs/eslint-config-typescript',
-    'plugin:nuxt/recommended',
+    '@nuxtjs',
     'plugin:@typescript-eslint/recommended',
-    'plugin:vue/recommended'
+    'plugin:vue/base',
+    'plugin:vuetify/base',
+    'plugin:prettier/recommended',
   ],
   parser: 'vue-eslint-parser',
   parserOptions: {
-    parser: '@typescript-eslint/parser'
+    parser: '@typescript-eslint/parser',
+    ecmaVersion: 8,
+    sourceType: 'module',
   },
-  plugins: [
-    '@typescript-eslint',
-    'vue'
-  ],
+  plugins: ['@typescript-eslint', 'vue'],
   // add your custom rules here
-  rules: {}
+  rules: {},
 }

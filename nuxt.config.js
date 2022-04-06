@@ -13,27 +13,24 @@ export default {
     titleTemplate: '%s - Board Game Calendar',
     title: 'Board Game Calendar',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'en',
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' }
+      { hid: 'description', name: 'description', content: '' },
     ],
     link: [
       { rel: 'icon', type: 'image/png', href: `${base}favicon.png` },
-      { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }
-    ]
+      { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` },
+    ],
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [
-  ],
+  css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-    '~/plugins/fireauth'
-  ],
+  plugins: ['~/plugins/fireauth'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -44,15 +41,14 @@ export default {
     '@nuxt/typescript-build',
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
-    '@nuxtjs/dotenv'
+    '@nuxtjs/dotenv',
   ],
   dotenv: {
-    systemvars: true
+    systemvars: true,
   },
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [
-  ],
+  modules: [],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {},
@@ -70,20 +66,26 @@ export default {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
-        }
-      }
-    }
+          success: colors.green.accent3,
+        },
+      },
+    },
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {
-  },
+  build: {},
   router: {
     base,
-    middleware: ['auth']
+    middleware: ['auth'],
   },
   env: {
-    base
-  }
+    base,
+  },
+  typescript: {
+    typeCheck: {
+      eslint: {
+        files: './**/*.{ts,js,vue}',
+      },
+    },
+  },
 }

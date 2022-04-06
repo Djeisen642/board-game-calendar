@@ -3,69 +3,70 @@
     <v-col>
       <v-card>
         <v-card-title>
-          <v-row
-            class="pa-3"
-          >
-            <h3>{{ collectionAreaOpen ? 'Game Collection' : 'Game Search' }}</h3>
+          <v-row class="pa-3">
+            <h3>
+              {{ collectionAreaOpen ? 'Game Collection' : 'Game Search' }}
+            </h3>
             <v-spacer />
-            <v-btn
-              @click.stop="toggleAddArea"
-            >
+            <v-btn @click.stop="toggleAddArea">
               <v-icon class="mr-3">
-                {{ collectionAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}
-              </v-icon>{{ collectionAreaOpen ? 'Add' : 'Back' }}
+                {{
+                  collectionAreaOpen
+                    ? 'mdi-plus-circle'
+                    : 'mdi-arrow-left-circle'
+                }} </v-icon
+              >{{ collectionAreaOpen ? 'Add' : 'Back' }}
             </v-btn>
           </v-row>
         </v-card-title>
         <v-card-text>
-          <div
-            v-if="collectionAreaOpen"
-          >
-            <v-text-field v-model="filterGames" label="Filter Games" />
-            <v-list>
-              <v-list-item
-                v-for="(item, id) in gamesMatchingFilter"
-                :key="id"
-              >
-                <v-list-item-content>
-                  <v-list-item-title>{{ item.name }}</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-rating
-                    v-model="item.rating"
-                    half-increments
-                    hover
-                    large
-                    @input="changeRating(id, item)"
-                  />
-                  <v-btn
-                    dense
-                    @click.stop="removeGameFromCollection(id)"
-                  >
-                    <v-icon class="mr-3">
-                      mdi-minus-circle
-                    </v-icon>Remove
-                  </v-btn>
-                </v-list-item-action>
-              </v-list-item>
-            </v-list>
-            <h4
-              v-if="!collection"
-            >
+          <div v-if="loading">
+            <v-progress-linear indeterminate color="primary" />
+          </div>
+          <div v-else-if="collectionAreaOpen">
+            <h4 v-if="!collection">
               No Games in Collection. Please add games!
             </h4>
+            <div v-else>
+              <v-text-field v-model="filterGames" label="Filter Games" />
+              <v-list>
+                <v-list-item
+                  v-for="(item, id) in gamesMatchingFilter"
+                  :key="id"
+                >
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-rating
+                      v-model="item.rating"
+                      half-increments
+                      hover
+                      large
+                      @input="changeRating(id, item)"
+                    />
+                    <v-btn dense @click.stop="removeGameFromCollection(id)">
+                      <v-icon class="mr-3"> mdi-minus-circle </v-icon>Remove
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </div>
           </div>
-          <GameSearch v-else :ids-in-collection="idsInCollection" :add-to-collection="addToCollection" @error="onGameSearchError" />
+          <GameSearch
+            v-else
+            :ids-in-collection="idsInCollection"
+            :add-to-collection="addToCollection"
+            @error="onGameSearchError"
+          />
         </v-card-text>
       </v-card>
     </v-col>
-    <Snackbar
-      ref="snackbar"
-    />
+    <Snackbar ref="snackbar" />
   </v-row>
 </template>
 <script lang="ts">
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 import { Component, State, Vue } from 'nuxt-property-decorator'
 import GameSearch from '~/components/GameSearch.vue'
 import Snackbar from '~/components/Snackbar.vue'
@@ -73,17 +74,10 @@ import { DisplayableItemType, Game, NuxtHeadType } from '~/helpers/types'
 import { db } from '~/plugins/firebase'
 import names from '~/helpers/names'
 import routes from '~/helpers/routes'
-
-export const settings = {
-  BoardGameGeekBaseUrl: 'https://www.boardgamegeek.com/xmlapi2/',
-  BggBoardGameType: 'boardgame',
-  DebounceThrottleInMs: 500,
-  NumberToShow: 10,
-  PrimaryNameType: 'primary'
-}
+import constants from '~/helpers/constants'
 
 @Component({
-  components: { Snackbar, GameSearch }
+  components: { Snackbar, GameSearch },
 })
 export default class GameCollection extends Vue {
   static route = routes.gameCollection
@@ -91,24 +85,26 @@ export default class GameCollection extends Vue {
   static title = 'Game Collection'
 
   @State('user')
-  user!:firebase.User
+  user!: firebase.User
 
-  collection:Record<string, Game>|null = null;
+  collection: Record<string, Game> | null = null
 
   collectionAreaOpen = true
 
   filterGames = ''
+
+  loading = true
 
   $refs!: {
     boardGameSearch: HTMLFormElement
     snackbar: Snackbar
   }
 
-  get gamesMatchingFilter ():Record<string, Game> {
+  get gamesMatchingFilter(): Record<string, Game> {
     if (!this.collection) {
       return {}
     }
-    const filteredCollection:Record<string, Game> = {}
+    const filteredCollection: Record<string, Game> = {}
     for (const [key, game] of Object.entries(this.collection)) {
       if (game.name.toLowerCase().includes(this.filterGames.toLowerCase())) {
         filteredCollection[key] = game
@@ -117,7 +113,7 @@ export default class GameCollection extends Vue {
     return filteredCollection
   }
 
-  get idsInCollection ():string[] {
+  get idsInCollection(): string[] {
     if (!this.collection) {
       return []
     }
@@ -126,42 +122,46 @@ export default class GameCollection extends Vue {
     })
   }
 
-  created ():void {
+  mounted(): void {
     const collectionRef = db.ref(`users/${this.user.uid}/collection`)
     collectionRef.on('value', (snapshot) => {
       this.collection = snapshot.val()
+      this.loading = false
     })
+    setTimeout(() => {
+      this.loading = false
+    }, constants.LoadingTimeoutInMs)
   }
 
-  head ():NuxtHeadType {
+  head(): NuxtHeadType {
     return {
-      title: GameCollection.title
+      title: GameCollection.title,
     }
   }
 
-  async addToCollection (item:DisplayableItemType):Promise<void> {
+  async addToCollection(item: DisplayableItemType): Promise<void> {
     const collectionRef = db.ref(`users/${this.user.uid}/collection`)
     await collectionRef.push().set({
       id: item.id,
-      name: item.name
+      name: item.name,
     })
   }
 
-  async changeRating (id:string, item:Game):Promise<void> {
+  async changeRating(id: string, item: Game): Promise<void> {
     const gameRef = db.ref(`users/${this.user.uid}/collection/${id}`)
     await gameRef.update(item)
   }
 
-  async removeGameFromCollection (id:string):Promise<void> {
+  async removeGameFromCollection(id: string): Promise<void> {
     const gameRef = db.ref(`users/${this.user.uid}/collection/${id}`)
     await gameRef.remove()
   }
 
-  toggleAddArea ():void {
+  toggleAddArea(): void {
     this.collectionAreaOpen = !this.collectionAreaOpen
   }
 
-  onGameSearchError (error:Error):void {
+  onGameSearchError(error: Error): void {
     this.$refs.snackbar.showSnackbarWithMessage(error.message, true)
   }
 }

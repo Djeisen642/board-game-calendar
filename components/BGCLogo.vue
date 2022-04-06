@@ -1,10 +1,5 @@
 <template>
-  <v-icon
-    size="200"
-    class="logo"
-  >
-    mdi-chess-bishop
-  </v-icon>
+  <v-icon size="200" class="logo"> mdi-chess-bishop </v-icon>
 </template>
 
 <style>
