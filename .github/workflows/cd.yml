@@ -46,8 +46,8 @@ jobs:
         env:
           BASE_URL: /board-game-calendar/
           NODE_ENV: production
-          G_API_KEY: {{secrets.G_API_KEY}}
-          G_APP_ID: {{secrets.G_APP_ID}}
+          G_API_KEY: ${{secrets.G_API_KEY}}
+          G_APP_ID: ${{secrets.G_APP_ID}}
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
