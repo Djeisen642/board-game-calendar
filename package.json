@@ -48,7 +48,7 @@
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/vuetify": "^1.11.3",
     "@types/validator": "^13.1.4",
-    "@types/xml2js": "^0.4.8",
+    "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@vue/test-utils": "^1.0.0",
     "babel-core": "7.0.0-bridge.0",
