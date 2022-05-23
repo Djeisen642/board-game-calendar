@@ -3403,10 +3403,10 @@ autoprefixer@^9.6.1:
     postcss "^7.0.32"
     postcss-value-parser "^4.1.0"
 
-awesome-phonenumber@^2.52.0:
-  version "2.70.0"
-  resolved "https://registry.yarnpkg.com/awesome-phonenumber/-/awesome-phonenumber-2.70.0.tgz#81ed3abd1cecd08f974563b0973275f4c0f51efc"
-  integrity sha512-VlYfAmfPYKhNqr87zoMEBCDCQvtdlRysvMSfDsZV+KaSse+gZMnRImWa049Eb1l1CfrAtzFXLzSRgXI1qfPwXA==
+awesome-phonenumber@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/awesome-phonenumber/-/awesome-phonenumber-3.0.2.tgz#5030fe3b8601610df95169ff484986ec4bf7578e"
+  integrity sha512-TVPSJM7wymvBl8C0lI68wCpijFK0+jPQ9/+/Q9eqrobt/CPWaRGG0m6H1hGclpl5TibFq9OutXpP6049yCecRw==
 
 babel-code-frame@^6.26.0:
   version "6.26.0"
