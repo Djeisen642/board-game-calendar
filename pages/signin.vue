@@ -112,6 +112,7 @@ async function handleOAuthSignIn(
   try {
     const result = await signInWithPopup(auth, provider)
     const user = result.user
+    userStore.setUser(user)
     logEvent('login', { method: provider.providerId })
     await update(dbRef(db, `users/${user.uid}`), {
       name: user.displayName,
@@ -138,7 +139,8 @@ async function handleEmailSignIn() {
   if (!result?.valid) return
   loading.value = true
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value)
+    const { user } = await signInWithEmailAndPassword(auth, email.value, password.value)
+    userStore.setUser(user)
     logEvent('login', { method: 'email' })
     router.push(routes.gameCollection)
   } catch (err) {
@@ -158,6 +160,7 @@ async function handleEmailSignUp() {
       email.value,
       password.value
     )
+    userStore.setUser(user)
     logEvent('sign_up', { method: 'email' })
     await update(dbRef(db, `users/${user.uid}`), {
       name: user.email,

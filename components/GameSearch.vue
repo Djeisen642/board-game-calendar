@@ -88,7 +88,6 @@ function resetData() {
 function searchEnterPressed() {
   if (!searchResults.value.length) return
   boardGameSearch.value?.blur()
-  displayEntries()
 }
 
 watch(selectedItem, () => {
@@ -107,9 +106,9 @@ const entriesToShow = computed(() =>
 async function displayEntries() {
   try {
     const entries = _getEntriesToShow()
-    const url = new URL('thing', constants.BoardGameGeekBaseUrl)
     const resultingEntries: BoardGameGeekThingItemType[] = await Promise.all(
       entries.map(async (entry) => {
+        const url = new URL('thing', constants.BoardGameGeekBaseUrl)
         url.search = new URLSearchParams({ id: entry.id }).toString()
         const response = await fetch(url.toString())
         const string = await response.text()

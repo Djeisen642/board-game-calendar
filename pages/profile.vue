@@ -60,7 +60,7 @@
           </div>
           <p>
             <v-icon class="mx-2">mdi-account-multiple-check</v-icon>
-            {{ labels.maxPeople }}: {{ profile.maxPeople || 'Empty' }}
+            {{ labels.maxPeople }}: {{ profile.maxPeople != null ? profile.maxPeople : 'Empty' }}
           </p>
         </v-card-text>
         <v-card-actions>
