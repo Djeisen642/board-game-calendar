@@ -6,7 +6,7 @@ export default {
     const handledError =
       error instanceof Error ? error : new Error(errorMessage)
     log(LogLevel.ERROR, handledError.message, {
-      stack: handledError.stack || '',
+      stack: handledError.stack ?? '',
     })
     return handledError
   },

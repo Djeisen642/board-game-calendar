@@ -1,36 +1,32 @@
 <template>
   <v-snackbar v-model="showSnackbar">
     {{ snackbarText }}
-
-    <template #action="{ attrs }">
-      <v-btn color="pink" text v-bind="attrs" @click="showSnackbar = false">
+    <template #actions>
+      <v-btn color="pink" variant="text" @click="showSnackbar = false">
         Close
       </v-btn>
     </template>
   </v-snackbar>
 </template>
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
 
-@Component
-export default class Snackbar extends Vue {
-  snackbarText = ''
+<script setup lang="ts">
+import { ref } from 'vue'
 
-  isError = false
+const snackbarText = ref('')
+const isError = ref(false)
+const showSnackbar = ref(false)
 
-  showSnackbar = false
-
-  showSnackbarWithMessage(text: string, isError: boolean): void {
-    this.snackbarText = text
-    this.isError = isError
-    this.showSnackbar = true
-  }
-
-  hideSnackbar(): void {
-    this.snackbarText = ''
-    this.isError = false
-    this.showSnackbar = false
-  }
+function showSnackbarWithMessage(text: string, error: boolean) {
+  snackbarText.value = text
+  isError.value = error
+  showSnackbar.value = true
 }
+
+function hideSnackbar() {
+  snackbarText.value = ''
+  isError.value = false
+  showSnackbar.value = false
+}
+
+defineExpose({ showSnackbarWithMessage, hideSnackbar })
 </script>

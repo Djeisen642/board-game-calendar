@@ -24,32 +24,13 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/SignIn"> Continue </v-btn>
+          <v-btn color="primary" to="/signin">Continue</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
   </v-row>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
-import BGCLogo from '~/components/BGCLogo.vue'
-import { NuxtHeadType } from '~/helpers/types'
-import names from '~/helpers/names'
-import routes from '~/helpers/routes'
-
-@Component({
-  components: { BGCLogo },
-})
-export default class index extends Vue {
-  static route = routes.index
-  static routeName = names.index
-  static title = 'Welcome'
-
-  head(): NuxtHeadType {
-    return {
-      title: index.title,
-    }
-  }
-}
+<script setup lang="ts">
+useHead({ title: 'Welcome' })
 </script>

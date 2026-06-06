@@ -1,8 +1,8 @@
 export default {
-  signIn: 'SignIn',
-  friends: 'Friends',
-  gameCollection: 'GameCollection',
+  signIn: 'signin',
+  friends: 'friends',
+  gameCollection: 'gamecollection',
   index: 'index',
-  profile: 'Profile',
-  calendar: 'Calendar',
+  profile: 'profile',
+  calendar: 'calendar',
 }

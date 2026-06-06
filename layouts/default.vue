@@ -1,135 +1,80 @@
 <template>
-  <v-app dark>
-    <v-navigation-drawer v-model="drawer" clipped fixed app>
+  <v-app>
+    <v-navigation-drawer v-model="drawer">
       <v-list>
         <v-list-item
           v-for="(item, i) in activeItems"
           :key="i"
           :to="item.to"
-          router
+          :prepend-icon="item.icon"
+          :title="item.title"
           exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        />
       </v-list>
     </v-navigation-drawer>
-    <v-app-bar clipped-left fixed app>
+
+    <v-app-bar>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
-      <v-btn v-if="showSignOut" text @click.stop="onSignoutClicked">
-        <v-icon class="ml-2"> mdi-logout </v-icon>
+      <v-btn v-if="showSignOut" variant="text" @click.stop="onSignoutClicked">
+        <v-icon start>mdi-logout</v-icon>
         Sign out
       </v-btn>
     </v-app-bar>
+
     <v-main>
       <v-container>
-        <nuxt />
+        <slot />
       </v-container>
     </v-main>
-    <v-footer :absolute="false" app>
+
+    <v-footer app>
       <span>Jason Suttles &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
-import { Action, State } from 'nuxt-property-decorator'
-import firebase from 'firebase/compat/app'
-import index from '~/pages/index.vue'
-import GameCollection from '~/pages/GameCollection.vue'
-import SignIn from '~/pages/SignIn.vue'
-import Profile from '~/pages/Profile.vue'
-import Friends from '~/pages/Friends.vue'
-import Calendar from '~/pages/Calendar.vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import routes from '~/helpers/routes'
 
-export enum PageType {
+enum PageType {
   AlwaysShow,
   NeedsAuth,
   BeforeAuth,
 }
 
-type SidebarItemType = {
-  icon: string
-  title: string
-  to: string
-  type: PageType
-}
+const userStore = useUserStore()
+const router = useRouter()
 
-@Component
-export default class Default extends Vue {
-  @State('user')
-  user!: firebase.User
+const title = 'Board Game Calendar'
+const drawer = ref(false)
 
-  title = 'Board Game Calendar'
-  drawer = false
-  items: SidebarItemType[] = [
-    {
-      icon: 'mdi-apps',
-      title: index.title,
-      to: index.route,
-      type: PageType.AlwaysShow,
-    },
-    {
-      icon: 'mdi-login',
-      title: SignIn.title,
-      to: SignIn.route,
-      type: PageType.BeforeAuth,
-    },
-    {
-      icon: 'mdi-calendar',
-      title: Calendar.title,
-      to: Calendar.route,
-      type: PageType.NeedsAuth,
-    },
-    {
-      icon: 'mdi-rhombus-split',
-      title: GameCollection.title,
-      to: GameCollection.route,
-      type: PageType.NeedsAuth,
-    },
-    {
-      icon: 'mdi-account-group',
-      title: Friends.title,
-      to: Friends.route,
-      type: PageType.NeedsAuth,
-    },
-    {
-      icon: 'mdi-account',
-      title: Profile.title,
-      to: Profile.route,
-      type: PageType.NeedsAuth,
-    },
-  ]
+const items = [
+  { icon: 'mdi-apps', title: 'Welcome', to: routes.index, type: PageType.AlwaysShow },
+  { icon: 'mdi-login', title: 'Sign In', to: routes.signIn, type: PageType.BeforeAuth },
+  { icon: 'mdi-calendar', title: 'Calendar', to: routes.calendar, type: PageType.NeedsAuth },
+  { icon: 'mdi-rhombus-split', title: 'Game Collection', to: routes.gameCollection, type: PageType.NeedsAuth },
+  { icon: 'mdi-account-group', title: 'Friends', to: routes.friends, type: PageType.NeedsAuth },
+  { icon: 'mdi-account', title: 'Profile', to: routes.profile, type: PageType.NeedsAuth },
+]
 
-  get activeItems(): SidebarItemType[] {
-    if (this.user) {
-      return this.items.filter((item) =>
-        [PageType.AlwaysShow, PageType.NeedsAuth].includes(item.type)
-      )
-    }
-    return this.items.filter((item) =>
-      [PageType.AlwaysShow, PageType.BeforeAuth].includes(item.type)
+const activeItems = computed(() => {
+  if (userStore.user) {
+    return items.filter((item) =>
+      [PageType.AlwaysShow, PageType.NeedsAuth].includes(item.type)
     )
   }
+  return items.filter((item) =>
+    [PageType.AlwaysShow, PageType.BeforeAuth].includes(item.type)
+  )
+})
 
-  get showSignOut(): boolean {
-    return !!this.user
-  }
+const showSignOut = computed(() => !!userStore.user)
 
-  @Action('signOut')
-  signOut!: () => Promise<void>
-
-  async onSignoutClicked(): Promise<void> {
-    await this.signOut()
-    await this.$router.push(SignIn.route)
-  }
+async function onSignoutClicked() {
+  await userStore.signOut()
+  await router.push(routes.signIn)
 }
 </script>
