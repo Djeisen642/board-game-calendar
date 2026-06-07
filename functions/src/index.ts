@@ -15,7 +15,7 @@ setGlobalOptions({
     'firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com',
 })
 
-export const bggProxy = onRequest(async (req, res) => {
+export const bggProxy = onRequest({ invoker: 'public' }, async (req, res) => {
   const origin = req.headers.origin ?? ''
 
   if (ALLOWED_ORIGINS.includes(origin)) {
