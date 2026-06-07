@@ -3,17 +3,35 @@ import { onRequest } from 'firebase-functions/https'
 
 const BGG_BASE_URL = 'https://www.boardgamegeek.com/xmlapi2'
 
+const ALLOWED_ORIGINS = [
+  'https://djeisen642.github.io',
+  'http://localhost:3005', // local dev
+]
+
 // Limit concurrent instances to control costs
 setGlobalOptions({ maxInstances: 5 })
 
 export const bggProxy = onRequest(async (req, res) => {
+  const origin = req.headers.origin ?? ''
+
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin)
+  }
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET')
+    res.set('Access-Control-Max-Age', '3600')
+    res.status(204).send('')
+    return
+  }
+
   // Only allow GET requests
   if (req.method !== 'GET') {
     res.status(405).send('Method Not Allowed')
     return
   }
 
-  // The path after /bggProxy becomes the BGG endpoint, e.g. /search or /thing
   const bggPath = req.path || '/'
   const queryString = new URLSearchParams(
     req.query as Record<string, string>
@@ -29,7 +47,6 @@ export const bggProxy = onRequest(async (req, res) => {
 
   const xml = await response.text()
 
-  res.set('Access-Control-Allow-Origin', '*')
   res.set('Content-Type', 'application/xml')
   res.status(200).send(xml)
 })
