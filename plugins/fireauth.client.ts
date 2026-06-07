@@ -4,7 +4,7 @@ import { useUserStore } from '~/stores/user'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const userStore = useUserStore()
-  const auth = (nuxtApp as any).$auth
+  const auth = nuxtApp.$auth
 
   await new Promise<void>((resolve) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

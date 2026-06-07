@@ -72,7 +72,7 @@ useHead({ title: 'Friends' })
 
 const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
-const db = (nuxtApp as any).$db
+const db = nuxtApp.$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const friendsAreaOpen = ref(true)
 const friends = ref<Friend[]>([])
