@@ -54,3 +54,12 @@ jobs:
           npx firebase-tools@latest deploy --only functions --project board-game-calendar-3ae94
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
+
+      - name: Ensure bggProxy is publicly invokable
+        run: |
+          gcloud auth activate-service-account --key-file=/tmp/sa.json
+          gcloud run services add-iam-policy-binding bggproxy \
+            --region=us-central1 \
+            --member="allUsers" \
+            --role="roles/run.invoker" \
+            --project=board-game-calendar-3ae94
