@@ -37,7 +37,16 @@ export default defineNuxtConfig({
     pageTransition: { name: 'page', mode: 'out-in' },
   },
 
-  modules: ['@pinia/nuxt', 'vuetify-nuxt-module', '@nuxt/eslint'],
+  modules: [
+    '@pinia/nuxt',
+    'vuetify-nuxt-module',
+    '@nuxt/eslint',
+    'nuxt-turnstile',
+  ],
+
+  turnstile: {
+    siteKey: process.env.TURNSTILE_SITE_KEY ?? '',
+  },
 
   vuetify: {
     moduleOptions: {
@@ -94,6 +103,13 @@ export default defineNuxtConfig({
           rounded: true,
         },
       },
+    },
+  },
+
+  runtimeConfig: {
+    turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY ?? '',
+    public: {
+      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY ?? '',
     },
   },
 

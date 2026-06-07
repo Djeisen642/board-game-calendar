@@ -109,8 +109,8 @@ async function displayEntries() {
     const entries = _getEntriesToShow()
     const resultingEntries: BoardGameGeekThingItemType[] = await Promise.all(
       entries.map(async (entry) => {
-        const url = new URL('thing', constants.BoardGameGeekBaseUrl)
-        url.search = new URLSearchParams({ id: entry.id }).toString()
+        const params = new URLSearchParams({ id: entry.id }).toString()
+        const url = `${constants.BoardGameGeekBaseUrl}thing?${params}`
         const response = await fetch(url.toString())
         const string = await response.text()
         const parser = new Parser({ explicitArray: false })
@@ -186,11 +186,11 @@ async function fetchResults(input: string) {
   if (isLoading.value || !input || input.length <= 3) return
   isLoading.value = true
   try {
-    const url = new URL('search', constants.BoardGameGeekBaseUrl)
-    url.search = new URLSearchParams({
+    const params = new URLSearchParams({
       query: input,
       type: constants.BggBoardGameType,
     }).toString()
+    const url = `${constants.BoardGameGeekBaseUrl}search?${params}`
     const response = await fetch(url.toString())
     const string = await response.text()
     const parser = new Parser({ explicitArray: false })

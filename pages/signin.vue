@@ -54,6 +54,17 @@
               :rules="[validation.isRequired]"
               class="mb-2"
             />
+            <!-- Honeypot: hidden from real users, bots fill this in -->
+            <input
+              v-model="honeypot"
+              type="text"
+              name="username"
+              autocomplete="username"
+              tabindex="-1"
+              aria-hidden="true"
+              class="bot-trap"
+            />
+            <NuxtTurnstile v-model="turnstileToken" class="mb-3" />
             <v-btn
               type="submit"
               block
@@ -89,6 +100,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
 } from 'firebase/auth'
 import { ref as dbRef, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
@@ -113,6 +125,8 @@ const emailForm = ref<FormInstance | null>(null)
 const loading = ref(false)
 const email = ref('')
 const password = ref('')
+const honeypot = ref('')
+const turnstileToken = ref('')
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
@@ -160,6 +174,11 @@ const signInWithFacebook = () => handleOAuthSignIn(new FacebookAuthProvider())
 async function handleEmailSignIn() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
+  if (honeypot.value) return // bot trap
+  if (!turnstileToken.value) {
+    snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
+    return
+  }
   loading.value = true
   try {
     const { user } = await signInWithEmailAndPassword(
@@ -183,6 +202,11 @@ async function handleEmailSignIn() {
 async function handleEmailSignUp() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
+  if (honeypot.value) return // bot trap
+  if (!turnstileToken.value) {
+    snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
+    return
+  }
   loading.value = true
   try {
     const { user } = await createUserWithEmailAndPassword(
@@ -190,13 +214,19 @@ async function handleEmailSignUp() {
       email.value,
       password.value
     )
+    await sendEmailVerification(user)
     userStore.setUser(user)
     logEvent('sign_up', { method: 'email' })
     await update(dbRef(db, `users/${user.uid}`), {
       name: user.email,
       queryableName: user.email?.toLowerCase() ?? null,
       email: user.email,
+      emailVerified: false,
     })
+    snackbar.value?.showSnackbarWithMessage(
+      'Account created! Check your email to verify your address.',
+      false
+    )
     router.push(routes.gameCollection)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
@@ -252,5 +282,16 @@ async function handleEmailSignUp() {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   white-space: nowrap;
+}
+
+/* Honeypot: visually hidden but present in DOM so bots fill it */
+.bot-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 </style>
