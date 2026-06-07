@@ -1,4 +1,13 @@
 // Ref: https://github.com/nuxt-community/vuetify-module#customvariables
 //
-// The variables you want to modify
-// $font-size-root: 20px;
+// Vuetify SCSS variable overrides
+
+// Typography
+$body-font-family: 'Inter', sans-serif;
+$heading-font-family: 'Inter', sans-serif;
+
+// Border radius — softer, modern feel
+$border-radius-root: 12px;
+
+// Card elevation tweaks
+$card-elevation: 0;

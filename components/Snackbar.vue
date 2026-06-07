@@ -1,10 +1,16 @@
 <template>
-  <v-snackbar v-model="showSnackbar">
-    {{ snackbarText }}
+  <v-snackbar
+    v-model="showSnackbar"
+    :color="isError ? 'error' : 'success'"
+    rounded="lg"
+    location="bottom end"
+  >
+    <div class="d-flex align-center gap-2">
+      <v-icon>{{ isError ? 'mdi-alert-circle' : 'mdi-check-circle' }}</v-icon>
+      {{ snackbarText }}
+    </div>
     <template #actions>
-      <v-btn color="pink" variant="text" @click="showSnackbar = false">
-        Close
-      </v-btn>
+      <v-btn variant="text" @click="showSnackbar = false"> Close </v-btn>
     </template>
   </v-snackbar>
 </template>

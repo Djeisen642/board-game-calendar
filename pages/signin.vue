@@ -1,12 +1,17 @@
 <template>
   <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <v-card>
-        <v-card-title class="text-h5">Sign In</v-card-title>
+    <v-col cols="12" sm="8" md="5">
+      <div class="text-center mb-6">
+        <v-icon size="48" color="primary" class="mb-2">mdi-chess-bishop</v-icon>
+        <h1 class="signin-title">Welcome back</h1>
+        <p class="signin-subtitle">Sign in to manage your game nights</p>
+      </div>
+      <v-card class="pa-2">
         <v-card-text>
           <v-btn
             block
-            class="mb-3"
+            size="large"
+            class="mb-3 social-btn google-btn"
             :loading="loading"
             @click="signInWithGoogle"
           >
@@ -15,7 +20,8 @@
           </v-btn>
           <v-btn
             block
-            class="mb-3"
+            size="large"
+            class="mb-3 social-btn facebook-btn"
             :loading="loading"
             @click="signInWithFacebook"
           >
@@ -23,7 +29,11 @@
             Continue with Facebook
           </v-btn>
 
-          <v-divider class="my-4" />
+          <div class="divider-row my-5">
+            <v-divider />
+            <span class="divider-text">or</span>
+            <v-divider />
+          </div>
 
           <v-form ref="emailForm" @submit.prevent="handleEmailSignIn">
             <v-text-field
@@ -31,27 +41,33 @@
               label="Email"
               type="email"
               autocomplete="email"
+              prepend-inner-icon="mdi-email-outline"
               :rules="[validation.isRequired, validation.isEmail]"
+              class="mb-1"
             />
             <v-text-field
               v-model="password"
               label="Password"
               type="password"
               autocomplete="current-password"
+              prepend-inner-icon="mdi-lock-outline"
               :rules="[validation.isRequired]"
+              class="mb-2"
             />
             <v-btn
               type="submit"
               block
               color="primary"
+              size="large"
               :loading="loading"
-              class="mb-2"
+              class="mb-3"
             >
-              Sign In with Email
+              Sign In
             </v-btn>
             <v-btn
               block
               variant="text"
+              color="accent"
               :disabled="loading"
               @click="handleEmailSignUp"
             >
@@ -175,3 +191,49 @@ async function handleEmailSignUp() {
   }
 }
 </script>
+
+<style scoped>
+.signin-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: rgba(205, 214, 244, 0.95);
+}
+
+.signin-subtitle {
+  font-size: 0.9rem;
+  color: rgba(205, 214, 244, 0.5);
+}
+
+.social-btn {
+  font-weight: 500;
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  transition: all 0.25s ease;
+}
+
+.social-btn:hover {
+  border-color: rgba(108, 92, 231, 0.3);
+  background: rgba(108, 92, 231, 0.06) !important;
+}
+
+.google-btn {
+  color: #cdd6f4;
+}
+
+.facebook-btn {
+  color: #cdd6f4;
+}
+
+.divider-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.divider-text {
+  font-size: 0.8rem;
+  color: rgba(205, 214, 244, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+</style>
