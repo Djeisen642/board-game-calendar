@@ -5207,6 +5207,7 @@ __metadata:
     firebase: "npm:^12.14.0"
     husky: "npm:^9.1.7"
     jsdom: "npm:^29.1.1"
+    lightningcss: "npm:^1.32.0"
     lint-staged: "npm:^17.0.7"
     nuxt: "npm:^4.4.7"
     pinia: "npm:^3.0.4"
