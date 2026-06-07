@@ -1,0 +1,1 @@
+.logo{transform:rotateY(1turn);animation:turn 3.5s ease-out 1s forwards}@keyframes turn{to{transform:rotateX(0)}}
