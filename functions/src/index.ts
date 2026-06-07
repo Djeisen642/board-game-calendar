@@ -46,7 +46,12 @@ export const bggProxy = onRequest({ invoker: 'public' }, async (req, res) => {
   const url = `${BGG_BASE_URL}${bggPath}${queryString ? `?${queryString}` : ''}`
 
   console.log(`Proxying request to BGG: ${url}`)
-  const response = await fetch(url)
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'BoardGameCalendar/1.0 (https://djeisen642.github.io/board-game-calendar)',
+    },
+  })
   console.log(`BGG responded with status: ${response.status}`)
 
   if (!response.ok) {
