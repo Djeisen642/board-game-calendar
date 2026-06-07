@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   css: ['~/assets/global.scss'],
 
   app: {
+    baseURL: process.env.BASE_URL ?? '/',
     head: {
       titleTemplate: '%s - Board Game Calendar',
       title: 'Board Game Calendar',
@@ -107,9 +108,7 @@ export default defineNuxtConfig({
         'firebase/database',
         'validator/lib/isEmail', // CJS
         'xml2js', // CJS
-      ]
-
-
+      ],
     },
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
