@@ -10,7 +10,7 @@
           <p class="error-message mb-6">
             {{ error.statusCode === 404 ? 'This page doesn\'t exist.' : 'Something went wrong.' }}
           </p>
-          <v-btn color="primary" variant="tonal" to="/">
+          <v-btn color="primary" variant="elevated" to="/">
             <v-icon start>mdi-home</v-icon>Go Home
           </v-btn>
         </v-col>

@@ -6,7 +6,7 @@
           <v-icon color="primary" class="mr-3">mdi-account-group</v-icon>
           <span class="page-title">Friends</span>
           <v-spacer />
-          <v-btn variant="tonal" color="primary" size="small" @click.stop="toggleAddArea">
+          <v-btn variant="elevated" color="primary" size="small" @click.stop="toggleAddArea">
             <v-icon start>{{ friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}</v-icon>
             {{ friendsAreaOpen ? 'Add' : 'Back' }}
           </v-btn>
@@ -20,7 +20,7 @@
             <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-account-multiple-plus-outline</v-icon>
             <div class="empty-title">No friends yet</div>
             <div class="empty-desc">Search for other players and add them to your list.</div>
-            <v-btn variant="tonal" color="primary" class="mt-4" @click.stop="toggleAddArea">
+            <v-btn variant="elevated" color="primary" class="mt-4" @click.stop="toggleAddArea">
               <v-icon start>mdi-plus-circle</v-icon>Find Friends
             </v-btn>
           </div>
@@ -44,7 +44,7 @@
                 </v-avatar>
               </template>
               <template #append>
-                <v-btn :disabled="person.isFriend" size="small" variant="tonal" color="accent" @click.stop="addToFriends(id)">
+                <v-btn :disabled="person.isFriend" size="small" variant="elevated" color="accent" @click.stop="addToFriends(id)">
                   <v-icon start>mdi-plus-circle</v-icon>Add
                 </v-btn>
               </template>
