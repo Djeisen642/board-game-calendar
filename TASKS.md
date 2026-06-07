@@ -9,6 +9,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 1. Data model cleanup
 
 **`helpers/types.ts`**
+
 - [ ] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
 - [ ] Add `Guest` type: `{ id: string; confirmed: boolean }`
 - [ ] Add `Gathering` type: `{ id: string; state: GatheringState; datetime: string; initiator: string; host: string; open: boolean; maxGuests: number; guests: Guest[]; games: string[] }`
@@ -19,6 +20,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 2. Firebase security rules
 
 **`database.rules.json`**
+
 - [ ] Restrict `users/{uid}` reads to authenticated users only (change `.read: true` → `.read: "auth != null"`)
 - [ ] Add rules for `gatherings/{gatheringId}`:
   - host can read and write the full gathering
@@ -31,6 +33,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 3. Create gathering page/dialog
 
 **New: `pages/CreateGathering.vue`** (or a dialog launched from Calendar)
+
 - [ ] Date + time picker (Vuetify `v-date-picker` + `v-time-picker`)
 - [ ] Max guests field (numeric, defaults to host's `maxPeople` from profile)
 - [ ] Open / invite-only toggle
@@ -44,6 +47,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 4. Calendar page — full implementation
 
 **`pages/Calendar.vue`** (currently a stub)
+
 - [ ] Replace `EventType` with `Gathering` type
 - [ ] Change Firebase query from `events` to `gatherings`, filtered to gatherings where `host === uid` OR `guests` contains `uid`
 - [ ] Display gathering state as a colored chip (pending = yellow, confirmed = green, canceled = red)
@@ -67,6 +71,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 6. CI: add tests to GitHub Actions
 
 **`.github/workflows/ci.yml`**
+
 - [ ] Uncomment (or re-add) the `yarn test` step — it was commented out and the test suite is now passing
 
 ---
@@ -74,6 +79,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 ## 7. Game notes (stretch, post-MVP)
 
 These fields exist in the `Game` type but no UI writes or reads them:
+
 - [ ] `privateNote` — visible only to the owner; could be a tooltip or expandable row in GameCollection
 - [ ] `publicNote` — visible to guests viewing the game list for a gathering
 

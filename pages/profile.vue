@@ -55,12 +55,14 @@
               style="white-space: pre-wrap"
               target="_blank"
               :href="`https://www.google.com/maps/search/?api=1&query=${removeNewLines(profile.address)}`"
-            >{{ profile.address }}</a>
+              >{{ profile.address }}</a
+            >
             <div v-else>Empty</div>
           </div>
           <p>
             <v-icon class="mx-2">mdi-account-multiple-check</v-icon>
-            {{ labels.maxPeople }}: {{ profile.maxPeople != null ? profile.maxPeople : 'Empty' }}
+            {{ labels.maxPeople }}:
+            {{ profile.maxPeople != null ? profile.maxPeople : 'Empty' }}
           </p>
         </v-card-text>
         <v-card-actions>
@@ -82,7 +84,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
-import { db } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
@@ -130,6 +132,9 @@ const validation = {
 
 let unsubscribe: (() => void) | null = null
 
+const nuxtApp = useNuxtApp()
+const db = (nuxtApp as any).$db
+
 onMounted(() => {
   const userRef = dbRef(db, `users/${userStore.user!.uid}`)
   unsubscribe = onValue(userRef, (snapshot) => {
@@ -168,7 +173,10 @@ async function updateProfile() {
     })
     editable.value = false
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   }
 }
 </script>

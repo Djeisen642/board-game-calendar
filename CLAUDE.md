@@ -16,30 +16,30 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 
 ## Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Framework | Nuxt 4.4 + Vue 3.5 | `<script setup>` Composition API throughout |
-| UI | Vuetify 4.1 (Material Design 3, dark theme) | via `vuetify-nuxt-module` |
-| State | Pinia 3 via `@pinia/nuxt` | `stores/user.ts`; replaces Vuex |
-| DB | Firebase Realtime Database | Not Firestore |
-| Auth | Firebase Auth (custom sign-in UI) | Google, Facebook, email/password via `signInWithPopup` / `signInWithEmailAndPassword`; FirebaseUI removed |
-| Language | TypeScript (strict) | `<script setup lang="ts">` on all `.vue` files |
-| CSS | Vuetify SCSS + `~/assets/variables.scss` | configured in `nuxt.config.ts` |
-| Linting | ESLint 10 flat config via `@nuxt/eslint` + Prettier | `eslint.config.mjs` imports from `.nuxt/eslint.config.mjs` |
-| Testing | Vitest 4 + `@nuxt/test-utils` | `vitest.config.ts`; jsdom env |
+| Layer     | Choice                                              | Notes                                                                                                     |
+| --------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Framework | Nuxt 4.4 + Vue 3.5                                  | `<script setup>` Composition API throughout                                                               |
+| UI        | Vuetify 4.1 (Material Design 3, dark theme)         | via `vuetify-nuxt-module`                                                                                 |
+| State     | Pinia 3 via `@pinia/nuxt`                           | `stores/user.ts`; replaces Vuex                                                                           |
+| DB        | Firebase Realtime Database                          | Not Firestore                                                                                             |
+| Auth      | Firebase Auth (custom sign-in UI)                   | Google, Facebook, email/password via `signInWithPopup` / `signInWithEmailAndPassword`; FirebaseUI removed |
+| Language  | TypeScript (strict)                                 | `<script setup lang="ts">` on all `.vue` files                                                            |
+| CSS       | Vuetify SCSS + `~/assets/variables.scss`            | configured in `nuxt.config.ts`                                                                            |
+| Linting   | ESLint 10 flat config via `@nuxt/eslint` + Prettier | `eslint.config.mjs` imports from `.nuxt/eslint.config.mjs`                                                |
+| Testing   | Vitest 4 + `@nuxt/test-utils`                       | `vitest.config.ts`; jsdom env                                                                             |
 
 ## Architecture
 
 ### Pages → Firebase paths
 
-| Page | Route | Firebase reads/writes |
-|---|---|---|
-| `signin.vue` | `/signin` | auth only |
-| `profile.vue` | `/profile` | `users/{uid}` |
-| `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}` |
-| `friends.vue` | `/friends` | `users/` (search), `users/{uid}/friends/{friendId}` |
-| `calendar.vue` | `/calendar` | `events` (host filter) — **stub, not MVP-complete** |
-| `index.vue` | `/` | none |
+| Page                 | Route             | Firebase reads/writes                               |
+| -------------------- | ----------------- | --------------------------------------------------- |
+| `signin.vue`         | `/signin`         | auth only                                           |
+| `profile.vue`        | `/profile`        | `users/{uid}`                                       |
+| `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}`                   |
+| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends/{friendId}` |
+| `calendar.vue`       | `/calendar`       | `events` (host filter) — **stub, not MVP-complete** |
+| `index.vue`          | `/`               | none                                                |
 
 ### Key files
 
@@ -84,16 +84,16 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
   phoneNumber: string
   address: string
   maxPeople: number
-  queryableName: string  // lowercase(name), used for friend search
+  queryableName: string // lowercase(name), used for friend search
 }
 
 // users/{uid}/collection/{pushId}
 type Game = {
-  id: string       // BoardGameGeek game ID
+  id: string // BoardGameGeek game ID
   name: string
   rating?: number
-  privateNote?: string   // defined but not yet written/read in UI
-  publicNote?: string    // defined but not yet written/read in UI
+  privateNote?: string // defined but not yet written/read in UI
+  publicNote?: string // defined but not yet written/read in UI
 }
 
 // users/{uid}/friends/{friendId}: true
@@ -102,22 +102,22 @@ type Game = {
 ### Defined but not yet used
 
 ```ts
-type GatheringState = 'pending' | 'confirmed' | 'canceled'  // not in types.ts yet
+type GatheringState = 'pending' | 'confirmed' | 'canceled' // not in types.ts yet
 
 // gatherings/{gatheringId}  — path does not exist yet
 type Gathering = {
   state: GatheringState
-  datetime: string       // ISO date
-  initiator: string      // uid
-  host: string           // uid
+  datetime: string // ISO date
+  initiator: string // uid
+  host: string // uid
   open: boolean
   maxGuests: number
   guests: Guest[]
-  games: string[]        // Game ids from host's collection
+  games: string[] // Game ids from host's collection
 }
 
 type Guest = {
-  id: string             // uid
+  id: string // uid
   confirmed: boolean
 }
 
@@ -139,7 +139,7 @@ Current state — `database.rules.json` only covers `users/`:
     "users": {
       "$uid": {
         ".write": "$uid === auth.uid",
-        ".read": true          // overly permissive — exposes phone/address to anyone
+        ".read": true // overly permissive — exposes phone/address to anyone
       }
     },
     ".read": false,
@@ -153,6 +153,7 @@ The `gatherings` path has no rules yet (will default to `".read": false, ".write
 ## External API
 
 BoardGameGeek XML API v2 — used in `GameSearch.vue`:
+
 - Search: `https://boardgamegeek.com/xmlapi2/search?query=<term>&type=boardgame`
 - Detail: `https://boardgamegeek.com/xmlapi2/thing?id=<id>&stats=1`
 - Response is XML; parsed with `xml2js`
