@@ -7,7 +7,9 @@
           <v-spacer />
           <v-btn @click.stop="toggleAddArea">
             <v-icon start>
-              {{ friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}
+              {{
+                friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle'
+              }}
             </v-icon>
             {{ friendsAreaOpen ? 'Add' : 'Back' }}
           </v-btn>
@@ -74,7 +76,7 @@ import {
   endAt,
   limitToFirst,
 } from 'firebase/database'
-import { db } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
@@ -91,6 +93,9 @@ const loading = ref(true)
 const searchResults = ref<Record<string, Person>>({})
 let searchTimerId: ReturnType<typeof setTimeout> | undefined
 let unsubscribe: (() => void) | null = null
+
+const nuxtApp = useNuxtApp()
+const db = (nuxtApp as any).$db
 
 onMounted(() => {
   const friendsRef = dbRef(db, `users/${userStore.user!.uid}/friends`)
@@ -136,7 +141,10 @@ async function addToFriends(id: string) {
       [id]: true,
     })
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   }
 }
 
@@ -166,7 +174,10 @@ async function fetchResults(input: string) {
     }
     searchResults.value = filtered
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   }
 }
 </script>
