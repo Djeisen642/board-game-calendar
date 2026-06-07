@@ -41,8 +41,17 @@ jobs:
           G_API_KEY: ${{secrets.G_API_KEY}}
           G_APP_ID: ${{secrets.G_APP_ID}}
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+
+      - name: Install functions dependencies
+        run: npm install
+        working-directory: functions
+
+      - name: Deploy functions to Firebase
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_3AE94 }}' > /tmp/sa.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json npx firebase-tools deploy --only functions --project board-game-calendar-3ae94
