@@ -9,7 +9,11 @@ const ALLOWED_ORIGINS = [
 ]
 
 // Limit concurrent instances to control costs
-setGlobalOptions({ maxInstances: 5 })
+setGlobalOptions({
+  maxInstances: 5,
+  serviceAccount:
+    'firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com',
+})
 
 export const bggProxy = onRequest(async (req, res) => {
   const origin = req.headers.origin ?? ''
