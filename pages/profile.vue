@@ -53,7 +53,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
-import { db } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
@@ -66,6 +66,8 @@ type UserProfile = { name: string; email: string; phoneNumber: string; address: 
 const labels = { name: 'Name', phoneNumber: 'Phone Number', email: 'Email', address: 'Address', maxPeople: 'Max people at residence' }
 
 const userStore = useUserStore()
+const nuxtApp = useNuxtApp()
+const db = (nuxtApp as any).$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const profileForm = ref<FormInstance | null>(null)
 const editable = ref(false)

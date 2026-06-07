@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, push, set, update, remove } from 'firebase/database'
-import { db } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import GameSearch from '~/components/GameSearch.vue'
 import type { DisplayableItemType, Game } from '~/helpers/types'
@@ -61,6 +61,8 @@ import constants from '~/helpers/constants'
 useHead({ title: 'Game Collection' })
 
 const userStore = useUserStore()
+const nuxtApp = useNuxtApp()
+const db = (nuxtApp as any).$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const collection = ref<Record<string, Game> | null>(null)
 const collectionAreaOpen = ref(true)
