@@ -33,12 +33,13 @@
           <div class="d-flex gap-2">
             <v-btn
               :disabled="item.incollection"
+              color="primary"
               size="small"
               @click.stop="addToCollection(item)"
             >
               <v-icon start>mdi-plus-circle</v-icon>Add
             </v-btn>
-            <v-btn :href="item.url" target="_blank" size="small">
+            <v-btn :href="item.url" target="_blank" color="primary" size="small">
               <v-icon start>mdi-link</v-icon>Link
             </v-btn>
           </div>

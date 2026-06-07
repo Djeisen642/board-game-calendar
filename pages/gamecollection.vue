@@ -6,7 +6,7 @@
           <v-icon color="primary" class="mr-3">mdi-rhombus-split</v-icon>
           <span class="page-title">{{ collectionAreaOpen ? 'Game Collection' : 'Game Search' }}</span>
           <v-spacer />
-          <v-btn variant="tonal" color="primary" size="small" @click.stop="toggleAddArea">
+          <v-btn variant="elevated" color="primary" size="small" @click.stop="toggleAddArea">
             <v-icon start>{{ collectionAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}</v-icon>
             {{ collectionAreaOpen ? 'Add' : 'Back' }}
           </v-btn>
@@ -21,7 +21,7 @@
               <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-cards-outline</v-icon>
               <div class="empty-title">No games yet</div>
               <div class="empty-desc">Add games from BoardGameGeek to build your collection.</div>
-              <v-btn variant="tonal" color="primary" class="mt-4" @click.stop="toggleAddArea">
+              <v-btn variant="elevated" color="primary" class="mt-4" @click.stop="toggleAddArea">
                 <v-icon start>mdi-plus-circle</v-icon>Add Games
               </v-btn>
             </div>
