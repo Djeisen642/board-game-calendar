@@ -93,7 +93,6 @@ import {
 import { ref as dbRef, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
-import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'

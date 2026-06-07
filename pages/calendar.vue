@@ -38,7 +38,6 @@ import {
   equalTo,
   onValue,
 } from 'firebase/database'
-import { useNuxtApp } from '#app'
 import type { Person } from '~/helpers/types'
 import constants from '~/helpers/constants'
 

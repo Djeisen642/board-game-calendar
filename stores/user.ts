@@ -5,7 +5,6 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth'
-import { useNuxtApp } from '#app'
 
 export const useUserStore = defineStore('user', {
   state: () => ({

@@ -1,4 +1,3 @@
-import { useNuxtApp } from '#app'
 
 export enum LogLevel {
   INFO = 'info',

@@ -52,7 +52,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, push, set, update, remove } from 'firebase/database'
-import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import GameSearch from '~/components/GameSearch.vue'
 import type { DisplayableItemType, Game } from '~/helpers/types'

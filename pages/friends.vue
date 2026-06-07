@@ -63,7 +63,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, get, update, query, orderByChild, startAt, endAt, limitToFirst } from 'firebase/database'
-import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
