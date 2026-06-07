@@ -6,10 +6,10 @@
           <v-icon color="primary" class="mr-3">mdi-account-circle</v-icon>
           <span class="page-title">Profile</span>
           <v-spacer />
-          <v-btn v-if="!editable && !loading" variant="tonal" color="primary" size="small" @click.stop="editable = true">
+          <v-btn v-if="!editable && !loading" variant="elevated" color="primary" size="small" @click.stop="editable = true">
             <v-icon start>mdi-pencil</v-icon>Edit
           </v-btn>
-          <v-btn v-if="editable" variant="tonal" color="success" size="small" @click.stop="updateProfile">
+          <v-btn v-if="editable" variant="elevated" color="success" size="small" @click.stop="updateProfile">
             <v-icon start>mdi-content-save</v-icon>Save
           </v-btn>
         </v-card-title>
