@@ -1,5 +1,5 @@
 export default {
-  BoardGameGeekBaseUrl: 'https://www.boardgamegeek.com/xmlapi2/',
+  BoardGameGeekBaseUrl: '/api/bgg/',
   BggBoardGameType: 'boardgame',
   DebounceThrottleInMs: 500,
   NumberToShow: 10,
