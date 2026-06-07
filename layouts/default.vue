@@ -27,9 +27,8 @@
       <v-spacer />
       <v-btn
         v-if="showSignOut"
-        variant="tonal"
+        variant="elevated"
         color="primary"
-        size="small"
         @click.stop="onSignoutClicked"
       >
         <v-icon start>mdi-logout</v-icon>

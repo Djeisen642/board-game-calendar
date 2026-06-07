@@ -73,6 +73,7 @@ export default defineNuxtConfig({
       defaults: {
         VBtn: {
           rounded: 'lg',
+          variant: 'elevated',
         },
         VCard: {
           rounded: 'xl',
