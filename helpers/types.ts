@@ -1,18 +1,7 @@
-import { Vue } from 'nuxt-property-decorator'
-import firebase from 'firebase/compat/app'
-
-export type VForm = Vue & {
-  validate(): boolean
+export type FormInstance = {
+  validate(): Promise<{ valid: boolean }>
   reset(): void
   resetValidation(): void
-}
-
-export type NuxtHeadType = {
-  title: string
-}
-
-export type AuthResultType = {
-  user: firebase.User
 }
 
 export type Person = {
@@ -57,76 +46,29 @@ export type BoardGameGeekThingItemType = {
       }
       description: string
       image: string
-      maxplayers: {
-        $: {
-          value: string
-        }
-      }
-      maxplaytime: {
-        $: {
-          value: string
-        }
-      }
-      minage: {
-        $: {
-          value: string
-        }
-      }
-      minplayers: {
-        $: {
-          value: string
-        }
-      }
-      minplaytime: {
-        $: {
-          value: string
-        }
-      }
-      yearpublished: {
-        $: {
-          value: string
-        }
-      }
+      maxplayers: { $: { value: string } }
+      maxplaytime: { $: { value: string } }
+      minage: { $: { value: string } }
+      minplayers: { $: { value: string } }
+      minplaytime: { $: { value: string } }
+      yearpublished: { $: { value: string } }
       name:
-        | {
-            $: {
-              type: string
-              value: string
-            }
-          }[]
-        | {
-            $: {
-              type: string
-              value: string
-            }
-          }
+        | { $: { type: string; value: string } }[]
+        | { $: { type: string; value: string } }
     }
   }
 }
 
 export type BoardGameGeekSearchItemType = {
-  $: {
-    id: string
-    type: string
-  }
-  name: {
-    $: {
-      type: string
-      value: string
-    }
-  }
-  yearpublished?: {
-    $: {
-      value: string
-    }
-  }
+  $: { id: string; type: string }
+  name: { $: { type: string; value: string } }
+  yearpublished?: { $: { value: string } }
 }
 
 export type BoardGameGeekItemsType = {
-  items: {
-    item?: BoardGameGeekSearchItemType[]
-  }
+  items: { item?: BoardGameGeekSearchItemType[] }
 }
+
 export type BoardGameSearchResult = {
   id: string
   name: string

@@ -1,29 +1,27 @@
-import firebase from 'firebase/compat/app'
-import firebaseConf from '~/firebase.config.js'
-import 'firebase/compat/database'
-import 'firebase/compat/auth'
-import 'firebase/compat/analytics'
+import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getDatabase } from 'firebase/database'
+import { getAuth } from 'firebase/auth'
+import {
+  getAnalytics,
+  logEvent as firebaseLogEvent,
+  isSupported,
+} from 'firebase/analytics'
+import firebaseConf from '~/firebase.config'
 
-!firebase.apps.length && firebase.initializeApp(firebaseConf)
-
-export const authProviders = {
-  Google: {
-    provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-    providerId: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-  },
-  Email: {
-    provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-    providerId: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-  },
-  Facebook: {
-    provider: firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-    providerId: firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-  },
+if (getApps().length === 0) {
+  initializeApp(firebaseConf)
 }
-export const db = firebase.database()
-export const auth = firebase.auth()
-export const analytics = firebase.analytics()
-export const logEvent = analytics.logEvent
+
+export const db = getDatabase(getApp())
+export const auth = getAuth(getApp())
+
+let _analytics: ReturnType<typeof getAnalytics> | null = null
+
+if (typeof window !== 'undefined') {
+  isSupported().then((yes) => {
+    if (yes) _analytics = getAnalytics(getApp())
+  })
+}
 
 export enum LogLevel {
   INFO = 'info',
@@ -31,13 +29,19 @@ export enum LogLevel {
   ERROR = 'error',
 }
 
+export const logEvent = (
+  eventName: string,
+  params?: Record<string, unknown>
+): void => {
+  if (_analytics) {
+    firebaseLogEvent(_analytics, eventName, params as Record<string, string>)
+  }
+}
+
 export const log = (
   logLevel: LogLevel,
   message: string,
   details?: Record<string, string>
 ): void => {
-  analytics.logEvent(logLevel, {
-    message,
-    details,
-  })
+  logEvent(logLevel, { message, ...details })
 }
