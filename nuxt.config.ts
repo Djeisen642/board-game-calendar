@@ -97,6 +97,12 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    css: {
+      transformer: 'lightningcss',
+    },
+    build: {
+      cssMinify: 'lightningcss',
+    },
     optimizeDeps: {
       include: [
         '@vue/devtools-core',
