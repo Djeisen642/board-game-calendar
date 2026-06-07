@@ -2522,7 +2522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@npm:^3.19.3, @nuxt/kit@npm:^3.21.2":
+"@nuxt/kit@npm:^3.0.0, @nuxt/kit@npm:^3.19.3, @nuxt/kit@npm:^3.21.2":
   version: 3.21.7
   resolution: "@nuxt/kit@npm:3.21.7"
   dependencies:
@@ -5210,6 +5210,7 @@ __metadata:
     lightningcss: "npm:^1.32.0"
     lint-staged: "npm:^17.0.7"
     nuxt: "npm:^4.4.7"
+    nuxt-turnstile: "npm:^0.1.1"
     pinia: "npm:^3.0.4"
     prettier: "npm:^3.8.3"
     sass-embedded: "npm:^1.100.0"
@@ -6017,7 +6018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"defu@npm:^6.1.4, defu@npm:^6.1.6, defu@npm:^6.1.7":
+"defu@npm:^6.1.1, defu@npm:^6.1.4, defu@npm:^6.1.6, defu@npm:^6.1.7":
   version: 6.1.7
   resolution: "defu@npm:6.1.7"
   checksum: 10c0/e6635388103c8be3c574ac31302f6930e5e6eeedba32cb1b30cf993c7d9fb571aec2485446dfa23bfa63e55e66156fe109027a9695db82a50f931e91e8d4bedb
@@ -9040,6 +9041,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nuxt-turnstile@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "nuxt-turnstile@npm:0.1.1"
+  dependencies:
+    "@nuxt/kit": "npm:^3.0.0"
+    defu: "npm:^6.1.1"
+    pathe: "npm:^1.0.0"
+  checksum: 10c0/b7d9e015ee10ce4cb77163789606370d45529de0a4fcc93a0303c072c88592bf0a7ad37bf1cccee996f1bf7611bfcd59992c59cb38399b6969299109accfcb12
+  languageName: node
+  linkType: hard
+
 "nuxt@npm:^4.4.7":
   version: 4.4.7
   resolution: "nuxt@npm:4.4.7"
@@ -9605,7 +9617,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pathe@npm:^1.1.1, pathe@npm:^1.1.2":
+"pathe@npm:^1.0.0, pathe@npm:^1.1.1, pathe@npm:^1.1.2":
   version: 1.1.2
   resolution: "pathe@npm:1.1.2"
   checksum: 10c0/64ee0a4e587fb0f208d9777a6c56e4f9050039268faaaaecd50e959ef01bf847b7872785c36483fa5cdcdbdfdb31fef2ff222684d4fc21c330ab60395c681897
