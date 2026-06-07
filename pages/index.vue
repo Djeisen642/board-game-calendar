@@ -2,7 +2,7 @@
   <div class="hero-wrapper">
     <div class="hero-bg" />
     <v-row justify="center" align="center">
-      <v-col cols="12" sm="10" md="8" lg="6">
+      <v-col cols="12" sm="11" md="8" lg="6">
         <div class="text-center mb-8">
           <BGCLogo />
         </div>
