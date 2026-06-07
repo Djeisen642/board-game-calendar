@@ -1,7 +1,18 @@
-# PLUGINS
+# Plugins
 
-**This directory is not required, you can delete it if you don't want to use it.**
+Nuxt plugins run before the Vue app mounts. They are loaded in filename order.
 
-This directory contains Javascript plugins that you want to run before mounting the root Vue.js application.
+## 01-firebase.client.ts
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/guide/plugins).
+Initializes the Firebase app and provides the following to `useNuxtApp()`:
+
+- `$db` — Firebase Realtime Database instance
+- `$auth` — Firebase Auth instance
+- `$logEvent` — wrapper around Firebase Analytics `logEvent`
+- `$log` — structured logger that routes through `$logEvent`
+
+Types for these are declared in `helpers/nuxt.d.ts`.
+
+## 02-fireauth.client.ts
+
+Runs after `01-firebase.client.ts`. Waits for Firebase Auth to resolve the initial auth state before the app renders, ensuring `useUserStore().user` is populated on first load.

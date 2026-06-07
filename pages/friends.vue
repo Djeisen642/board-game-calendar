@@ -79,7 +79,7 @@ const friends = ref<Friend[]>([])
 const searchInput = ref('')
 const loading = ref(true)
 const searchResults = ref<Record<string, Person>>({})
-let searchTimerId: ReturnType<typeof setTimeout> | undefined
+let searchTimerId: number | undefined
 let unsubscribe: (() => void) | null = null
 
 
