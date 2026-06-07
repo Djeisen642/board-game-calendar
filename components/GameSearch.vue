@@ -76,7 +76,7 @@ const selectedItem = ref<BoardGameSearchResult | null>(null)
 const searchInput = ref('')
 const isLoading = ref(false)
 const queriedEntries = ref<DisplayableItemType[]>([])
-let searchTimerId: ReturnType<typeof setTimeout> | undefined
+let searchTimerId: number | undefined // browser setTimeout returns a number
 
 function resetData() {
   selectedItem.value = null
@@ -193,7 +193,9 @@ async function fetchResults(input: string) {
     const response = await fetch(url.toString())
     const string = await response.text()
     const parser = new Parser({ explicitArray: false })
-    const json = (await parser.parseStringPromise(string)) as BoardGameGeekItemsType
+    const json = (await parser.parseStringPromise(
+      string
+    )) as BoardGameGeekItemsType
     if (!json.items.item) {
       searchResults.value = []
       return

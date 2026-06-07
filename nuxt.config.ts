@@ -96,6 +96,9 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'firebase/auth'],
+    },
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
       'process.env.G_APP_ID': JSON.stringify(process.env.G_APP_ID ?? ''),

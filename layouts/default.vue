@@ -66,12 +66,42 @@ const title = 'Board Game Calendar'
 const drawer = ref(false)
 
 const items = [
-  { icon: 'mdi-apps', title: 'Welcome', to: routes.index, type: PageType.AlwaysShow },
-  { icon: 'mdi-login', title: 'Sign In', to: routes.signIn, type: PageType.BeforeAuth },
-  { icon: 'mdi-calendar', title: 'Calendar', to: routes.calendar, type: PageType.NeedsAuth },
-  { icon: 'mdi-rhombus-split', title: 'Game Collection', to: routes.gameCollection, type: PageType.NeedsAuth },
-  { icon: 'mdi-account-group', title: 'Friends', to: routes.friends, type: PageType.NeedsAuth },
-  { icon: 'mdi-account', title: 'Profile', to: routes.profile, type: PageType.NeedsAuth },
+  {
+    icon: 'mdi-apps',
+    title: 'Welcome',
+    to: routes.index,
+    type: PageType.AlwaysShow,
+  },
+  {
+    icon: 'mdi-login',
+    title: 'Sign In',
+    to: routes.signIn,
+    type: PageType.BeforeAuth,
+  },
+  {
+    icon: 'mdi-calendar',
+    title: 'Calendar',
+    to: routes.calendar,
+    type: PageType.NeedsAuth,
+  },
+  {
+    icon: 'mdi-rhombus-split',
+    title: 'Game Collection',
+    to: routes.gameCollection,
+    type: PageType.NeedsAuth,
+  },
+  {
+    icon: 'mdi-account-group',
+    title: 'Friends',
+    to: routes.friends,
+    type: PageType.NeedsAuth,
+  },
+  {
+    icon: 'mdi-account',
+    title: 'Profile',
+    to: routes.profile,
+    type: PageType.NeedsAuth,
+  },
 ]
 
 const activeItems = computed(() => {

@@ -5,27 +5,32 @@ A calendar to suggest board game nights and board games
 ### Types?
 
 GatheringState
+
 - pending
 - confirmed
 - canceled
 
 Game
+
 - id:number
 - rating:number
 - privateNote:string
 - publicNote:string
 
 Contact
+
 - id:uuid
 - privateNote
 
 Guest
+
 - confirmed:boolean
 - id:uuidj
 
 ### Tables
 
 user
+
 - id:uuid
 - name:string
 - email:string
@@ -34,6 +39,7 @@ user
 - sharesWith:uuid[]
 
 gathering
+
 - state:GatheringState
 - datetime:DateTime
 - initiator:uuid
@@ -42,7 +48,6 @@ gathering
 - maxGuests:number
 - guests:Guest[]
 - games:id
-
 
 Sorry people... I can't get the jsdoc to lint... Sooo... No jsdocs. 🤣
 

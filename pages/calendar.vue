@@ -31,8 +31,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ref as dbRef, query, orderByChild, equalTo, onValue } from 'firebase/database'
-import { db } from '~/plugins/firebase'
+import {
+  ref as dbRef,
+  query,
+  orderByChild,
+  equalTo,
+  onValue,
+} from 'firebase/database'
+import { useNuxtApp } from '#app'
 import type { Person } from '~/helpers/types'
 import constants from '~/helpers/constants'
 
@@ -44,6 +50,9 @@ const userStore = useUserStore()
 const events = ref<EventType[]>([])
 const loading = ref(true)
 let unsubscribe: (() => void) | null = null
+
+const nuxtApp = useNuxtApp()
+const db = (nuxtApp as any).$db
 
 onMounted(() => {
   const q = query(dbRef(db, 'events'), orderByChild('host'), equalTo(userStore.user!.uid))

@@ -89,6 +89,7 @@ const validation = {
 let unsubscribe: (() => void) | null = null
 
 
+
 onMounted(() => {
   const userRef = dbRef(db, `users/${userStore.user!.uid}`)
   unsubscribe = onValue(userRef, (snapshot) => { const val = snapshot.val(); if (val) Object.assign(profile, val); loading.value = false })

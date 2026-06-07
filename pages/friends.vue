@@ -81,6 +81,8 @@ const searchResults = ref<Record<string, Person>>({})
 let searchTimerId: ReturnType<typeof setTimeout> | undefined
 let unsubscribe: (() => void) | null = null
 
+
+
 onMounted(() => {
   const friendsRef = dbRef(db, `users/${userStore.user!.uid}/friends`)
   unsubscribe = onValue(friendsRef, async (snapshot) => {

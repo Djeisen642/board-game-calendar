@@ -93,7 +93,7 @@ import {
 import { ref as dbRef, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
-import { auth, db, logEvent } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
@@ -103,6 +103,11 @@ useHead({ title: 'Sign In' })
 
 const userStore = useUserStore()
 const router = useRouter()
+
+const nuxtApp = useNuxtApp()
+const auth = (nuxtApp as any).$auth
+const db = (nuxtApp as any).$db
+const logEvent = (nuxtApp as any).$logEvent
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const emailForm = ref<FormInstance | null>(null)
@@ -141,7 +146,10 @@ async function handleOAuthSignIn(
     })
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     loading.value = false
   }
@@ -155,12 +163,19 @@ async function handleEmailSignIn() {
   if (!result?.valid) return
   loading.value = true
   try {
-    const { user } = await signInWithEmailAndPassword(auth, email.value, password.value)
+    const { user } = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    )
     userStore.setUser(user)
     logEvent('login', { method: 'email' })
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     loading.value = false
   }
@@ -185,7 +200,10 @@ async function handleEmailSignUp() {
     })
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     loading.value = false
   }

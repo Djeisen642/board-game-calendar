@@ -8,7 +8,10 @@ export default defineNuxtRouteMiddleware((to) => {
     if (to.name === names.signIn) {
       return navigateTo(routes.gameCollection)
     }
-  } else if (to.name && ![names.index, names.signIn].includes(to.name as string)) {
+  } else if (
+    to.name &&
+    ![names.index, names.signIn].includes(to.name as string)
+  ) {
     return navigateTo(routes.signIn)
   }
 })
