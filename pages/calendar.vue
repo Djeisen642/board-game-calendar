@@ -51,7 +51,7 @@ const loading = ref(true)
 let unsubscribe: (() => void) | null = null
 
 const nuxtApp = useNuxtApp()
-const db = (nuxtApp as any).$db
+const db = nuxtApp.$db
 
 onMounted(() => {
   const q = query(dbRef(db, 'events'), orderByChild('host'), equalTo(userStore.user!.uid))

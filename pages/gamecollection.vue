@@ -61,7 +61,7 @@ useHead({ title: 'Game Collection' })
 
 const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
-const db = (nuxtApp as any).$db
+const db = nuxtApp.$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const collection = ref<Record<string, Game> | null>(null)
 const collectionAreaOpen = ref(true)

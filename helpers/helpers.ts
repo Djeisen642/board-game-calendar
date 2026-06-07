@@ -1,4 +1,3 @@
-
 export enum LogLevel {
   INFO = 'info',
   WARN = 'warn',
@@ -11,7 +10,7 @@ export default {
     const handledError =
       error instanceof Error ? error : new Error(errorMessage)
     const nuxtApp = useNuxtApp()
-    const log = (nuxtApp as any).$log
+    const log = nuxtApp.$log
     if (log) {
       log(LogLevel.ERROR, handledError.message, {
         stack: handledError.stack ?? '',

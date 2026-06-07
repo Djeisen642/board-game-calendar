@@ -16,12 +16,12 @@ export const useUserStore = defineStore('user', {
     },
     signInWithGoogle() {
       const nuxtApp = useNuxtApp()
-      const auth = (nuxtApp as any).$auth
+      const auth = nuxtApp.$auth
       return signInWithPopup(auth, new GoogleAuthProvider())
     },
     async signOut() {
       const nuxtApp = useNuxtApp()
-      const auth = (nuxtApp as any).$auth
+      const auth = nuxtApp.$auth
       await firebaseSignOut(auth)
       this.user = null
     },

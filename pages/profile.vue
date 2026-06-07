@@ -66,7 +66,7 @@ const labels = { name: 'Name', phoneNumber: 'Phone Number', email: 'Email', addr
 
 const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
-const db = (nuxtApp as any).$db
+const db = nuxtApp.$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const profileForm = ref<FormInstance | null>(null)
 const editable = ref(false)

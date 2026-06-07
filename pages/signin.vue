@@ -104,9 +104,9 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const nuxtApp = useNuxtApp()
-const auth = (nuxtApp as any).$auth
-const db = (nuxtApp as any).$db
-const logEvent = (nuxtApp as any).$logEvent
+const auth = nuxtApp.$auth
+const db = nuxtApp.$db
+const logEvent = nuxtApp.$logEvent
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const emailForm = ref<FormInstance | null>(null)
