@@ -18,9 +18,12 @@ setGlobalOptions({
 export const bggProxy = onRequest({ invoker: 'public' }, async (req, res) => {
   const origin = req.headers.origin ?? ''
 
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.set('Access-Control-Allow-Origin', origin)
+  if (!ALLOWED_ORIGINS.includes(origin)) {
+    res.status(403).send('Forbidden')
+    return
   }
+
+  res.set('Access-Control-Allow-Origin', origin)
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
