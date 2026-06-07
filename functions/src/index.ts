@@ -45,7 +45,9 @@ export const bggProxy = onRequest({ invoker: 'public' }, async (req, res) => {
   ).toString()
   const url = `${BGG_BASE_URL}${bggPath}${queryString ? `?${queryString}` : ''}`
 
+  console.log(`Proxying request to BGG: ${url}`)
   const response = await fetch(url)
+  console.log(`BGG responded with status: ${response.status}`)
 
   if (!response.ok) {
     res.status(response.status).send(response.statusText)
