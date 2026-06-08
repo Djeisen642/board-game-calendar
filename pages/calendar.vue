@@ -20,8 +20,8 @@
         <v-card-text v-else class="pa-6">
           <div v-for="(event, i) in events" :key="i" class="event-item pa-4 mb-3">
             <div class="event-host mb-1"><v-icon size="16" class="mr-2">mdi-account</v-icon>Host: {{ event.host }}</div>
-            <div class="event-date mb-1"><v-icon size="16" class="mr-2">mdi-calendar</v-icon>Date: {{ event.date }}</div>
-            <div class="event-guests"><v-icon size="16" class="mr-2">mdi-account-group</v-icon>Guests: {{ event.guests && event.guests.map((guest) => guest.name) }}</div>
+            <div class="event-date mb-1"><v-icon size="16" class="mr-2">mdi-calendar</v-icon>Date: {{ event.datetime }}</div>
+            <div class="event-guests"><v-icon size="16" class="mr-2">mdi-account-group</v-icon>Guests: {{ event.guests?.length ?? 0 }}</div>
           </div>
         </v-card-text>
       </v-card>
@@ -38,15 +38,13 @@ import {
   equalTo,
   onValue,
 } from 'firebase/database'
-import type { Person } from '~/helpers/types'
+import type { Gathering } from '~/helpers/types'
 import constants from '~/helpers/constants'
 
 useHead({ title: 'Calendar' })
 
-type EventType = { host: string; date: Date; guests: Person[] }
-
 const userStore = useUserStore()
-const events = ref<EventType[]>([])
+const events = ref<Gathering[]>([])
 const loading = ref(true)
 let unsubscribe: (() => void) | null = null
 

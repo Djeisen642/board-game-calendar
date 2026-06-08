@@ -75,3 +75,22 @@ export type BoardGameSearchResult = {
   displayname: string
   yearpublished: string
 }
+
+export type GatheringState = 'pending' | 'confirmed' | 'canceled'
+
+export type Guest = {
+  id: string
+  confirmed: boolean
+}
+
+export type Gathering = {
+  id: string
+  state: GatheringState
+  datetime: string
+  initiator: string
+  host: string
+  open: boolean
+  maxGuests: number
+  guests: Guest[]
+  games: string[]
+}
