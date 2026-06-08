@@ -10,10 +10,10 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 **`helpers/types.ts`**
 
-- [ ] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
-- [ ] Add `Guest` type: `{ id: string; confirmed: boolean }`
-- [ ] Add `Gathering` type: `{ id: string; state: GatheringState; datetime: string; initiator: string; host: string; open: boolean; maxGuests: number; guests: Guest[]; games: string[] }`
-- [ ] Remove the local `EventType` from `Calendar.vue` and replace with `Gathering`
+- [x] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
+- [x] Add `Guest` type: `{ id: string; confirmed: boolean }`
+- [x] Add `Gathering` type: `{ id: string; state: GatheringState; datetime: string; initiator: string; host: string; open: boolean; maxGuests: number; guests: Guest[]; games: string[] }`
+- [x] Remove the local `EventType` from `Calendar.vue` and replace with `Gathering`
 
 ---
 
