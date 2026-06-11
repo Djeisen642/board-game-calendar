@@ -131,24 +131,12 @@ type EventType = {
 
 ## Firebase Security Rules
 
-Current state — `database.rules.json` only covers `users/`:
+`database.rules.json` covers `users/` and `gatherings/` (deploy separately via Firebase CLI: `firebase deploy --only database`):
 
-```json
-{
-  "rules": {
-    "users": {
-      "$uid": {
-        ".write": "$uid === auth.uid",
-        ".read": true // overly permissive — exposes phone/address to anyone
-      }
-    },
-    ".read": false,
-    ".write": false
-  }
-}
-```
+- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`, which is indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
+- `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`).
 
-The `gatherings` path has no rules yet (will default to `".read": false, ".write": false` from the root).
+Known accepted limitation (post-MVP): any authenticated user can read other users' phone/address. Fixing this requires splitting public profile data from private data.
 
 ## External API
 

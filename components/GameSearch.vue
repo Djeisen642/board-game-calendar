@@ -39,7 +39,7 @@
             >
               <v-icon start>mdi-plus-circle</v-icon>Add
             </v-btn>
-            <v-btn :href="item.url" target="_blank" color="primary" size="small">
+            <v-btn :href="item.url" target="_blank" rel="noopener noreferrer" color="primary" size="small">
               <v-icon start>mdi-link</v-icon>Link
             </v-btn>
           </div>

@@ -21,12 +21,12 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 **`database.rules.json`**
 
-- [ ] Restrict `users/{uid}` reads to authenticated users only (change `.read: true` → `.read: "auth != null"`)
-- [ ] Add rules for `gatherings/{gatheringId}`:
+- [x] Restrict `users/{uid}` reads to authenticated users only (change `.read: true` → `.read: "auth != null"`)
+- [x] Add rules for `gatherings/{gatheringId}`:
   - host can read and write the full gathering
-  - invited guests can read the gathering
-  - a guest can update only their own `guests/{guestIndex}/confirmed` field
-- [ ] Add a Firebase index on `gatherings` for `host` and for `guests/{uid}` so queries are efficient
+  - any authenticated user can read gatherings (rules are not filters; client-side filtering per MVP plan in section 5)
+  - a guest can update only their own `guests/{uid}` response field
+- [x] Add a Firebase index on `gatherings` for `host` (guest membership is filtered client-side for MVP)
 
 ---
 
