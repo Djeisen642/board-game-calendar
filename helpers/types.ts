@@ -4,10 +4,19 @@ export type FormInstance = {
   resetValidation(): void
 }
 
+// users/{uid}/friendRequests/{fromUid}; only ever 'pending' — accepting or
+// declining removes the entry
+export type FriendRequestStatus = 'pending'
+
 export type Person = {
   name: string
   email: string
+  queryableEmail?: string
+  queryablePhone?: string
+  friendRequests?: Record<string, FriendRequestStatus>
+  blocked?: Record<string, boolean>
   isFriend?: boolean
+  requestSent?: boolean
 }
 
 export type Friend = Person & {
