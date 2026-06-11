@@ -58,6 +58,8 @@ typings/
 
 # dotenv environment variables file
 .env
+.env.local
+.env.*.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -89,3 +91,10 @@ sw.*
 
 # Vim swap files
 *.swp
+
+# Yarn Berry — install state is a generated optimization artifact; the
+# releases/ binary (.yarn/releases/*.cjs) must stay committed for zero-install
+.yarn/install-state.gz
+
+# Firebase local deploy cache
+.firebase/
