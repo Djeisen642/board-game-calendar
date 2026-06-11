@@ -10,6 +10,7 @@
       item-value="id"
       label="Board Game Search"
       placeholder="Start typing to search"
+      :hint="`Type at least ${constants.MinSearchLength} characters`"
       prepend-icon="mdi-database-search"
       return-object
       @blur="displayEntries"
@@ -47,7 +48,8 @@
       </v-list-item>
     </v-list>
     <div v-if="!selectedItem && entriesToShow.length !== searchResults.length">
-      To return better search results, please write better searches…
+      Showing the top {{ constants.NumberToShow }} matches — refine your search
+      to narrow the results.
     </div>
   </v-card-text>
 </template>
@@ -183,7 +185,7 @@ watch(searchInput, (input) => {
 })
 
 async function fetchResults(input: string) {
-  if (isLoading.value || !input || input.length <= 3) return
+  if (isLoading.value || !input || input.length < constants.MinSearchLength) return
   isLoading.value = true
   try {
     const params = new URLSearchParams({

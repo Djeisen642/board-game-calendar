@@ -37,6 +37,9 @@ jobs:
           NODE_ENV: production
           G_API_KEY: ${{ secrets.G_API_KEY }}
           G_APP_ID: ${{ secrets.G_APP_ID }}
+          # without this the Turnstile widget never issues a token; the
+          # sign-in page skips the Turnstile gate when the key is absent
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

@@ -51,9 +51,20 @@
               type="password"
               autocomplete="current-password"
               prepend-inner-icon="mdi-lock-outline"
-              :rules="[validation.isRequired]"
+              :rules="[validation.isRequired, validation.isPassword]"
               class="mb-2"
             />
+            <div class="d-flex justify-end mb-2">
+              <v-btn
+                variant="text"
+                size="small"
+                color="accent"
+                :disabled="loading"
+                @click="handleForgotPassword"
+              >
+                Forgot password?
+              </v-btn>
+            </div>
             <!-- Honeypot: hidden from real users, bots fill this in -->
             <input
               v-model="honeypot"
@@ -64,7 +75,7 @@
               aria-hidden="true"
               class="bot-trap"
             />
-            <NuxtTurnstile v-model="turnstileToken" class="mb-3" />
+            <NuxtTurnstile v-if="turnstileEnabled" v-model="turnstileToken" class="mb-3" />
             <v-btn
               type="submit"
               block
@@ -101,12 +112,14 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from 'firebase/auth'
 import { ref as dbRef, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
+import { authErrorMessage } from '~/helpers/authErrors'
 import routes from '~/helpers/routes'
 import type { FormInstance } from '~/helpers/types'
 
@@ -127,10 +140,22 @@ const email = ref('')
 const password = ref('')
 const honeypot = ref('')
 const turnstileToken = ref('')
+// Turnstile is client-side deterrence only (static site — the token is never
+// verified server-side). Without a configured site key the widget can never
+// produce a token, which would lock everyone out of email sign-in, so the
+// gate is skipped entirely in that case.
+const turnstileEnabled = !!useRuntimeConfig().public.turnstileSiteKey
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
   isEmail: (v: string) => !v || isEmail(v) || 'Invalid email',
+  // Firebase Auth's minimum password length
+  isPassword: (v: string) => !v || v.length >= 6 || 'At least 6 characters',
+}
+
+function showAuthError(err: unknown) {
+  helpers.handleError(err) // logs to analytics
+  snackbar.value?.showSnackbarWithMessage(authErrorMessage(err), true)
 }
 
 onMounted(() => {
@@ -159,10 +184,7 @@ async function handleOAuthSignIn(
     })
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
-      true
-    )
+    showAuthError(err)
   } finally {
     loading.value = false
   }
@@ -175,7 +197,7 @@ async function handleEmailSignIn() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
   if (honeypot.value) return // bot trap
-  if (!turnstileToken.value) {
+  if (turnstileEnabled && !turnstileToken.value) {
     snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
     return
   }
@@ -190,10 +212,29 @@ async function handleEmailSignIn() {
     logEvent('login', { method: 'email' })
     router.push(routes.gameCollection)
   } catch (err) {
+    showAuthError(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function handleForgotPassword() {
+  if (!email.value || !isEmail(email.value)) {
     snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
+      'Enter your email address above first, then click "Forgot password?".',
       true
     )
+    return
+  }
+  loading.value = true
+  try {
+    await sendPasswordResetEmail(auth, email.value)
+    snackbar.value?.showSnackbarWithMessage(
+      'Password reset email sent. Check your inbox.',
+      false
+    )
+  } catch (err) {
+    showAuthError(err)
   } finally {
     loading.value = false
   }
@@ -203,7 +244,7 @@ async function handleEmailSignUp() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
   if (honeypot.value) return // bot trap
-  if (!turnstileToken.value) {
+  if (turnstileEnabled && !turnstileToken.value) {
     snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
     return
   }
@@ -229,10 +270,7 @@ async function handleEmailSignUp() {
     )
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
-      true
-    )
+    showAuthError(err)
   } finally {
     loading.value = false
   }

@@ -94,7 +94,10 @@ let unsubscribe: (() => void) | null = null
 
 onMounted(() => {
   const userRef = dbRef(db, `users/${userStore.user!.uid}`)
-  unsubscribe = onValue(userRef, (snapshot) => { const val = snapshot.val(); if (val) Object.assign(profile, val); loading.value = false })
+  unsubscribe = onValue(userRef, (snapshot) => { const val = snapshot.val(); if (val) Object.assign(profile, val); loading.value = false }, (err) => {
+    loading.value = false
+    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+  })
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
 

@@ -31,11 +31,16 @@
                   <span class="avatar-initial">{{ friend.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                 </v-avatar>
               </template>
+              <template #append>
+                <v-btn density="compact" size="small" variant="text" color="error" @click.stop="removeFromFriends(friend.userId)">
+                  <v-icon start>mdi-minus-circle</v-icon>Remove
+                </v-btn>
+              </template>
             </v-list-item>
           </v-list>
         </v-card-text>
         <v-card-text v-else class="pa-6">
-          <v-text-field v-model="searchInput" label="Search for friends" placeholder="Search by name or email" prepend-inner-icon="mdi-magnify" clearable class="mb-4" />
+          <v-text-field v-model="searchInput" label="Search for friends" placeholder="Search by name or email" :hint="`Type at least ${constants.MinSearchLength} characters`" persistent-hint prepend-inner-icon="mdi-magnify" clearable class="mb-4" />
           <v-list>
             <v-list-item v-for="(person, id) in searchResults" :key="id" :title="person.name" :subtitle="person.email" class="friend-item mb-1">
               <template #prepend>
@@ -50,7 +55,7 @@
               </template>
             </v-list-item>
           </v-list>
-          <div v-if="searchInput.length && Object.keys(searchResults).length <= 0" class="empty-desc text-center mt-4">
+          <div v-if="searchInput?.length >= constants.MinSearchLength && Object.keys(searchResults).length <= 0" class="empty-desc text-center mt-4">
             No person found with a similar name
           </div>
         </v-card-text>
@@ -62,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { ref as dbRef, onValue, get, update, query, orderByChild, startAt, endAt, limitToFirst } from 'firebase/database'
+import { ref as dbRef, onValue, get, update, remove, query, orderByChild, startAt, endAt, limitToFirst } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
@@ -76,7 +81,8 @@ const db = nuxtApp.$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const friendsAreaOpen = ref(true)
 const friends = ref<Friend[]>([])
-const searchInput = ref('')
+// clearable text fields set the model to null
+const searchInput = ref<string | null>('')
 const loading = ref(true)
 const searchResults = ref<Record<string, Person>>({})
 let searchTimerId: number | undefined
@@ -91,6 +97,9 @@ onMounted(() => {
     if (!ids) { friends.value = []; return }
     const userPromises = Object.keys(ids).map((userId) => get(dbRef(db, `users/${userId}`)).then((snap) => ({ userId, ...snap.val() })))
     friends.value = await Promise.all(userPromises)
+  }, (err) => {
+    loading.value = false
+    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
   })
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
@@ -99,8 +108,8 @@ onUnmounted(() => { unsubscribe?.() })
 function toggleAddArea() { friendsAreaOpen.value = !friendsAreaOpen.value }
 
 watch(searchInput, (input) => {
-  if (input.length <= 3) return
   clearTimeout(searchTimerId)
+  if (!input || input.length < constants.MinSearchLength) { searchResults.value = {}; return }
   searchTimerId = window.setTimeout(() => { fetchResults(input) }, constants.DebounceThrottleInMs)
 })
 
@@ -109,10 +118,15 @@ async function addToFriends(id: string) {
   catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
+async function removeFromFriends(friendId: string) {
+  try { await remove(dbRef(db, `users/${userStore.user!.uid}/friends/${friendId}`)) }
+  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+}
+
 async function fetchResults(input: string) {
   try {
     const lowerInput = input.toLowerCase()
-    const q = query(dbRef(db, 'users'), orderByChild('queryableName'), startAt(lowerInput), endAt(lowerInput + ''), limitToFirst(10))
+    const q = query(dbRef(db, 'users'), orderByChild('queryableName'), startAt(lowerInput), endAt(lowerInput + '\uf8ff'), limitToFirst(10))
     const snapshot = await get(q); const val = snapshot.val()
     if (!val) { searchResults.value = {}; return }
     const ownUid = userStore.user!.uid
