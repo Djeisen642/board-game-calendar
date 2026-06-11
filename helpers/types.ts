@@ -22,6 +22,28 @@ export type Game = {
   publicNote?: string
 }
 
+export type GatheringState = 'pending' | 'confirmed' | 'canceled'
+
+// Keyed into Gathering.guests by uid; security rules let a guest write only
+// their own entry
+export type GuestResponse = 'invited' | 'accepted' | 'declined'
+
+// Denormalized so guests can render game names without reading the host's
+// collection
+export type GatheringGame = Pick<Game, 'id' | 'name'>
+
+// gatherings/{pushId}
+export type Gathering = {
+  state: GatheringState
+  datetime: string // ISO date
+  initiator: string // uid
+  host: string // uid
+  open: boolean
+  maxGuests: number
+  guests?: Record<string, GuestResponse> // keyed by guest uid
+  games?: GatheringGame[]
+}
+
 export type DisplayableItemType = {
   id: string
   name: string

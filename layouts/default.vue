@@ -84,6 +84,12 @@ const items = [
     type: PageType.NeedsAuth,
   },
   {
+    icon: 'mdi-calendar-plus',
+    title: 'New Gathering',
+    to: routes.newGathering,
+    type: PageType.NeedsAuth,
+  },
+  {
     icon: 'mdi-rhombus-split',
     title: 'Game Collection',
     to: routes.gameCollection,
