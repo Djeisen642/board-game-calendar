@@ -40,7 +40,7 @@
           </v-list>
         </v-card-text>
         <v-card-text v-else class="pa-6">
-          <v-text-field v-model="searchInput" label="Search for friends" placeholder="Search by name or email" :hint="`Type at least ${constants.MinSearchLength} characters`" persistent-hint prepend-inner-icon="mdi-magnify" clearable class="mb-4" />
+          <v-text-field v-model="searchInput" label="Search for friends" placeholder="Search by name" :hint="`Type at least ${constants.MinSearchLength} characters`" persistent-hint prepend-inner-icon="mdi-magnify" clearable class="mb-4" />
           <v-list>
             <v-list-item v-for="(person, id) in searchResults" :key="id" :title="person.name" :subtitle="person.email" class="friend-item mb-1">
               <template #prepend>
