@@ -5,4 +5,5 @@ export default {
   index: 'index',
   profile: 'profile',
   calendar: 'calendar',
+  newGathering: 'gatherings-new',
 }

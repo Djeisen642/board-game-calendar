@@ -10,9 +10,9 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 **`helpers/types.ts`**
 
-- [ ] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
-- [ ] Add `Guest` type: `{ id: string; confirmed: boolean }`
-- [ ] Add `Gathering` type: `{ id: string; state: GatheringState; datetime: string; initiator: string; host: string; open: boolean; maxGuests: number; guests: Guest[]; games: string[] }`
+- [x] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
+- [x] Guest responses: instead of a `Guest[]` array, `guests` is a `Record<uid, GuestResponse>` (`'invited' | 'accepted' | 'declined'`) — keying by uid makes the security rule for "a guest may update only their own response" trivial, and the tri-state distinguishes "hasn't responded" from "declined"
+- [x] Add `Gathering` type — `games` is `GatheringGame[]` (`{ id, name }`), denormalized so guests can render game names without reading the host's collection
 - [ ] Remove the local `EventType` from `Calendar.vue` and replace with `Gathering`
 
 ---
@@ -32,15 +32,15 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 ## 3. Create gathering page/dialog
 
-**New: `pages/CreateGathering.vue`** (or a dialog launched from Calendar)
+**New: `pages/gatherings/new.vue`**
 
-- [ ] Date + time picker (Vuetify `v-date-picker` + `v-time-picker`)
-- [ ] Max guests field (numeric, defaults to host's `maxPeople` from profile)
-- [ ] Open / invite-only toggle
-- [ ] Guest selector — multiselect from the host's friends list
-- [ ] Game selector — multiselect from the host's game collection
-- [ ] On submit: write to `gatherings/{pushId}` with `state: 'pending'`
-- [ ] Add route `/gatherings/new` and nav item (NeedsAuth)
+- [x] Date + time picker (native `type="date"` / `type="time"` text fields — lighter than `v-date-picker` + `v-time-picker` and better on mobile)
+- [x] Max guests field (numeric, defaults to host's `maxPeople` from profile, minus the host)
+- [x] Open / invite-only toggle
+- [x] Guest selector — multiselect from the host's friends list
+- [x] Game selector — multiselect from the host's game collection
+- [x] On submit: write to `gatherings/{pushId}` with `state: 'pending'` (rejects past dates)
+- [x] Add route `/gatherings/new` and nav item (NeedsAuth)
 
 ---
 

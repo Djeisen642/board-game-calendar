@@ -3,6 +3,7 @@ export default {
   friends: '/friends',
   gameCollection: '/gamecollection',
   calendar: '/calendar',
+  newGathering: '/gatherings/new',
   index: '/',
   profile: '/profile',
 }
