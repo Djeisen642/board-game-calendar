@@ -23,7 +23,7 @@
             <v-text-field v-model="profile.phoneNumber" :label="labels.phoneNumber" :rules="[validation.isPhone]" prepend-inner-icon="mdi-phone-outline" class="mb-1" />
             <v-text-field v-model="profile.email" :label="labels.email" :rules="[validation.isRequired, validation.isEmail]" prepend-inner-icon="mdi-email-outline" class="mb-1" />
             <v-textarea v-model="profile.address" :label="labels.address" prepend-inner-icon="mdi-map-marker-outline" rows="3" />
-            <v-text-field v-model="profile.maxPeople" type="number" :label="labels.maxPeople" prepend-inner-icon="mdi-account-multiple-outline" />
+            <v-text-field v-model="profile.maxPeople" type="number" :label="labels.maxPeople" :rules="[validation.isMaxPeople]" prepend-inner-icon="mdi-account-multiple-outline" />
           </v-form>
         </v-card-text>
         <v-card-text v-else class="pa-6">
@@ -34,7 +34,7 @@
                 <div class="profile-field-label">{{ field.label }}</div>
                 <div class="profile-field-value">
                   <template v-if="field.isAddress && profile.address">
-                    <a style="white-space: pre-wrap" target="_blank" :href="`https://www.google.com/maps/search/?api=1&query=${removeNewLines(profile.address)}`" class="address-link">{{ profile.address }}</a>
+                    <a style="white-space: pre-wrap" target="_blank" rel="noopener noreferrer" :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(removeNewLines(profile.address))}`" class="address-link">{{ profile.address }}</a>
                   </template>
                   <template v-else>{{ field.value || 'Not set' }}</template>
                 </div>
@@ -85,6 +85,7 @@ const validation = {
   isRequired: (v: string) => !!v || 'Required',
   isEmail: (v: string) => !v || isEmail(v) || 'Invalid email',
   isPhone: (v: string) => !v || parsePhoneNumber(v, { regionCode: 'US' }).valid || 'Invalid phone number',
+  isMaxPeople: (v: number | string) => v == null || v === '' || (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) || 'Must be a whole number between 0 and 1000',
 }
 
 let unsubscribe: (() => void) | null = null
@@ -108,7 +109,9 @@ async function updateProfile() {
     await update(dbRef(db, `users/${userStore.user!.uid}`), {
       name: profile.name, queryableName: profile.name.toLowerCase(),
       phoneNumber: profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null,
-      address: profile.address, email: profile.email, maxPeople: profile.maxPeople ?? null,
+      address: profile.address, email: profile.email,
+      // v-text-field type="number" still models a string; rules require a number
+      maxPeople: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
     })
     editable.value = false
   } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }

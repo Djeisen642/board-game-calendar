@@ -8,6 +8,9 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3005', // local dev
 ]
 
+// Only the BGG endpoints the app actually uses
+const ALLOWED_PATHS = ['/search', '/thing']
+
 // Limit concurrent instances to control costs
 setGlobalOptions({
   maxInstances: 5,
@@ -40,6 +43,12 @@ export const bggProxy = onRequest({ invoker: 'public' }, async (req, res) => {
   }
 
   const bggPath = req.path || '/'
+
+  if (!ALLOWED_PATHS.includes(bggPath)) {
+    res.status(404).send('Not Found')
+    return
+  }
+
   const queryString = new URLSearchParams(
     req.query as Record<string, string>
   ).toString()

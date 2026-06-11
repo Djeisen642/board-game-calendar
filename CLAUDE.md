@@ -8,6 +8,7 @@ A Nuxt 4 / Vue 3 SPA that helps groups schedule board game nights around specifi
 yarn dev          # dev server on :3005
 yarn lint         # ESLint (must pass before commit)
 yarn test         # Vitest (must pass before commit)
+yarn test:rules   # security-rules tests against the RTDB emulator (needs Java)
 yarn generate     # production static build → dist/
 yarn postinstall  # nuxi prepare — regenerates .nuxt/ types (run after yarn install)
 ```
@@ -131,24 +132,12 @@ type EventType = {
 
 ## Firebase Security Rules
 
-Current state — `database.rules.json` only covers `users/`:
+`database.rules.json` covers `users/` and `gatherings/` (deploy separately via Firebase CLI: `firebase deploy --only database`):
 
-```json
-{
-  "rules": {
-    "users": {
-      "$uid": {
-        ".write": "$uid === auth.uid",
-        ".read": true // overly permissive — exposes phone/address to anyone
-      }
-    },
-    ".read": false,
-    ".write": false
-  }
-}
-```
+- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`, which is indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
+- `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`).
 
-The `gatherings` path has no rules yet (will default to `".read": false, ".write": false` from the root).
+Known accepted limitation (post-MVP): any authenticated user can read other users' phone/address. Fixing this requires splitting public profile data from private data.
 
 ## External API
 

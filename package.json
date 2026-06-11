@@ -10,7 +10,8 @@
     "postinstall": "nuxi prepare",
     "prepare": "husky",
     "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('yarn') === -1) throw new Error('You must use Yarn to install, not NPM')\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:rules": "npx firebase-tools emulators:exec --only database --project board-game-calendar-3ae94 'vitest run --config vitest.rules.config.ts'"
   },
   "lint-staged": {
     "*.{js,ts,vue}": "eslint"
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@nuxt/eslint": "^1.15.2",
     "@nuxt/test-utils": "^4.0.3",
     "@pinia/nuxt": "^0.11.3",
