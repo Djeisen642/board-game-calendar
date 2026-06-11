@@ -69,15 +69,12 @@
         "initiator": {
           ".validate": "newData.isString() && newData.val().length <= 128"
         },
-        "open": {
-          ".validate": "newData.isBoolean()"
-        },
         "maxGuests": {
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
         },
         "guests": {
           "$guestUid": {
-            ".write": "auth != null && $guestUid === auth.uid && (data.exists() || (newData.val() === 'accepted' && data.parent().parent().child('open').val() === true && data.parent().parent().child('state').val() !== 'canceled'))",
+            ".write": "auth != null && $guestUid === auth.uid && data.exists()",
             ".validate": "newData.val() === 'invited' || newData.val() === 'accepted' || newData.val() === 'declined'"
           }
         },

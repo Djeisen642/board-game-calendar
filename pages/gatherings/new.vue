@@ -20,8 +20,7 @@
                 <v-text-field v-model="time" type="time" label="Start time" :rules="[validation.isRequired]" prepend-inner-icon="mdi-clock-outline" />
               </v-col>
             </v-row>
-            <v-text-field v-model="maxGuests" type="number" label="Max guests" :rules="[validation.isMaxGuests]" prepend-inner-icon="mdi-account-multiple-outline" class="mb-1" />
-            <v-switch v-model="open" color="primary" label="Open gathering" hint="Open gatherings can be seen by all signed-in users, not just invited guests" persistent-hint class="mb-3" />
+            <v-text-field v-model="maxGuests" type="number" label="Max guests" :rules="[validation.isMaxGuests]" prepend-inner-icon="mdi-account-multiple-outline" class="mb-3" />
             <v-select v-model="selectedGuests" :items="friendItems" multiple chips closable-chips label="Invite friends" prepend-inner-icon="mdi-account-group" :hint="friendItems.length ? '' : 'Add friends on the Friends page to invite them'" persistent-hint class="mb-1" />
             <v-select v-model="selectedGameIds" :items="gameItems" multiple chips closable-chips label="Games to play" prepend-inner-icon="mdi-rhombus-split" :hint="gameItems.length ? '' : 'Add games on the Game Collection page to pick them'" persistent-hint class="mb-4" />
             <v-btn type="submit" block color="primary" size="large" :loading="saving">
@@ -58,7 +57,6 @@ const saving = ref(false)
 const date = ref('')
 const time = ref('')
 const maxGuests = ref<number | string>(0)
-const open = ref(false)
 const selectedGuests = ref<string[]>([])
 const selectedGameIds = ref<string[]>([])
 const friendItems = ref<{ title: string; value: string }[]>([])
@@ -124,7 +122,6 @@ onMounted(async () => {
       date.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
       time.value = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`
       maxGuests.value = gathering.maxGuests
-      open.value = gathering.open
       selectedGuests.value = Object.keys(existingGuests)
       selectedGameIds.value = (gathering.games ?? []).map((game) => game.id)
       // Keep invited guests visible even if they are no longer friends
@@ -169,7 +166,6 @@ async function createGathering() {
       datetime: datetime.toISOString(),
       initiator: uid,
       host: uid,
-      open: open.value,
       maxGuests: Number(maxGuests.value || 0),
       // existing guests keep their response when editing; new ones start as invited
       guests: Object.fromEntries(selectedGuests.value.map((guestId) => [guestId, existingGuests[guestId] ?? ('invited' as GuestResponse)])),
