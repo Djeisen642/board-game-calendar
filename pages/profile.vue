@@ -109,10 +109,13 @@ async function updateProfile() {
   try {
     const result = await profileForm.value?.validate()
     if (!result?.valid) return
+    const nationalPhone = profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null
     await update(dbRef(db, `users/${userStore.user!.uid}`), {
       name: profile.name, queryableName: profile.name.toLowerCase(),
-      phoneNumber: profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null,
+      phoneNumber: nationalPhone,
+      queryablePhone: nationalPhone ? nationalPhone.replace(/\D/g, '') : null,
       address: profile.address, email: profile.email,
+      queryableEmail: profile.email ? profile.email.toLowerCase() : null,
       // v-text-field type="number" still models a string; rules require a number
       maxPeople: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
     })

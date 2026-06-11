@@ -38,7 +38,7 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 | `signin.vue`         | `/signin`         | auth only                                           |
 | `profile.vue`        | `/profile`        | `users/{uid}`                                       |
 | `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}`                   |
-| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends/{friendId}` |
+| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends`, `users/{uid}/friendRequests`, `users/{uid}/blocked` |
 | `calendar.vue`       | `/calendar`       | `gatherings` (loads all, splits into hosting/invited client-side), `users/{uid}/name` |
 | `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place), `users/{uid}` (prefill) |
 | `index.vue`          | `/`               | none                                                |
@@ -87,6 +87,8 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
   address: string
   maxPeople: number
   queryableName: string // lowercase(name), used for friend search
+  queryableEmail: string // lowercase(email), used for friend search
+  queryablePhone: string // digits-only phone number, used for friend search
 }
 
 // users/{uid}/collection/{pushId}
@@ -98,7 +100,11 @@ type Game = {
   publicNote?: string // defined but not yet written/read in UI
 }
 
-// users/{uid}/friends/{friendId}: true
+// users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
+
+// users/{uid}/friendRequests/{fromUid}: 'pending' — incoming requests; removed on accept/decline
+
+// users/{uid}/blocked/{blockedUid}: true — written on decline; directional (blocks blockedUid → uid requests only)
 
 // gatherings/{pushId}
 type Gathering = {
@@ -117,10 +123,12 @@ type Gathering = {
 
 `database.rules.json` covers `users/` and `gatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`):
 
-- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`, which is indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
+- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`/`queryableEmail`/`queryablePhone`, all indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
+- `users/{uid}/friendRequests/{fromUid}` — the sender (`auth.uid === fromUid`) can create (not overwrite) a `'pending'` entry unless `users/{uid}/blocked/{fromUid}` exists; only the recipient can delete (via the owner write rule).
+- `users/{uid}/friends/{friendId}` — the owner can write their own list; additionally `friendId` may add themselves only while a pending request from `uid` sits in their own `friendRequests` (the accept flow's mutual multi-path update), and may always delete themselves (mutual unfriend).
 - `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`).
 
-Known accepted limitation (post-MVP): any authenticated user can read other users' phone/address. Fixing this requires splitting public profile data from private data.
+Known accepted limitation (post-MVP): any authenticated user can read other users' phone/address — and, because the `users/` read rule cascades, also their `friendRequests` and `blocked` lists. Fixing this requires splitting public profile data from private data.
 
 ## External API
 

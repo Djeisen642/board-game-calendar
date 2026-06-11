@@ -2,7 +2,7 @@
   "rules": {
     "users": {
       ".read": "auth != null",
-      ".indexOn": ["queryableName"],
+      ".indexOn": ["queryableName", "queryableEmail", "queryablePhone"],
       "$uid": {
         ".write": "$uid === auth.uid",
         "name": {
@@ -14,8 +14,14 @@
         "email": {
           ".validate": "newData.isString() && newData.val().length <= 320"
         },
+        "queryableEmail": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
         "phoneNumber": {
           ".validate": "newData.isString() && newData.val().length <= 30"
+        },
+        "queryablePhone": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
         },
         "address": {
           ".validate": "newData.isString() && newData.val().length <= 500"
@@ -47,7 +53,19 @@
         },
         "friends": {
           "$friendId": {
-            ".validate": "newData.isBoolean()"
+            ".write": "auth != null && $friendId === auth.uid && (newData.exists() ? root.child('users').child(auth.uid).child('friendRequests').child($uid).exists() : true)",
+            ".validate": "newData.val() === true"
+          }
+        },
+        "friendRequests": {
+          "$fromUid": {
+            ".write": "auth != null && $fromUid === auth.uid && !data.exists() && !root.child('users').child($uid).child('blocked').child(auth.uid).exists()",
+            ".validate": "newData.val() === 'pending'"
+          }
+        },
+        "blocked": {
+          "$blockedUid": {
+            ".validate": "newData.val() === true"
           }
         }
       }

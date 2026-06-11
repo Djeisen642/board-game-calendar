@@ -35,7 +35,9 @@ const aliceProfile = {
   name: 'Alice',
   queryableName: 'alice',
   email: 'alice@example.com',
+  queryableEmail: 'alice@example.com',
   phoneNumber: '(555) 123-4567',
+  queryablePhone: '5551234567',
   address: '1 Main St',
   maxPeople: 6,
 }
@@ -135,6 +137,146 @@ describe('users rules', () => {
         name: 'Catan',
         rating: 11,
       })
+    )
+  })
+})
+
+describe('friend search index rules', () => {
+  it('permits queries on queryableEmail and queryablePhone for signed-in users', async () => {
+    await seed('users/alice', aliceProfile)
+    await assertSucceeds(
+      get(
+        query(
+          ref(db('bob'), 'users'),
+          orderByChild('queryableEmail'),
+          startAt('alice@'),
+          endAt('alice@'),
+          limitToFirst(10)
+        )
+      )
+    )
+    await assertSucceeds(
+      get(
+        query(
+          ref(db('bob'), 'users'),
+          orderByChild('queryablePhone'),
+          startAt('5551234'),
+          endAt('5551234'),
+          limitToFirst(10)
+        )
+      )
+    )
+  })
+
+  it('validates queryableEmail and queryablePhone types and lengths', async () => {
+    await assertFails(
+      set(ref(db('alice'), 'users/alice'), {
+        ...aliceProfile,
+        queryableEmail: 'x'.repeat(201),
+      })
+    )
+    await assertFails(
+      set(ref(db('alice'), 'users/alice'), {
+        ...aliceProfile,
+        queryablePhone: 5551234567,
+      })
+    )
+  })
+})
+
+describe('friend request rules', () => {
+  it('lets a user send a pending request under their own uid', async () => {
+    await assertSucceeds(
+      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+    )
+  })
+
+  it('rejects values other than pending', async () => {
+    await assertFails(
+      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'accepted')
+    )
+  })
+
+  it('blocks sending a request under someone else uid', async () => {
+    await assertFails(
+      set(ref(db('mallory'), 'users/alice/friendRequests/bob'), 'pending')
+    )
+  })
+
+  it('blocks overwriting an existing request', async () => {
+    await seed('users/alice/friendRequests/bob', 'pending')
+    await assertFails(
+      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+    )
+  })
+
+  it('blocks requests from a sender the recipient has blocked', async () => {
+    await seed('users/alice/blocked/bob', true)
+    await assertFails(
+      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+    )
+    // the block is directional: alice can still request bob
+    await assertSucceeds(
+      set(ref(db('alice'), 'users/bob/friendRequests/alice'), 'pending')
+    )
+  })
+
+  it('lets only the recipient delete a request', async () => {
+    await seed('users/alice/friendRequests/bob', 'pending')
+    await assertFails(remove(ref(db('bob'), 'users/alice/friendRequests/bob')))
+    await assertSucceeds(
+      remove(ref(db('alice'), 'users/alice/friendRequests/bob'))
+    )
+  })
+
+  it('lets the recipient accept via the mutual multi-path update', async () => {
+    await seed('users/alice/friendRequests/bob', 'pending')
+    await assertSucceeds(
+      update(ref(db('alice')), {
+        'users/alice/friends/bob': true,
+        'users/bob/friends/alice': true,
+        'users/alice/friendRequests/bob': null,
+      })
+    )
+  })
+
+  it('blocks writing into another users friends list without a pending request', async () => {
+    await assertFails(set(ref(db('alice'), 'users/bob/friends/alice'), true))
+    await assertFails(set(ref(db('mallory'), 'users/bob/friends/alice'), true))
+  })
+
+  it('lets the decline flow remove the request and block the sender', async () => {
+    await seed('users/alice/friendRequests/bob', 'pending')
+    await assertSucceeds(
+      update(ref(db('alice')), {
+        'users/alice/blocked/bob': true,
+        'users/alice/friendRequests/bob': null,
+      })
+    )
+  })
+
+  it('lets a user remove themselves from a friends list (mutual unfriend)', async () => {
+    await seed('users/alice/friends/bob', true)
+    await seed('users/bob/friends/alice', true)
+    await assertSucceeds(
+      update(ref(db('alice')), {
+        'users/alice/friends/bob': null,
+        'users/bob/friends/alice': null,
+      })
+    )
+  })
+})
+
+describe('blocked list rules', () => {
+  it('lets only the owner write their blocked list', async () => {
+    await assertSucceeds(set(ref(db('alice'), 'users/alice/blocked/bob'), true))
+    await assertFails(set(ref(db('bob'), 'users/alice/blocked/bob'), true))
+  })
+
+  it('only allows true as a blocked value', async () => {
+    await assertFails(set(ref(db('alice'), 'users/alice/blocked/bob'), false))
+    await assertFails(
+      set(ref(db('alice'), 'users/alice/blocked/bob'), 'blocked')
     )
   })
 })
