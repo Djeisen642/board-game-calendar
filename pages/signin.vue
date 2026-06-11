@@ -75,7 +75,7 @@
               aria-hidden="true"
               class="bot-trap"
             />
-            <NuxtTurnstile v-model="turnstileToken" class="mb-3" />
+            <NuxtTurnstile v-if="turnstileEnabled" v-model="turnstileToken" class="mb-3" />
             <v-btn
               type="submit"
               block
@@ -140,6 +140,11 @@ const email = ref('')
 const password = ref('')
 const honeypot = ref('')
 const turnstileToken = ref('')
+// Turnstile is client-side deterrence only (static site — the token is never
+// verified server-side). Without a configured site key the widget can never
+// produce a token, which would lock everyone out of email sign-in, so the
+// gate is skipped entirely in that case.
+const turnstileEnabled = !!useRuntimeConfig().public.turnstileSiteKey
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
@@ -192,7 +197,7 @@ async function handleEmailSignIn() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
   if (honeypot.value) return // bot trap
-  if (!turnstileToken.value) {
+  if (turnstileEnabled && !turnstileToken.value) {
     snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
     return
   }
@@ -239,7 +244,7 @@ async function handleEmailSignUp() {
   const result = await emailForm.value?.validate()
   if (!result?.valid) return
   if (honeypot.value) return // bot trap
-  if (!turnstileToken.value) {
+  if (turnstileEnabled && !turnstileToken.value) {
     snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
     return
   }
