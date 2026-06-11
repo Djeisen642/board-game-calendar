@@ -56,7 +56,7 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 - `helpers/constants.ts` — `LoadingTimeoutInMs`, `DebounceThrottleInMs`, BGG API constants
 - `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
 - `firebase.json` — Firebase Hosting config
-- `database.rules.json` — Firebase Realtime DB security rules (deploy separately via Firebase CLI)
+- `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
 
 ### Components
 
@@ -115,7 +115,7 @@ type Gathering = {
 
 ## Firebase Security Rules
 
-`database.rules.json` covers `users/` and `gatherings/` (deploy separately via Firebase CLI: `firebase deploy --only database`):
+`database.rules.json` covers `users/` and `gatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`):
 
 - `users/` — readable by any authenticated user (required for friend search queries on `queryableName`, which is indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
 - `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`).
