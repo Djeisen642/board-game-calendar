@@ -5230,7 +5230,7 @@ __metadata:
     vite-plugin-vuetify: "npm:^2.1.3"
     vitest: "npm:^4.1.8"
     vue: "npm:^3.5.35"
-    vuetify: "npm:^4.1.0"
+    vuetify: "npm:^4.1.1"
     vuetify-nuxt-module: "npm:^0.19.5"
     xml2js: "npm:^0.6.2"
     yup: "npm:^1.7.1"
@@ -12567,7 +12567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vuetify@npm:^3.7.0 || ^4.0.0-0, vuetify@npm:^4.1.0":
+"vuetify@npm:^3.7.0 || ^4.0.0-0":
   version: 4.1.0
   resolution: "vuetify@npm:4.1.0"
   peerDependencies:
@@ -12583,6 +12583,25 @@ __metadata:
     webpack-plugin-vuetify:
       optional: true
   checksum: 10c0/b5b97671684606865587c2e5e4938862bacb71b75f0b1e3154f4100fc8b15616cae94a7b3b4fafe784ca0827b13dfa96e0c611ee37aeec2ab5ac803004d41ae6
+  languageName: node
+  linkType: hard
+
+"vuetify@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "vuetify@npm:4.1.1"
+  peerDependencies:
+    typescript: ">=4.7"
+    vite-plugin-vuetify: ">=2.1.0"
+    vue: ^3.5.0
+    webpack-plugin-vuetify: ">=3.1.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    vite-plugin-vuetify:
+      optional: true
+    webpack-plugin-vuetify:
+      optional: true
+  checksum: 10c0/021734ae224b3508932c17b47be4450a8ee4d7111bee16159187939b0d7cf46e34556fba0f68d99de94d89098fa0f4cbd23bc25c5516f0dfbb958313bd227a8c
   languageName: node
   linkType: hard
 
