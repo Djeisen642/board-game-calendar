@@ -43,8 +43,6 @@ import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
 import type { FormInstance, Game, Gathering, GatheringState, GuestResponse } from '~/helpers/types'
 
-useHead({ title: 'New Gathering' })
-
 const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
@@ -71,6 +69,8 @@ let gamesById: Record<string, Game> = {}
 const editId = typeof route.query.id === 'string' ? route.query.id : null
 let existingState: GatheringState = 'pending'
 let existingGuests: Record<string, GuestResponse> = {}
+
+useHead({ title: editId ? 'Edit Gathering' : 'New Gathering' })
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',

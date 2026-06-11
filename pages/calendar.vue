@@ -14,7 +14,7 @@
         <v-card-text v-if="loading" class="pa-8">
           <v-progress-linear indeterminate color="primary" />
         </v-card-text>
-        <v-card-text v-else-if="!hosting.length && !invited.length" class="pa-6">
+        <v-card-text v-else-if="!hosting.length && !invited.length && !openGatherings.length" class="pa-6">
           <div class="empty-state">
             <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-calendar-blank-outline</v-icon>
             <div class="empty-title">No gatherings yet</div>
@@ -61,8 +61,32 @@
             </div>
           </template>
 
+          <template v-if="openGatherings.length">
+            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length }">Open gatherings</div>
+            <div v-for="gathering in openGatherings" :key="gathering.id" class="event-item pa-4 mb-3">
+              <div class="d-flex align-center flex-wrap mb-2">
+                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
+                <span class="event-line"><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>{{ formatDatetime(gathering.datetime) }}</span>
+                <v-spacer />
+                <v-btn density="compact" size="small" variant="tonal" color="success" :disabled="isFull(gathering)" @click.stop="respond(gathering, 'accepted')">
+                  <v-icon start>mdi-account-plus</v-icon>{{ isFull(gathering) ? 'Full' : 'Join' }}
+                </v-btn>
+              </div>
+              <div class="event-line mb-2">
+                <v-icon size="16" class="mr-1">mdi-account</v-icon>Hosted by {{ names[gathering.host] ?? '…' }}
+                <template v-if="gathering.maxGuests > 0">
+                  <span class="mx-2">·</span>{{ acceptedCount(gathering) }}/{{ gathering.maxGuests }} guests
+                </template>
+              </div>
+              <div v-if="gathering.games?.length" class="event-line">
+                <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
+                <v-chip v-for="game in gathering.games" :key="game.id" size="x-small" variant="outlined" class="mr-1">{{ game.name }}</v-chip>
+              </div>
+            </div>
+          </template>
+
           <template v-if="invited.length">
-            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length }">Invited</div>
+            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length || openGatherings.length }">Invited</div>
             <div v-for="gathering in invited" :key="gathering.id" class="event-item pa-4 mb-3">
               <div class="d-flex align-center flex-wrap mb-2">
                 <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
@@ -99,11 +123,19 @@ import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
 import constants from '~/helpers/constants'
+import {
+  splitGatherings,
+  acceptedCount,
+  isFull,
+  stateColor,
+  responseColor,
+  responseIcon,
+  formatDatetime,
+  type GatheringWithId,
+} from '~/helpers/gatherings'
 import type { Gathering, GatheringState, GuestResponse } from '~/helpers/types'
 
 useHead({ title: 'Calendar' })
-
-type GatheringWithId = Gathering & { id: string }
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -135,17 +167,15 @@ onMounted(() => {
 
 onUnmounted(() => { unsubscribe?.() })
 
-const byDatetime = (a: GatheringWithId, b: GatheringWithId) => a.datetime.localeCompare(b.datetime)
-
-const hosting = computed(() => gatherings.value.filter((g) => g.host === uid).sort(byDatetime))
-const invited = computed(() => gatherings.value.filter((g) => g.host !== uid && g.guests?.[uid]).sort(byDatetime))
+const sections = computed(() => splitGatherings(gatherings.value, uid))
+const hosting = computed(() => sections.value.hosting)
+const invited = computed(() => sections.value.invited)
+const openGatherings = computed(() => sections.value.open)
 
 async function resolveNames() {
   const wanted = new Set<string>()
-  for (const gathering of gatherings.value) {
-    if (gathering.host === uid) Object.keys(gathering.guests ?? {}).forEach((guestUid) => wanted.add(guestUid))
-    else if (gathering.guests?.[uid]) wanted.add(gathering.host)
-  }
+  for (const gathering of sections.value.hosting) Object.keys(gathering.guests ?? {}).forEach((guestUid) => wanted.add(guestUid))
+  for (const gathering of [...sections.value.invited, ...sections.value.open]) wanted.add(gathering.host)
   const missing = [...wanted].filter((personUid) => !(personUid in names.value))
   await Promise.all(missing.map(async (personUid) => {
     try {
@@ -163,28 +193,6 @@ function guestEntries(gathering: Gathering): { uid: string; response: GuestRespo
 
 function myResponse(gathering: Gathering): GuestResponse | undefined {
   return gathering.guests?.[uid]
-}
-
-function stateColor(state: GatheringState): string {
-  return { pending: 'warning', confirmed: 'success', canceled: 'error' }[state] ?? 'info'
-}
-
-function responseColor(response: GuestResponse): string {
-  return { invited: 'warning', accepted: 'success', declined: 'error' }[response] ?? 'info'
-}
-
-function responseIcon(response: GuestResponse): string {
-  return {
-    invited: 'mdi-help-circle-outline',
-    accepted: 'mdi-check-circle-outline',
-    declined: 'mdi-close-circle-outline',
-  }[response] ?? 'mdi-help-circle-outline'
-}
-
-function formatDatetime(iso: string): string {
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return iso
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 async function setState(gathering: GatheringWithId, state: GatheringState) {
