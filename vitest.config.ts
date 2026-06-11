@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // rules tests need the RTDB emulator — run them via `yarn test:rules`
+    exclude: [...configDefaults.exclude, 'test/rules/**'],
     server: {
       deps: {
         inline: ['vuetify'],

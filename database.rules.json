@@ -77,7 +77,7 @@
         },
         "guests": {
           "$guestUid": {
-            ".write": "auth != null && $guestUid === auth.uid && data.exists()",
+            ".write": "auth != null && $guestUid === auth.uid && (data.exists() || (newData.val() === 'accepted' && data.parent().parent().child('open').val() === true && data.parent().parent().child('state').val() !== 'canceled'))",
             ".validate": "newData.val() === 'invited' || newData.val() === 'accepted' || newData.val() === 'declined'"
           }
         },

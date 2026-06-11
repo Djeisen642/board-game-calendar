@@ -8,6 +8,7 @@ A Nuxt 4 / Vue 3 SPA that helps groups schedule board game nights around specifi
 yarn dev          # dev server on :3005
 yarn lint         # ESLint (must pass before commit)
 yarn test         # Vitest (must pass before commit)
+yarn test:rules   # security-rules tests against the RTDB emulator (needs Java)
 yarn generate     # production static build → dist/
 yarn postinstall  # nuxi prepare — regenerates .nuxt/ types (run after yarn install)
 ```
