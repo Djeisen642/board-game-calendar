@@ -4,6 +4,7 @@ export default {
     'https://us-central1-board-game-calendar-3ae94.cloudfunctions.net/bggProxy/',
   BggBoardGameType: 'boardgame',
   DebounceThrottleInMs: 500,
+  MinSearchLength: 4,
   NumberToShow: 10,
   PrimaryNameType: 'primary',
   LoadingTimeoutInMs: 2000,

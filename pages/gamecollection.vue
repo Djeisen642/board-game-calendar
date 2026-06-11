@@ -54,6 +54,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, push, set, update, remove } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import GameSearch from '~/components/GameSearch.vue'
+import helpers from '~/helpers/helpers'
 import type { DisplayableItemType, Game } from '~/helpers/types'
 import constants from '~/helpers/constants'
 
@@ -65,7 +66,8 @@ const db = nuxtApp.$db
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const collection = ref<Record<string, Game> | null>(null)
 const collectionAreaOpen = ref(true)
-const filterGames = ref('')
+// clearable text fields set the model to null
+const filterGames = ref<string | null>('')
 const loading = ref(true)
 let unsubscribe: (() => void) | null = null
 
@@ -73,9 +75,10 @@ let unsubscribe: (() => void) | null = null
 
 const gamesMatchingFilter = computed<Record<string, Game>>(() => {
   if (!collection.value) return {}
+  const filter = (filterGames.value ?? '').toLowerCase()
   const result: Record<string, Game> = {}
   for (const [key, game] of Object.entries(collection.value)) {
-    if (game.name.toLowerCase().includes(filterGames.value.toLowerCase())) result[key] = game
+    if (game.name.toLowerCase().includes(filter)) result[key] = game
   }
   return result
 })
@@ -84,7 +87,10 @@ const idsInCollection = computed(() => collection.value ? Object.values(collecti
 
 onMounted(() => {
   const collectionRef = dbRef(db, `users/${userStore.user!.uid}/collection`)
-  unsubscribe = onValue(collectionRef, (snapshot) => { collection.value = snapshot.val(); loading.value = false })
+  unsubscribe = onValue(collectionRef, (snapshot) => { collection.value = snapshot.val(); loading.value = false }, (err) => {
+    loading.value = false
+    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+  })
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
 
@@ -93,16 +99,20 @@ onUnmounted(() => { unsubscribe?.() })
 function toggleAddArea() { collectionAreaOpen.value = !collectionAreaOpen.value }
 
 async function addToCollection(item: DisplayableItemType) {
-  const collectionRef = dbRef(db, `users/${userStore.user!.uid}/collection`)
-  await set(push(collectionRef), { id: item.id, name: item.name })
+  try {
+    const collectionRef = dbRef(db, `users/${userStore.user!.uid}/collection`)
+    await set(push(collectionRef), { id: item.id, name: item.name })
+  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
 async function changeRating(id: string, item: Game) {
-  await update(dbRef(db, `users/${userStore.user!.uid}/collection/${id}`), item)
+  try { await update(dbRef(db, `users/${userStore.user!.uid}/collection/${id}`), item) }
+  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
 async function removeGameFromCollection(id: string) {
-  await remove(dbRef(db, `users/${userStore.user!.uid}/collection/${id}`))
+  try { await remove(dbRef(db, `users/${userStore.user!.uid}/collection/${id}`)) }
+  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
 function onGameSearchError(error: Error) { snackbar.value?.showSnackbarWithMessage(error.message, true) }

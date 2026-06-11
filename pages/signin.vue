@@ -51,9 +51,20 @@
               type="password"
               autocomplete="current-password"
               prepend-inner-icon="mdi-lock-outline"
-              :rules="[validation.isRequired]"
+              :rules="[validation.isRequired, validation.isPassword]"
               class="mb-2"
             />
+            <div class="d-flex justify-end mb-2">
+              <v-btn
+                variant="text"
+                size="small"
+                color="accent"
+                :disabled="loading"
+                @click="handleForgotPassword"
+              >
+                Forgot password?
+              </v-btn>
+            </div>
             <!-- Honeypot: hidden from real users, bots fill this in -->
             <input
               v-model="honeypot"
@@ -101,12 +112,14 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from 'firebase/auth'
 import { ref as dbRef, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
 import isEmail from 'validator/lib/isEmail'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
+import { authErrorMessage } from '~/helpers/authErrors'
 import routes from '~/helpers/routes'
 import type { FormInstance } from '~/helpers/types'
 
@@ -131,6 +144,13 @@ const turnstileToken = ref('')
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
   isEmail: (v: string) => !v || isEmail(v) || 'Invalid email',
+  // Firebase Auth's minimum password length
+  isPassword: (v: string) => !v || v.length >= 6 || 'At least 6 characters',
+}
+
+function showAuthError(err: unknown) {
+  helpers.handleError(err) // logs to analytics
+  snackbar.value?.showSnackbarWithMessage(authErrorMessage(err), true)
 }
 
 onMounted(() => {
@@ -159,10 +179,7 @@ async function handleOAuthSignIn(
     })
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
-      true
-    )
+    showAuthError(err)
   } finally {
     loading.value = false
   }
@@ -190,10 +207,29 @@ async function handleEmailSignIn() {
     logEvent('login', { method: 'email' })
     router.push(routes.gameCollection)
   } catch (err) {
+    showAuthError(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function handleForgotPassword() {
+  if (!email.value || !isEmail(email.value)) {
     snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
+      'Enter your email address above first, then click "Forgot password?".',
       true
     )
+    return
+  }
+  loading.value = true
+  try {
+    await sendPasswordResetEmail(auth, email.value)
+    snackbar.value?.showSnackbarWithMessage(
+      'Password reset email sent. Check your inbox.',
+      false
+    )
+  } catch (err) {
+    showAuthError(err)
   } finally {
     loading.value = false
   }
@@ -229,10 +265,7 @@ async function handleEmailSignUp() {
     )
     router.push(routes.gameCollection)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(
-      helpers.handleError(err).message,
-      true
-    )
+    showAuthError(err)
   } finally {
     loading.value = false
   }
