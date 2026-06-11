@@ -3,8 +3,8 @@
     <v-col cols="12" sm="11" md="9" lg="6">
       <v-card>
         <v-card-title class="d-flex align-center pa-6">
-          <v-icon color="primary" class="mr-3">mdi-calendar-plus</v-icon>
-          <span class="page-title">New Gathering</span>
+          <v-icon color="primary" class="mr-3">{{ editId ? 'mdi-calendar-edit' : 'mdi-calendar-plus' }}</v-icon>
+          <span class="page-title">{{ editId ? 'Edit Gathering' : 'New Gathering' }}</span>
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
@@ -25,7 +25,7 @@
             <v-select v-model="selectedGuests" :items="friendItems" multiple chips closable-chips label="Invite friends" prepend-inner-icon="mdi-account-group" :hint="friendItems.length ? '' : 'Add friends on the Friends page to invite them'" persistent-hint class="mb-1" />
             <v-select v-model="selectedGameIds" :items="gameItems" multiple chips closable-chips label="Games to play" prepend-inner-icon="mdi-rhombus-split" :hint="gameItems.length ? '' : 'Add games on the Game Collection page to pick them'" persistent-hint class="mb-4" />
             <v-btn type="submit" block color="primary" size="large" :loading="saving">
-              <v-icon start>mdi-calendar-check</v-icon>Create Gathering
+              <v-icon start>mdi-calendar-check</v-icon>{{ editId ? 'Save Changes' : 'Create Gathering' }}
             </v-btn>
           </v-form>
         </v-card-text>
@@ -37,16 +37,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ref as dbRef, get, push, set } from 'firebase/database'
+import { ref as dbRef, get, push, set, update } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
-import type { FormInstance, Game, Gathering, GuestResponse } from '~/helpers/types'
+import type { FormInstance, Game, Gathering, GatheringState, GuestResponse } from '~/helpers/types'
 
 useHead({ title: 'New Gathering' })
 
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
 const logEvent = nuxtApp.$logEvent
@@ -65,6 +66,11 @@ const selectedGameIds = ref<string[]>([])
 const friendItems = ref<{ title: string; value: string }[]>([])
 const gameItems = ref<{ title: string; value: string }[]>([])
 let gamesById: Record<string, Game> = {}
+
+// Edit mode: /gatherings/new?id={gatheringId} prefills and updates in place
+const editId = typeof route.query.id === 'string' ? route.query.id : null
+let existingState: GatheringState = 'pending'
+let existingGuests: Record<string, GuestResponse> = {}
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
@@ -102,6 +108,40 @@ onMounted(async () => {
         .map((game) => ({ title: game.name, value: game.id }))
         .sort((a, b) => a.title.localeCompare(b.title))
     }
+
+    if (editId) {
+      const gatheringSnap = await get(dbRef(db, `gatherings/${editId}`))
+      const gathering: Gathering | null = gatheringSnap.val()
+      if (!gathering || gathering.host !== uid) {
+        snackbar.value?.showSnackbarWithMessage('Gathering not found.', true)
+        await router.replace(routes.calendar)
+        return
+      }
+      existingState = gathering.state
+      existingGuests = gathering.guests ?? {}
+      const dt = new Date(gathering.datetime)
+      const pad = (n: number) => String(n).padStart(2, '0')
+      date.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
+      time.value = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+      maxGuests.value = gathering.maxGuests
+      open.value = gathering.open
+      selectedGuests.value = Object.keys(existingGuests)
+      selectedGameIds.value = (gathering.games ?? []).map((game) => game.id)
+      // Keep invited guests visible even if they are no longer friends
+      for (const guestId of selectedGuests.value) {
+        if (!friendItems.value.some((friend) => friend.value === guestId)) {
+          const nameSnap = await get(dbRef(db, `users/${guestId}/name`))
+          friendItems.value.push({ title: nameSnap.val() ?? 'Unknown player', value: guestId })
+        }
+      }
+      // Keep selections visible even if a game has since left the collection
+      for (const game of gathering.games ?? []) {
+        if (!gamesById[game.id]) {
+          gamesById[game.id] = game
+          gameItems.value.push({ title: game.name, value: game.id })
+        }
+      }
+    }
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
   } finally {
@@ -125,17 +165,22 @@ async function createGathering() {
   try {
     const uid = userStore.user!.uid
     const gathering: Gathering = {
-      state: 'pending',
+      state: editId ? existingState : 'pending',
       datetime: datetime.toISOString(),
       initiator: uid,
       host: uid,
       open: open.value,
       maxGuests: Number(maxGuests.value || 0),
-      guests: Object.fromEntries(selectedGuests.value.map((guestId) => [guestId, 'invited' as GuestResponse])),
+      // existing guests keep their response when editing; new ones start as invited
+      guests: Object.fromEntries(selectedGuests.value.map((guestId) => [guestId, existingGuests[guestId] ?? ('invited' as GuestResponse)])),
       games: selectedGameIds.value.map((id) => ({ id, name: gamesById[id]?.name ?? 'Unknown game' })),
     }
-    await set(push(dbRef(db, 'gatherings')), gathering)
-    logEvent('create_gathering', { guests: selectedGuests.value.length, games: selectedGameIds.value.length })
+    if (editId) {
+      await update(dbRef(db, `gatherings/${editId}`), gathering)
+    } else {
+      await set(push(dbRef(db, 'gatherings')), gathering)
+    }
+    logEvent(editId ? 'edit_gathering' : 'create_gathering', { guests: selectedGuests.value.length, games: selectedGameIds.value.length })
     await router.push(routes.calendar)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)

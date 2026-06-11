@@ -39,7 +39,8 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 | `profile.vue`        | `/profile`        | `users/{uid}`                                       |
 | `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}`                   |
 | `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends/{friendId}` |
-| `calendar.vue`       | `/calendar`       | `events` (host filter) — **stub, not MVP-complete** |
+| `calendar.vue`       | `/calendar`       | `gatherings` (loads all, splits into hosting/invited client-side), `users/{uid}/name` |
+| `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place), `users/{uid}` (prefill) |
 | `index.vue`          | `/`               | none                                                |
 
 ### Key files
@@ -98,35 +99,17 @@ type Game = {
 }
 
 // users/{uid}/friends/{friendId}: true
-```
 
-### Defined but not yet used
-
-```ts
-type GatheringState = 'pending' | 'confirmed' | 'canceled' // not in types.ts yet
-
-// gatherings/{gatheringId}  — path does not exist yet
+// gatherings/{pushId}
 type Gathering = {
-  state: GatheringState
+  state: GatheringState // 'pending' | 'confirmed' | 'canceled'
   datetime: string // ISO date
   initiator: string // uid
   host: string // uid
   open: boolean
   maxGuests: number
-  guests: Guest[]
-  games: string[] // Game ids from host's collection
-}
-
-type Guest = {
-  id: string // uid
-  confirmed: boolean
-}
-
-// Calendar.vue currently uses this ad-hoc type instead:
-type EventType = {
-  host: string
-  date: Date
-  guests: Person[]
+  guests?: Record<string, GuestResponse> // keyed by uid; 'invited' | 'accepted' | 'declined'
+  games?: GatheringGame[] // { id, name } — denormalized from the host's collection
 }
 ```
 

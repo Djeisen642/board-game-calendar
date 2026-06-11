@@ -13,7 +13,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 - [x] Add `GatheringState` type: `'pending' | 'confirmed' | 'canceled'`
 - [x] Guest responses: instead of a `Guest[]` array, `guests` is a `Record<uid, GuestResponse>` (`'invited' | 'accepted' | 'declined'`) — keying by uid makes the security rule for "a guest may update only their own response" trivial, and the tri-state distinguishes "hasn't responded" from "declined"
 - [x] Add `Gathering` type — `games` is `GatheringGame[]` (`{ id, name }`), denormalized so guests can render game names without reading the host's collection
-- [ ] Remove the local `EventType` from `Calendar.vue` and replace with `Gathering`
+- [x] Remove the local `EventType` from `Calendar.vue` and replace with `Gathering`
 
 ---
 
@@ -46,25 +46,25 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 ## 4. Calendar page — full implementation
 
-**`pages/Calendar.vue`** (currently a stub)
+**`pages/Calendar.vue`**
 
-- [ ] Replace `EventType` with `Gathering` type
-- [ ] Change Firebase query from `events` to `gatherings`, filtered to gatherings where `host === uid` OR `guests` contains `uid`
-- [ ] Display gathering state as a colored chip (pending = yellow, confirmed = green, canceled = red)
-- [ ] Display game list per gathering
-- [ ] Host actions: Edit, Cancel, Confirm (manual confirm for host)
-- [ ] Guest action: Accept / Decline button (writes to `guests[i].confirmed`)
-- [ ] Auto-confirm logic: transition to `confirmed` when all guests have responded (optional, can be host-only)
+- [x] Replace `EventType` with `Gathering` type
+- [x] Change Firebase query from `events` to `gatherings`, filtered to gatherings where `host === uid` OR `guests` contains `uid`
+- [x] Display gathering state as a colored chip (pending = yellow, confirmed = green, canceled = red)
+- [x] Display game list per gathering
+- [x] Host actions: Edit (reuses `/gatherings/new?id=`), Cancel, Confirm; Delete for canceled gatherings
+- [x] Guest action: Accept / Decline button (writes to `guests/{uid}`)
+- [ ] Auto-confirm logic: transition to `confirmed` when all guests have responded (optional — skipped; host confirms manually)
 
 ---
 
 ## 5. Guest invitation flow
 
-- [ ] When a gathering is created with specific guests, they need to see it
-  - Calendar query must include gatherings where the current user is in `guests[]`
-  - Firebase query: use `gatherings` index on `guests/{uid}` or load all gatherings and filter client-side (simpler for MVP)
-- [ ] Show "Invited" gatherings separately from "Hosting" gatherings on the calendar
-- [ ] Accept / Decline updates `gatherings/{id}/guests/{i}/confirmed`
+- [x] When a gathering is created with specific guests, they need to see it
+  - Calendar query must include gatherings where the current user is in `guests`
+  - Firebase query: load all gatherings and filter client-side (simpler for MVP)
+- [x] Show "Invited" gatherings separately from "Hosting" gatherings on the calendar
+- [x] Accept / Decline updates `gatherings/{id}/guests/{uid}`
 
 ---
 
@@ -72,7 +72,7 @@ Tasks are ordered by dependency — earlier items must be done before later ones
 
 **`.github/workflows/ci.yml`**
 
-- [ ] Uncomment (or re-add) the `yarn test` step — it was commented out and the test suite is now passing
+- [x] Uncomment (or re-add) the `yarn test` step — it was commented out and the test suite is now passing
 
 ---
 
