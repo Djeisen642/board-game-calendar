@@ -227,12 +227,12 @@ async function fetchResults(input: string) {
 </script>
 
 <style scoped>
-.page-title { font-size: 1.25rem; font-weight: 600; }
+.page-title { font-size: 1.5rem; font-weight: 600; }
 .empty-state { text-align: center; padding: 48px 24px; }
-.empty-title { font-size: 1.1rem; font-weight: 600; color: rgba(205,214,244,0.7); }
-.empty-desc { font-size: 0.85rem; color: rgba(205,214,244,0.4); margin-top: 4px; }
-.section-label { font-size: 0.75rem; color: rgba(205,214,244,0.45); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+.empty-title { font-size: 1.35rem; font-weight: 600; color: rgba(205,214,244,0.95); }
+.empty-desc { font-size: 1rem; color: rgba(205,214,244,0.75); margin-top: 8px; }
+.section-label { font-size: 0.875rem; color: rgba(205,214,244,0.7); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
 .friend-item { border-radius: 12px; transition: background 0.2s ease; }
 .friend-item:hover { background: rgba(108,92,231,0.06); }
-.avatar-initial { font-weight: 600; font-size: 0.85rem; color: rgba(205,214,244,0.9); }
+.avatar-initial { font-weight: 600; font-size: 1rem; color: rgba(205,214,244,0.95); }
 </style>

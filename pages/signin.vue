@@ -285,8 +285,8 @@ async function handleEmailSignUp() {
 }
 
 .signin-subtitle {
-  font-size: 0.9rem;
-  color: rgba(205, 214, 244, 0.5);
+  font-size: 1rem;
+  color: rgba(205, 214, 244, 0.8);
 }
 
 .social-btn {
@@ -315,8 +315,8 @@ async function handleEmailSignUp() {
 }
 
 .divider-text {
-  font-size: 0.8rem;
-  color: rgba(205, 214, 244, 0.35);
+  font-size: 0.875rem;
+  color: rgba(205, 214, 244, 0.65);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   white-space: nowrap;

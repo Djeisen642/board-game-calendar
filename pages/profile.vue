@@ -125,12 +125,12 @@ async function updateProfile() {
 </script>
 
 <style scoped>
-.page-title { font-size: 1.25rem; font-weight: 600; }
+.page-title { font-size: 1.5rem; font-weight: 600; }
 .profile-fields { display: flex; flex-direction: column; gap: 20px; }
 .profile-field { display: flex; align-items: flex-start; gap: 14px; }
-.profile-field-icon { margin-top: 2px; opacity: 0.8; }
-.profile-field-label { font-size: 0.75rem; color: rgba(205,214,244,0.45); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 2px; }
-.profile-field-value { font-size: 0.95rem; color: rgba(205,214,244,0.9); }
+.profile-field-icon { margin-top: 2px; opacity: 0.9; }
+.profile-field-label { font-size: 0.875rem; color: rgba(205,214,244,0.7); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 2px; }
+.profile-field-value { font-size: 1rem; color: rgba(205,214,244,0.95); }
 .address-link { color: #00cec9; text-decoration: none; transition: color 0.2s ease; }
 .address-link:hover { color: #55efc4; }
 </style>

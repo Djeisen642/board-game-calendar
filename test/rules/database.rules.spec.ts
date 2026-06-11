@@ -47,7 +47,6 @@ const baseGathering = {
   datetime: '2026-07-01T19:00:00.000Z',
   initiator: 'host1',
   host: 'host1',
-  open: false,
   maxGuests: 4,
   guests: { guest1: 'invited' },
   games: [{ id: '13', name: 'Catan' }],
@@ -339,23 +338,8 @@ describe('gatherings rules', () => {
     )
   })
 
-  it('lets a signed-in user join an open gathering by accepting', async () => {
-    await seed('gatherings/g1', { ...baseGathering, open: true })
-    await assertSucceeds(
-      set(ref(db('walkin'), 'gatherings/g1/guests/walkin'), 'accepted')
-    )
-    // joining is accept-only; you can't add yourself as merely invited
-    await assertFails(
-      set(ref(db('other'), 'gatherings/g1/guests/other'), 'invited')
-    )
-  })
-
-  it('blocks joining a canceled open gathering', async () => {
-    await seed('gatherings/g1', {
-      ...baseGathering,
-      open: true,
-      state: 'canceled',
-    })
+  it('blocks uninvited users from writing a guest response', async () => {
+    await seed('gatherings/g1', baseGathering)
     await assertFails(
       set(ref(db('walkin'), 'gatherings/g1/guests/walkin'), 'accepted')
     )

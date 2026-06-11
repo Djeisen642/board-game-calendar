@@ -47,7 +47,6 @@ export type Gathering = {
   datetime: string // ISO date
   initiator: string // uid
   host: string // uid
-  open: boolean
   maxGuests: number
   guests?: Record<string, GuestResponse> // keyed by guest uid
   games?: GatheringGame[]

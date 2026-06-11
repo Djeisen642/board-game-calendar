@@ -7,25 +7,11 @@ const byDatetime = (a: GatheringWithId, b: GatheringWithId) =>
 
 // Rules are not filters: any signed-in user may read gatherings, so the
 // calendar loads them all and splits them client-side (MVP approach)
-export function splitGatherings(
-  gatherings: GatheringWithId[],
-  uid: string,
-  now: number = Date.now()
-) {
+export function splitGatherings(gatherings: GatheringWithId[], uid: string) {
   return {
     hosting: gatherings.filter((g) => g.host === uid).sort(byDatetime),
     invited: gatherings
       .filter((g) => g.host !== uid && g.guests?.[uid])
-      .sort(byDatetime),
-    open: gatherings
-      .filter(
-        (g) =>
-          g.host !== uid &&
-          !g.guests?.[uid] &&
-          g.open &&
-          g.state !== 'canceled' &&
-          new Date(g.datetime).getTime() > now
-      )
       .sort(byDatetime),
   }
 }

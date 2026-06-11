@@ -113,8 +113,8 @@ const features = [
 }
 
 .hero-body {
-  font-size: 0.95rem;
-  color: rgba(205, 214, 244, 0.55);
+  font-size: 1rem;
+  color: rgba(205, 214, 244, 0.8);
   line-height: 1.6;
 }
 
@@ -141,14 +141,14 @@ const features = [
 
 .feature-title {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin-bottom: 4px;
-  color: rgba(205, 214, 244, 0.9);
+  color: rgba(205, 214, 244, 0.95);
 }
 
 .feature-desc {
-  font-size: 0.82rem;
-  color: rgba(205, 214, 244, 0.5);
+  font-size: 0.9rem;
+  color: rgba(205, 214, 244, 0.75);
   line-height: 1.5;
 }
 </style>

@@ -14,7 +14,7 @@
         <v-card-text v-if="loading" class="pa-8">
           <v-progress-linear indeterminate color="primary" />
         </v-card-text>
-        <v-card-text v-else-if="!hosting.length && !invited.length && !openGatherings.length" class="pa-6">
+        <v-card-text v-else-if="!hosting.length && !invited.length" class="pa-6">
           <div class="empty-state">
             <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-calendar-blank-outline</v-icon>
             <div class="empty-title">No gatherings yet</div>
@@ -61,32 +61,8 @@
             </div>
           </template>
 
-          <template v-if="openGatherings.length">
-            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length }">Open gatherings</div>
-            <div v-for="gathering in openGatherings" :key="gathering.id" class="event-item pa-4 mb-3">
-              <div class="d-flex align-center flex-wrap mb-2">
-                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
-                <span class="event-line"><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>{{ formatDatetime(gathering.datetime) }}</span>
-                <v-spacer />
-                <v-btn density="compact" size="small" variant="tonal" color="success" :disabled="isFull(gathering)" @click.stop="respond(gathering, 'accepted')">
-                  <v-icon start>mdi-account-plus</v-icon>{{ isFull(gathering) ? 'Full' : 'Join' }}
-                </v-btn>
-              </div>
-              <div class="event-line mb-2">
-                <v-icon size="16" class="mr-1">mdi-account</v-icon>Hosted by {{ names[gathering.host] ?? '…' }}
-                <template v-if="gathering.maxGuests > 0">
-                  <span class="mx-2">·</span>{{ acceptedCount(gathering) }}/{{ gathering.maxGuests }} guests
-                </template>
-              </div>
-              <div v-if="gathering.games?.length" class="event-line">
-                <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
-                <v-chip v-for="game in gathering.games" :key="game.id" size="x-small" variant="outlined" class="mr-1">{{ game.name }}</v-chip>
-              </div>
-            </div>
-          </template>
-
           <template v-if="invited.length">
-            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length || openGatherings.length }">Invited</div>
+            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length }">Invited</div>
             <div v-for="gathering in invited" :key="gathering.id" class="event-item pa-4 mb-3">
               <div class="d-flex align-center flex-wrap mb-2">
                 <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
@@ -125,8 +101,6 @@ import routes from '~/helpers/routes'
 import constants from '~/helpers/constants'
 import {
   splitGatherings,
-  acceptedCount,
-  isFull,
   stateColor,
   responseColor,
   responseIcon,
@@ -170,12 +144,11 @@ onUnmounted(() => { unsubscribe?.() })
 const sections = computed(() => splitGatherings(gatherings.value, uid))
 const hosting = computed(() => sections.value.hosting)
 const invited = computed(() => sections.value.invited)
-const openGatherings = computed(() => sections.value.open)
 
 async function resolveNames() {
   const wanted = new Set<string>()
   for (const gathering of sections.value.hosting) Object.keys(gathering.guests ?? {}).forEach((guestUid) => wanted.add(guestUid))
-  for (const gathering of [...sections.value.invited, ...sections.value.open]) wanted.add(gathering.host)
+  for (const gathering of sections.value.invited) wanted.add(gathering.host)
   const missing = [...wanted].filter((personUid) => !(personUid in names.value))
   await Promise.all(missing.map(async (personUid) => {
     try {
@@ -216,12 +189,12 @@ function editGathering(gathering: GatheringWithId) {
 </script>
 
 <style scoped>
-.page-title { font-size: 1.25rem; font-weight: 600; }
-.section-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(205,214,244,0.5); }
+.page-title { font-size: 1.5rem; font-weight: 600; }
+.section-title { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(205,214,244,0.75); }
 .empty-state { text-align: center; padding: 48px 24px; }
-.empty-title { font-size: 1.1rem; font-weight: 600; color: rgba(205,214,244,0.7); }
-.empty-desc { font-size: 0.85rem; color: rgba(205,214,244,0.4); margin-top: 4px; }
+.empty-title { font-size: 1.35rem; font-weight: 600; color: rgba(205,214,244,0.95); }
+.empty-desc { font-size: 1rem; color: rgba(205,214,244,0.75); margin-top: 8px; }
 .event-item { border-radius: 12px; background: rgba(108,92,231,0.04); border: 1px solid rgba(108,92,231,0.08); transition: all 0.2s ease; }
 .event-item:hover { background: rgba(108,92,231,0.08); border-color: rgba(108,92,231,0.15); }
-.event-line { font-size: 0.9rem; color: rgba(205,214,244,0.8); display: inline-flex; align-items: center; flex-wrap: wrap; }
+.event-line { font-size: 1rem; color: rgba(205,214,244,0.9); display: inline-flex; align-items: center; flex-wrap: wrap; }
 </style>
