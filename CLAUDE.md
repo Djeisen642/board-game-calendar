@@ -150,3 +150,7 @@ When writing PR descriptions (e.g. via `mcp__github__create_pull_request`), pass
 ## Deployment
 
 GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`. Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint` and `yarn test` on push to `main`.
+
+## Refactoring
+
+See [`docs/plans/component-refactoring.md`](docs/plans/component-refactoring.md) for the plan to break large pages into composables and sub-components. `GameSearch.vue` is done; `friends.vue`, `signin.vue`, and `calendar.vue` are next.
