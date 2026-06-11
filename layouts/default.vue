@@ -6,7 +6,7 @@
         <div class="drawer-brand">BGC</div>
       </div>
       <v-divider class="mb-2" />
-      <v-list nav>
+      <v-list nav class="nav-list">
         <v-list-item
           v-for="(item, i) in activeItems"
           :key="i"
@@ -14,6 +14,7 @@
           :prepend-icon="item.icon"
           :title="item.title"
           exact
+          min-height="56"
         />
       </v-list>
     </v-navigation-drawer>
@@ -154,5 +155,15 @@ async function onSignoutClicked() {
 .app-bar-title-icon {
   margin-right: 6px;
   font-size: 1.1em;
+}
+
+.nav-list :deep(.v-list-item-title) {
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.nav-list :deep(.v-icon) {
+  font-size: 1.35rem;
 }
 </style>
