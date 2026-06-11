@@ -5,6 +5,11 @@ Review of `database.rules.json` and the pages that read/write it (`pages/friends
 `pages/calendar.vue`). Findings are things a user can do that the feature design
 appears not to intend.
 
+Each write-based finding below (#1, #2, #4, #5, #6) was reproduced against the
+Firebase RTDB emulator using the current merged rules; #3 is a read-cascade
+confirmed by inspection. A reviewer reproducing these can add temporary cases to
+`test/rules/database.rules.spec.ts` and run `yarn test:rules`.
+
 **Severity caveat:** none of these grant a hard privilege *today* — friends lists
 and gatherings don't gate any sensitive write, and the worst-named field
 (`privateNote`) isn't yet read/written in the UI. These are mostly "defeats the
@@ -76,7 +81,7 @@ to rules:
 
 ```json
 "email":          { ".validate": "newData.val() === auth.token.email" },
-"queryableEmail": { ".validate": "newData.val() === auth.token.email.lowerCase()" }
+"queryableEmail": { ".validate": "newData.val() === auth.token.email.toLowerCase()" }
 ```
 
 Phone can't be verified without phone auth; if impersonation matters there, gate it
