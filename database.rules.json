@@ -1,27 +1,33 @@
 {
   "rules": {
-    "users": {
+    "profiles": {
       ".read": "auth != null",
       ".indexOn": ["queryableName", "queryableEmail", "queryablePhone"],
       "$uid": {
         ".write": "$uid === auth.uid",
         "name": {
-          ".validate": "newData.isString() && newData.val().length <= 100"
+          ".validate": "newData.isString() && newData.val().length <= 100 && newData.val().toLowerCase() === newData.parent().child('queryableName').val()"
         },
         "queryableName": {
           ".validate": "newData.isString() && newData.val().length <= 100 && newData.val() === newData.parent().child('name').val().toLowerCase()"
         },
-        "email": {
-          ".validate": "newData.isString() && newData.val() === auth.token.email"
-        },
         "queryableEmail": {
-          ".validate": "newData.isString() && newData.val() === auth.token.email.toLowerCase()"
-        },
-        "phoneNumber": {
-          ".validate": "newData.isString() && newData.val().length <= 30"
+          ".validate": "newData.isString() && (newData.val() === data.val() || (auth.token.email_verified === true && newData.val() === auth.token.email.toLowerCase()))"
         },
         "queryablePhone": {
           ".validate": "newData.isString() && newData.val().length <= 30 && newData.val().matches(/^[0-9]*$/)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "phoneNumber": {
+          ".validate": "newData.isString() && newData.val().length <= 30"
         },
         "address": {
           ".validate": "newData.isString() && newData.val().length <= 500"
@@ -81,10 +87,18 @@
         }
       }
     },
+    "userGatherings": {
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid",
+        "$gatheringId": {
+          ".write": "auth != null && ((!newData.exists() && $uid === auth.uid) || (root.child('gatherings').child($gatheringId).child('host').val() === auth.uid && (!newData.exists() || $uid === auth.uid || root.child('gatherings').child($gatheringId).child('guests').child($uid).exists())))",
+          ".validate": "newData.val() === true"
+        }
+      }
+    },
     "gatherings": {
-      ".read": "auth != null",
-      ".indexOn": ["host"],
       "$gatheringId": {
+        ".read": "auth != null && (data.child('host').val() === auth.uid || data.child('guests').child(auth.uid).exists())",
         ".write": "auth != null && (data.exists() ? data.child('host').val() === auth.uid : newData.child('host').val() === auth.uid)",
         "state": {
           ".validate": "newData.val() === 'pending' || newData.val() === 'confirmed' || newData.val() === 'canceled'"
@@ -104,7 +118,7 @@
         "guests": {
           "$guestUid": {
             ".write": "auth != null && $guestUid === auth.uid && data.exists()",
-            ".validate": "(newData.val() === 'invited' || newData.val() === 'accepted' || newData.val() === 'declined') && ($guestUid === auth.uid || newData.val() === 'invited' || newData.val() === data.val())"
+            ".validate": "(newData.val() === 'invited' || newData.val() === 'accepted' || newData.val() === 'declined') && ($guestUid === auth.uid || newData.val() === data.val() || (newData.val() === 'invited' && root.child('users').child($guestUid).child('friends').child(auth.uid).val() === true))"
           }
         },
         "games": {

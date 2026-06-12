@@ -5,8 +5,8 @@ export type GatheringWithId = Gathering & { id: string }
 const byDatetime = (a: GatheringWithId, b: GatheringWithId) =>
   a.datetime.localeCompare(b.datetime)
 
-// Rules are not filters: any signed-in user may read gatherings, so the
-// calendar loads them all and splits them client-side (MVP approach)
+// Splits the user's gatherings (loaded via their userGatherings/{uid} index,
+// so all are ones they host or are invited to) into the calendar sections
 export function splitGatherings(gatherings: GatheringWithId[], uid: string) {
   return {
     hosting: gatherings.filter((g) => g.host === uid).sort(byDatetime),

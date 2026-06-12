@@ -11,8 +11,9 @@ import {
 import constants from '~/helpers/constants'
 import type { Friend, Person } from '~/helpers/types'
 
-// Debounced friend search over the queryableName / queryableEmail /
-// queryablePhone indexes, annotating each result with friendship status.
+// Debounced friend search over the public profiles/ node's queryableName /
+// queryableEmail / queryablePhone indexes, annotating each result with
+// friendship status.
 export function useFriendSearch(
   friends: Ref<Friend[]>,
   onError: (err: unknown) => void
@@ -52,7 +53,7 @@ export function useFriendSearch(
     try {
       const { field, term } = searchFieldFor(input)
       const q = query(
-        dbRef(db, 'users'),
+        dbRef(db, 'profiles'),
         orderByChild(field),
         startAt(term),
         endAt(term + '\uf8ff'),

@@ -8,9 +8,11 @@ export type FormInstance = {
 // declining removes the entry
 export type FriendRequestStatus = 'pending'
 
+// profiles/{uid} — the public, search-visible profile node; private fields
+// (phone, address, collection, friends) live under owner-only users/{uid}
 export type Person = {
   name: string
-  email: string
+  queryableName?: string
   queryableEmail?: string
   queryablePhone?: string
   isFriend?: boolean

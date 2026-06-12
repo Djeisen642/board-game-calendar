@@ -35,12 +35,12 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 
 | Page                 | Route             | Firebase reads/writes                               |
 | -------------------- | ----------------- | --------------------------------------------------- |
-| `signin.vue`         | `/signin`         | auth only                                           |
-| `profile.vue`        | `/profile`        | `users/{uid}`                                       |
+| `signin.vue`         | `/signin`         | auth; writes initial `profiles/{uid}` (+ `users/{uid}/phoneNumber` if present) |
+| `profile.vue`        | `/profile`        | `users/{uid}` (private fields), `profiles/{uid}` (public fields); email shown from auth |
 | `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}`                   |
-| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends`, `friendRequests/{uid}`, `blocked/{uid}` (decline writes) |
-| `calendar.vue`       | `/calendar`       | `gatherings` (loads all, splits into hosting/invited client-side), `users/{uid}/name` |
-| `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place), `users/{uid}` (prefill) |
+| `friends.vue`        | `/friends`        | `profiles/` (search + display), `users/{uid}/friends`, `friendRequests/{uid}`, `blocked/{uid}` (decline writes) |
+| `calendar.vue`       | `/calendar`       | `userGatherings/{uid}` (own index), `gatherings/{id}` (one listener per entry; splits hosting/invited client-side), `profiles/{uid}/name` |
+| `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place) then `userGatherings/*` index sync, `users/{uid}` (own prefill), `profiles/{uid}/name` (friend/guest names) |
 | `index.vue`          | `/`               | none                                                |
 
 ### Key files
@@ -90,19 +90,23 @@ Pages own routing/layout, composables own data/logic (`composables/`, auto-impor
 ### Implemented and in use
 
 ```ts
-// users/{uid}
+// profiles/{uid} — public, search-visible; readable by any authenticated user
 {
   name: string
-  email: string
+  queryableName: string // lowercase(name), rule-enforced, indexed for friend search
+  queryableEmail: string // lowercase auth email; rules only accept it from a *verified* token (written at sign-in), indexed for friend search
+  queryablePhone: string // digits-only phone number, indexed for friend search
+}
+
+// users/{uid} — private; owner-only read/write
+{
   phoneNumber: string
   address: string
   maxPeople: number
-  queryableName: string // lowercase(name), used for friend search
-  queryableEmail: string // lowercase(email), used for friend search
-  queryablePhone: string // digits-only phone number, used for friend search
 }
+// the account email is not stored; the UI reads it from Firebase Auth
 
-// users/{uid}/collection/{pushId}
+// users/{uid}/collection/{pushId} — owner-only, like the rest of users/{uid}
 type Game = {
   id: string // BoardGameGeek game ID
   name: string
@@ -117,29 +121,40 @@ type Game = {
 
 // blocked/{ownerUid}/{blockedUid}: true — top-level, owner-only read/write; written on decline; directional (blocks blockedUid → ownerUid requests only)
 
-// gatherings/{pushId}
+// gatherings/{pushId} — readable only by the host and invited guests
 type Gathering = {
   state: GatheringState // 'pending' | 'confirmed' | 'canceled'
   datetime: string // ISO date
   initiator: string // uid; pinned to auth.uid at creation, immutable after
   host: string // uid; immutable after creation
   maxGuests: number
-  guests?: Record<string, GuestResponse> // keyed by uid; 'invited' | 'accepted' | 'declined'
+  guests?: Record<string, GuestResponse> // keyed by uid; 'invited' | 'accepted' | 'declined'; new invites require the guest to have friended the host
   games?: GatheringGame[] // { id, name } — denormalized from the host's collection
 }
+
+// userGatherings/{uid}/{gatheringId}: true — per-user calendar index, owner-only read;
+// maintained by the host (written after the gathering, since rules validate entries
+// against the existing gathering); a user can always delete their own entry
 ```
 
 ## Firebase Security Rules
 
-`database.rules.json` covers `users/`, `friendRequests/`, `blocked/`, and `gatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`):
+`database.rules.json` covers `profiles/`, `users/`, `friendRequests/`, `blocked/`, `gatherings/`, and `userGatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`). All nodes reject unknown keys via `"$other": { ".validate": false }` and bound types/lengths with field-level `.validate` rules.
 
-- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`/`queryableEmail`/`queryablePhone`, all indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths; unknown keys are rejected via `"$other": { ".validate": false }`. `email`/`queryableEmail` must match `auth.token.email`, `queryableName` must equal `lowercase(name)`, `queryablePhone` must be digits-only.
+- `profiles/{uid}` — the public/private profile split: only this node is readable by any authenticated user (required for friend search queries on `queryableName`/`queryableEmail`/`queryablePhone`, all indexed via `.indexOn`); owner-only write. A *new* `queryableEmail` must match `auth.token.email` **with `email_verified === true`** (so an unverified signup can't squat someone else's address; sign-in writes it once verified, and profile saves preserve the stored value); `name` and `queryableName` must agree (`queryableName === lowercase(name)`, enforced symmetrically so neither can drift); `queryablePhone` must be digits-only.
+- `users/{uid}` — owner-only read **and** write: phone, address, maxPeople, the game collection (incl. `privateNote`), and the friends list are not visible to other users.
 - `friendRequests/{toUid}/{fromUid}` — top-level so authorship is rule-enforced (a request nested under the recipient's own subtree was owner-forgeable). Only the sender can create (not overwrite) a `'pending'` entry, blocked senders can't; only the recipient can delete. Recipient reads their whole node; a sender can read only their own outgoing entry.
 - `blocked/{ownerUid}/{blockedUid}` — owner-only read and write; value must be `true`.
 - `users/{uid}/friends/{friendId}` — the owner can write their own list; additionally `friendId` may add themselves only while a pending request from `uid` exists at `friendRequests/{friendId}/{uid}` (the accept flow's mutual multi-path update), and may always delete themselves (mutual unfriend).
-- `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; `host` must be the creator and is immutable, `initiator` is pinned to `auth.uid` at creation and immutable; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`), and the host can only seed `'invited'` or preserve an existing response — never answer on a guest's behalf; unknown keys are rejected via `$other`.
+- `gatherings/{id}` — readable only by the host and invited guests (no list read at `gatherings/`; the calendar walks the user's `userGatherings` index instead); only the host can create/modify/delete a gathering; `host` must be the creator and is immutable, `initiator` is pinned to `auth.uid` at creation and immutable; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`); the host can only seed `'invited'` — and only for users whose own friends list contains the host (mutual friendship, which the host cannot forge) — or preserve an existing response, never answer on a guest's behalf.
+- `userGatherings/{uid}/{gatheringId}: true` — owner-only read. The host of the referenced gathering may write entries for themselves and actual participants (validated against the existing gathering, hence written *after* the gathering itself — creation is the one non-atomic two-step flow; deletion is atomic because rules see the pre-delete state). Any user may delete their own entry (dangling-pointer cleanup; the calendar does this when an entry turns unreadable).
 
-Remaining accepted limitations are tracked in [`docs/security-findings.md`](docs/security-findings.md) — chiefly that any authenticated user can read other users' phone/address until the post-MVP public/private profile split.
+Accepted limitations (conscious product trade-offs, not open findings):
+
+- **Search exposes what it searches**: name, verified lowercase email, and phone digits in `profiles/` are necessarily readable (and bulk-enumerable via range queries) by any signed-in user — client-side search on a static site cannot hide the indexed values. Mitigating this requires moving search behind a Cloud Function or dropping email/phone search.
+- **Phone impersonation**: `queryablePhone` is format-validated but ownership can't be verified without phone auth.
+- **`maxGuests` is not rule-enforced** against the number of guest entries (RTDB rules can't count children); the client enforces it informally.
+- **Gathering creation is two writes** (gathering, then index): if the second fails, the gathering is invisible until the host re-saves it. RTDB multi-path rules validate against pre-write `root`, so the index can't reference a gathering created in the same batch.
 
 ## External API
 
