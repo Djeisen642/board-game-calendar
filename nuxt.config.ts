@@ -49,7 +49,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     'vuetify-nuxt-module',
     '@nuxt/eslint',
-    'nuxt-turnstile',
+    '@nuxtjs/turnstile',
   ],
 
   turnstile: {
