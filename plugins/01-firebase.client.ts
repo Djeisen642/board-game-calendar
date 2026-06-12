@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
 import { getFunctions } from 'firebase/functions'
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import {
   getAnalytics,
   logEvent as firebaseLogEvent,
@@ -22,6 +23,14 @@ export default defineNuxtPlugin(() => {
   }
 
   const app = getApp()
+  const config = useRuntimeConfig()
+
+  if (config.public.recaptchaSiteKey) {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(config.public.recaptchaSiteKey as string),
+      isTokenAutoRefreshEnabled: true,
+    })
+  }
 
   const db = getDatabase(app)
   const auth = getAuth(app)

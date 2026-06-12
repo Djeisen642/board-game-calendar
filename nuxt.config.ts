@@ -118,6 +118,7 @@ export default defineNuxtConfig({
     turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY ?? '',
     public: {
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY ?? '',
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY ?? '',
     },
   },
 
