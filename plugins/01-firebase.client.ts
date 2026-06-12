@@ -2,6 +2,7 @@ import { defineNuxtPlugin } from 'nuxt/app'
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
+import { getFunctions } from 'firebase/functions'
 import {
   getAnalytics,
   logEvent as firebaseLogEvent,
@@ -24,6 +25,7 @@ export default defineNuxtPlugin(() => {
 
   const db = getDatabase(app)
   const auth = getAuth(app)
+  const functions = getFunctions(app)
 
   let _analytics: ReturnType<typeof getAnalytics> | null = null
 
@@ -54,6 +56,7 @@ export default defineNuxtPlugin(() => {
     provide: {
       auth,
       db,
+      functions,
       logEvent,
       log,
     },
