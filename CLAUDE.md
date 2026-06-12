@@ -13,6 +13,8 @@ yarn generate     # production static build → dist/
 yarn postinstall  # nuxi prepare — regenerates .nuxt/ types (run after yarn install)
 ```
 
+To manage packages in the `functions` workspace, use `yarn workspace functions add <package>` (note: singular `workspace`, not `workspaces`).
+
 Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
 
 ## Stack
