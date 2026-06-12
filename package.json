@@ -14,7 +14,10 @@
     "test:rules": "npx firebase-tools emulators:exec --only database --project board-game-calendar-3ae94 'vitest run --config vitest.rules.config.ts'"
   },
   "lint-staged": {
-    "*.{js,ts,vue}": ["prettier --write", "eslint --fix"]
+    "*.{js,ts,vue}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "awesome-phonenumber": "^7.8.0",
