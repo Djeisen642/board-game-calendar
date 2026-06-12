@@ -34,29 +34,33 @@ export function useAuthSignIn() {
     return false
   }
 
-  // email/queryableEmail are validated against auth.token.email by the
-  // security rules, so they always come from the auth user, never form input.
-  // Absent fields are skipped, not nulled — a null in update() would delete
-  // profile data the user saved (e.g. their phone number) on every sign-in.
-  function writeProfile(user: User, name: string | null) {
-    const profile: Record<string, string> = {}
+  // queryableEmail is validated against auth.token.email by the security
+  // rules, so it always comes from the auth user, never form input. Absent
+  // fields are skipped, not nulled — a null in update() would delete profile
+  // data the user saved (e.g. their phone number) on every sign-in.
+  async function writeProfile(user: User, name: string | null) {
+    // public, search-visible node
+    const publicProfile: Record<string, string> = {}
     if (name) {
-      profile.name = name
-      profile.queryableName = name.toLowerCase()
+      publicProfile.name = name
+      publicProfile.queryableName = name.toLowerCase()
     }
     if (user.email) {
-      profile.email = user.email
-      profile.queryableEmail = user.email.toLowerCase()
+      publicProfile.queryableEmail = user.email.toLowerCase()
     }
     if (user.phoneNumber) {
       const nationalPhone =
         parsePhoneNumber(user.phoneNumber, { regionCode: 'US' }).number
           ?.national ?? user.phoneNumber
-      profile.phoneNumber = nationalPhone
-      profile.queryablePhone = nationalPhone.replace(/\D/g, '')
+      publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
+      // private, owner-only node
+      await update(dbRef(db, `users/${user.uid}`), {
+        phoneNumber: nationalPhone,
+      })
     }
-    if (!Object.keys(profile).length) return Promise.resolve()
-    return update(dbRef(db, `users/${user.uid}`), profile)
+    if (Object.keys(publicProfile).length) {
+      await update(dbRef(db, `profiles/${user.uid}`), publicProfile)
+    }
   }
 
   async function handleOAuthSignIn(

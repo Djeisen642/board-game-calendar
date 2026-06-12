@@ -94,7 +94,7 @@ onMounted(async () => {
     if (friendIds) {
       const friendEntries = await Promise.all(
         Object.keys(friendIds).map(async (friendId) => {
-          const nameSnap = await get(dbRef(db, `users/${friendId}/name`))
+          const nameSnap = await get(dbRef(db, `profiles/${friendId}/name`))
           return { title: nameSnap.val() ?? 'Unknown player', value: friendId }
         })
       )
@@ -130,7 +130,7 @@ onMounted(async () => {
       // Keep invited guests visible even if they are no longer friends
       for (const guestId of selectedGuests.value) {
         if (!friendItems.value.some((friend) => friend.value === guestId)) {
-          const nameSnap = await get(dbRef(db, `users/${guestId}/name`))
+          const nameSnap = await get(dbRef(db, `profiles/${guestId}/name`))
           friendItems.value.push({ title: nameSnap.val() ?? 'Unknown player', value: guestId })
         }
       }

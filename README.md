@@ -54,7 +54,8 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 
 | Path | Description |
 |------|-------------|
-| `users/{uid}` | User profile |
+| `profiles/{uid}` | Public profile (search-visible) |
+| `users/{uid}` | Private profile (owner-only) |
 | `users/{uid}/collection/{pushId}` | Game in user's collection |
 | `users/{uid}/friends/{friendId}` | Mutual friend (value: `true`) |
 | `friendRequests/{toUid}/{fromUid}` | Incoming request (value: `'pending'`) |
@@ -63,15 +64,16 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 
 ### Types
 
-**User** (`users/{uid}`)
+**Public profile** (`profiles/{uid}`, readable by any signed-in user)
 - `name: string`
-- `email: string`
+- `queryableName: string` — lowercase name, indexed for friend search
+- `queryableEmail: string` — lowercase auth email, indexed for friend search
+- `queryablePhone: string` — digits-only phone, indexed for friend search
+
+**Private profile** (`users/{uid}`, owner-only)
 - `phoneNumber: string`
 - `address: string`
 - `maxPeople: number`
-- `queryableName: string` — lowercase name, indexed for friend search
-- `queryableEmail: string` — lowercase email, indexed for friend search
-- `queryablePhone: string` — digits-only phone, indexed for friend search
 
 **Game** (`users/{uid}/collection/{pushId}`)
 - `id: string` — BoardGameGeek game ID

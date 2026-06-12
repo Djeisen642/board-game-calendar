@@ -59,7 +59,9 @@ import type { FormInstance } from '~/helpers/types'
 
 useHead({ title: 'Profile' })
 
-type UserProfile = { name: string; email: string; phoneNumber: string; address: string; maxPeople: number }
+// name lives in the public profiles/{uid} node; the rest under owner-only
+// users/{uid}; email comes from the auth account and isn't stored directly
+type UserProfile = { name: string; phoneNumber: string; address: string; maxPeople: number }
 
 const labels = { name: 'Name', phoneNumber: 'Phone Number', email: 'Email', address: 'Address', maxPeople: 'Max people at residence' }
 
@@ -70,12 +72,12 @@ const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const profileForm = ref<FormInstance | null>(null)
 const editable = ref(false)
 const loading = ref(true)
-const profile = reactive<UserProfile>({ name: '', email: '', phoneNumber: '', address: '', maxPeople: 0 })
+const profile = reactive<UserProfile>({ name: '', phoneNumber: '', address: '', maxPeople: 0 })
 
 const profileFields = computed(() => [
   { icon: 'mdi-account', label: labels.name, value: profile.name },
   { icon: 'mdi-phone', label: labels.phoneNumber, value: profile.phoneNumber },
-  { icon: 'mdi-email', label: labels.email, value: profile.email },
+  { icon: 'mdi-email', label: labels.email, value: authEmail.value ?? '' },
   { icon: 'mdi-map-marker', label: labels.address, value: profile.address, isAddress: true },
   { icon: 'mdi-account-multiple-check', label: labels.maxPeople, value: profile.maxPeople != null ? String(profile.maxPeople) : '' },
 ])
@@ -91,19 +93,26 @@ const validation = {
 }
 
 let unsubscribe: (() => void) | null = null
-
-
+let unsubscribeName: (() => void) | null = null
 
 onMounted(() => {
-  const userRef = dbRef(db, `users/${userStore.user!.uid}`)
-  unsubscribe = onValue(userRef, (snapshot) => { const val = snapshot.val(); if (val) Object.assign(profile, val); loading.value = false }, (err) => {
+  const uid = userStore.user!.uid
+  function showLoadError(err: unknown) {
     loading.value = false
     snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
-  })
+  }
+  unsubscribe = onValue(dbRef(db, `users/${uid}`), (snapshot) => {
+    const val = snapshot.val()
+    if (val) Object.assign(profile, val)
+    loading.value = false
+  }, showLoadError)
+  unsubscribeName = onValue(dbRef(db, `profiles/${uid}/name`), (snapshot) => {
+    profile.name = snapshot.val() ?? ''
+  }, showLoadError)
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubscribe?.() })
+onUnmounted(() => { unsubscribe?.(); unsubscribeName?.() })
 
 function removeNewLines(str: string): string { return str.replace(/\n/g, ' ') }
 
@@ -111,15 +120,22 @@ async function updateProfile() {
   try {
     const result = await profileForm.value?.validate()
     if (!result?.valid) return
+    const uid = userStore.user!.uid
     const nationalPhone = profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null
-    await update(dbRef(db, `users/${userStore.user!.uid}`), {
-      name: profile.name, queryableName: profile.name.toLowerCase(),
-      phoneNumber: nationalPhone,
-      queryablePhone: nationalPhone ? nationalPhone.replace(/\D/g, '') : null,
-      address: profile.address, email: authEmail.value,
-      queryableEmail: authEmail.value ? authEmail.value.toLowerCase() : null,
+    // the public node is replaced wholesale (the form covers all its fields);
+    // omitted keys — e.g. a cleared phone — are thereby deleted
+    const publicProfile: Record<string, string> = {
+      name: profile.name,
+      queryableName: profile.name.toLowerCase(),
+    }
+    if (authEmail.value) publicProfile.queryableEmail = authEmail.value.toLowerCase()
+    if (nationalPhone) publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
+    await update(dbRef(db), {
+      [`profiles/${uid}`]: publicProfile,
+      [`users/${uid}/phoneNumber`]: nationalPhone,
+      [`users/${uid}/address`]: profile.address,
       // v-text-field type="number" still models a string; rules require a number
-      maxPeople: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
+      [`users/${uid}/maxPeople`]: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
     })
     editable.value = false
   } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }

@@ -21,7 +21,7 @@ export function useGatheringDisplay() {
     await Promise.all(
       missing.map(async (personUid) => {
         try {
-          const snap = await get(dbRef(db, `users/${personUid}/name`))
+          const snap = await get(dbRef(db, `profiles/${personUid}/name`))
           names.value[personUid] = snap.val() ?? 'Unknown player'
         } catch {
           names.value[personUid] = 'Unknown player'

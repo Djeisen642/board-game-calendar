@@ -1,27 +1,33 @@
 {
   "rules": {
-    "users": {
+    "profiles": {
       ".read": "auth != null",
       ".indexOn": ["queryableName", "queryableEmail", "queryablePhone"],
       "$uid": {
         ".write": "$uid === auth.uid",
         "name": {
-          ".validate": "newData.isString() && newData.val().length <= 100"
+          ".validate": "newData.isString() && newData.val().length <= 100 && newData.val().toLowerCase() === newData.parent().child('queryableName').val()"
         },
         "queryableName": {
           ".validate": "newData.isString() && newData.val().length <= 100 && newData.val() === newData.parent().child('name').val().toLowerCase()"
         },
-        "email": {
-          ".validate": "newData.isString() && newData.val() === auth.token.email"
-        },
         "queryableEmail": {
           ".validate": "newData.isString() && newData.val() === auth.token.email.toLowerCase()"
         },
-        "phoneNumber": {
-          ".validate": "newData.isString() && newData.val().length <= 30"
-        },
         "queryablePhone": {
           ".validate": "newData.isString() && newData.val().length <= 30 && newData.val().matches(/^[0-9]*$/)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "phoneNumber": {
+          ".validate": "newData.isString() && newData.val().length <= 30"
         },
         "address": {
           ".validate": "newData.isString() && newData.val().length <= 500"

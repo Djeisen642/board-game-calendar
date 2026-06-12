@@ -19,7 +19,7 @@
           <template v-if="incomingRequests.length">
             <div class="section-label mb-2">Friend Requests</div>
             <v-list class="mb-4">
-              <v-list-item v-for="request in incomingRequests" :key="request.userId" :title="request.name" :subtitle="request.email" class="friend-item mb-1">
+              <v-list-item v-for="request in incomingRequests" :key="request.userId" :title="request.name" :subtitle="request.queryableEmail" class="friend-item mb-1">
                 <template #prepend>
                   <v-avatar color="accent" size="36" class="mr-3">
                     <span class="avatar-initial">{{ request.name?.charAt(0)?.toUpperCase() || '?' }}</span>
@@ -66,7 +66,7 @@
         <v-card-text v-else class="pa-6">
           <v-text-field v-model="searchQuery" label="Search for friends" placeholder="Search by name, email, or phone number" :hint="`Search by name, email, or phone number (min ${constants.MinSearchLength} chars)`" persistent-hint prepend-inner-icon="mdi-magnify" :loading="isSearching" clearable class="mb-4" />
           <v-list>
-            <v-list-item v-for="(person, id) in searchResults" :key="id" :title="person.name" :subtitle="person.email" class="friend-item mb-1">
+            <v-list-item v-for="(person, id) in searchResults" :key="id" :title="person.name" :subtitle="person.queryableEmail" class="friend-item mb-1">
               <template #prepend>
                 <v-avatar color="surface-variant" size="36" class="mr-3">
                   <span class="avatar-initial">{{ person.name?.charAt(0)?.toUpperCase() || '?' }}</span>
@@ -122,7 +122,7 @@ const { searchQuery, searchResults, isSearching } = useFriendSearch(friends, sho
 const { sendFriendRequest, acceptRequest, declineRequest, removeFriend } = useFriendActions()
 
 function fetchProfiles(ids: Record<string, unknown>): Promise<Friend[]> {
-  const userPromises = Object.keys(ids).map((userId) => get(dbRef(db, `users/${userId}`)).then((snap) => ({ userId, ...snap.val() })))
+  const userPromises = Object.keys(ids).map((userId) => get(dbRef(db, `profiles/${userId}`)).then((snap) => ({ userId, ...snap.val() })))
   return Promise.all(userPromises)
 }
 
