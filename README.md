@@ -57,8 +57,8 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 | `users/{uid}` | User profile |
 | `users/{uid}/collection/{pushId}` | Game in user's collection |
 | `users/{uid}/friends/{friendId}` | Mutual friend (value: `true`) |
-| `users/{uid}/friendRequests/{fromUid}` | Incoming request (value: `'pending'`) |
-| `users/{uid}/blocked/{blockedUid}` | Blocked user (value: `true`) |
+| `friendRequests/{toUid}/{fromUid}` | Incoming request (value: `'pending'`) |
+| `blocked/{ownerUid}/{blockedUid}` | Blocked user (value: `true`) |
 | `gatherings/{pushId}` | A game night gathering |
 
 ### Types
@@ -83,7 +83,6 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 - `datetime: string` — ISO date
 - `initiator: string` — uid
 - `host: string` — uid
-- `open: boolean`
 - `maxGuests: number`
 - `guests?: Record<string, 'invited' | 'accepted' | 'declined'>` — keyed by uid
 - `games?: { id: string, name: string }[]` — denormalized from host's collection
@@ -94,6 +93,7 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 pages/          # Route pages (Nuxt file-based routing)
 components/     # Shared Vue components
 stores/         # Pinia stores
+composables/    # Data/logic composables (auth, friends, BGG search, gatherings)
 helpers/        # Types, constants, route/name helpers
 layouts/        # App shell (nav drawer, app bar)
 assets/         # Global SCSS and Vuetify variable overrides
