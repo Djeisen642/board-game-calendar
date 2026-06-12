@@ -21,7 +21,7 @@
           <v-form ref="profileForm">
             <v-text-field v-model="profile.name" :label="labels.name" :rules="[validation.isRequired]" prepend-inner-icon="mdi-account-outline" class="mb-1" />
             <v-text-field v-model="profile.phoneNumber" :label="labels.phoneNumber" :rules="[validation.isPhone]" prepend-inner-icon="mdi-phone-outline" class="mb-1" />
-            <v-text-field v-model="profile.email" :label="labels.email" :rules="[validation.isRequired, validation.isEmail]" prepend-inner-icon="mdi-email-outline" class="mb-1" />
+            <v-text-field :model-value="authEmail ?? ''" :label="labels.email" disabled hint="Email comes from your sign-in account" persistent-hint prepend-inner-icon="mdi-email-outline" class="mb-1" />
             <v-textarea v-model="profile.address" :label="labels.address" prepend-inner-icon="mdi-map-marker-outline" rows="3" />
             <v-text-field v-model="profile.maxPeople" type="number" :label="labels.maxPeople" :rules="[validation.isMaxPeople]" prepend-inner-icon="mdi-account-multiple-outline" />
           </v-form>
@@ -52,7 +52,6 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, update } from 'firebase/database'
 import { parsePhoneNumber } from 'awesome-phonenumber'
-import isEmail from 'validator/lib/isEmail'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
@@ -81,9 +80,12 @@ const profileFields = computed(() => [
   { icon: 'mdi-account-multiple-check', label: labels.maxPeople, value: profile.maxPeople != null ? String(profile.maxPeople) : '' },
 ])
 
+// the rules bind email/queryableEmail to the verified auth token, so the
+// field is read-only and writes always use the auth account's email
+const authEmail = computed(() => userStore.user?.email ?? null)
+
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
-  isEmail: (v: string) => !v || isEmail(v) || 'Invalid email',
   isPhone: (v: string) => !v || parsePhoneNumber(v, { regionCode: 'US' }).valid || 'Invalid phone number',
   isMaxPeople: (v: number | string) => v == null || v === '' || (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) || 'Must be a whole number between 0 and 1000',
 }
@@ -114,8 +116,8 @@ async function updateProfile() {
       name: profile.name, queryableName: profile.name.toLowerCase(),
       phoneNumber: nationalPhone,
       queryablePhone: nationalPhone ? nationalPhone.replace(/\D/g, '') : null,
-      address: profile.address, email: profile.email,
-      queryableEmail: profile.email ? profile.email.toLowerCase() : null,
+      address: profile.address, email: authEmail.value,
+      queryableEmail: authEmail.value ? authEmail.value.toLowerCase() : null,
       // v-text-field type="number" still models a string; rules require a number
       maxPeople: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
     })

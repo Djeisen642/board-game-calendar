@@ -38,7 +38,7 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 | `signin.vue`         | `/signin`         | auth only                                           |
 | `profile.vue`        | `/profile`        | `users/{uid}`                                       |
 | `gamecollection.vue` | `/gamecollection` | `users/{uid}/collection/{pushId}`                   |
-| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends`, `users/{uid}/friendRequests`, `users/{uid}/blocked` |
+| `friends.vue`        | `/friends`        | `users/` (search), `users/{uid}/friends`, `friendRequests/{uid}`, `blocked/{uid}` (decline writes) |
 | `calendar.vue`       | `/calendar`       | `gatherings` (loads all, splits into hosting/invited client-side), `users/{uid}/name` |
 | `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place), `users/{uid}` (prefill) |
 | `index.vue`          | `/`               | none                                                |
@@ -55,6 +55,7 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 - `helpers/names.ts` — route name constants (lowercase; match Nuxt 4 file-based routing)
 - `helpers/constants.ts` — `LoadingTimeoutInMs`, `DebounceThrottleInMs`, BGG API constants
 - `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
+- `helpers/gatherings.ts` — `splitGatherings`, state/response color+icon maps, `formatDatetime`
 - `firebase.json` — Firebase Hosting config
 - `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
 
@@ -63,6 +64,16 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 - `BGCLogo.vue` — animated chess bishop SVG logo
 - `GameSearch.vue` — BGG API search + add-to-collection; hits `https://boardgamegeek.com/xmlapi2/`
 - `Snackbar.vue` — toast notification wrapper; uses `defineExpose` for parent `ref` access
+
+### Composables
+
+Pages own routing/layout, composables own data/logic (`composables/`, auto-imported):
+
+- `useBoardGameSearch.ts` — BGG API search logic for `GameSearch.vue`
+- `useFriendSearch.ts` — debounced friend search over the queryable\* indexes, annotates friendship status
+- `useFriendActions.ts` — send/accept/decline friend requests, unfriend (multi-path updates)
+- `useAuthSignIn.ts` — OAuth/email sign-in, signup, password reset; writes the initial profile
+- `useGatheringDisplay.ts` — guest/host display-name resolution for the calendar
 
 ### Layout
 
@@ -102,17 +113,16 @@ type Game = {
 
 // users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
 
-// users/{uid}/friendRequests/{fromUid}: 'pending' — incoming requests; removed on accept/decline
+// friendRequests/{toUid}/{fromUid}: 'pending' — top-level so the rules can enforce authorship; removed on accept/decline
 
-// users/{uid}/blocked/{blockedUid}: true — written on decline; directional (blocks blockedUid → uid requests only)
+// blocked/{ownerUid}/{blockedUid}: true — top-level, owner-only read/write; written on decline; directional (blocks blockedUid → ownerUid requests only)
 
 // gatherings/{pushId}
 type Gathering = {
   state: GatheringState // 'pending' | 'confirmed' | 'canceled'
   datetime: string // ISO date
-  initiator: string // uid
-  host: string // uid
-  open: boolean
+  initiator: string // uid; pinned to auth.uid at creation, immutable after
+  host: string // uid; immutable after creation
   maxGuests: number
   guests?: Record<string, GuestResponse> // keyed by uid; 'invited' | 'accepted' | 'declined'
   games?: GatheringGame[] // { id, name } — denormalized from the host's collection
@@ -121,14 +131,15 @@ type Gathering = {
 
 ## Firebase Security Rules
 
-`database.rules.json` covers `users/` and `gatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`):
+`database.rules.json` covers `users/`, `friendRequests/`, `blocked/`, and `gatherings/` (deployed automatically by `cd.yml` on push to `main`; manual deploy: `firebase deploy --only database`):
 
-- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`/`queryableEmail`/`queryablePhone`, all indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths.
-- `users/{uid}/friendRequests/{fromUid}` — the sender (`auth.uid === fromUid`) can create (not overwrite) a `'pending'` entry unless `users/{uid}/blocked/{fromUid}` exists; only the recipient can delete (via the owner write rule).
-- `users/{uid}/friends/{friendId}` — the owner can write their own list; additionally `friendId` may add themselves only while a pending request from `uid` sits in their own `friendRequests` (the accept flow's mutual multi-path update), and may always delete themselves (mutual unfriend).
-- `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`).
+- `users/` — readable by any authenticated user (required for friend search queries on `queryableName`/`queryableEmail`/`queryablePhone`, all indexed via `.indexOn`); each user can write only their own subtree; field-level `.validate` rules bound types and lengths; unknown keys are rejected via `"$other": { ".validate": false }`. `email`/`queryableEmail` must match `auth.token.email`, `queryableName` must equal `lowercase(name)`, `queryablePhone` must be digits-only.
+- `friendRequests/{toUid}/{fromUid}` — top-level so authorship is rule-enforced (a request nested under the recipient's own subtree was owner-forgeable). Only the sender can create (not overwrite) a `'pending'` entry, blocked senders can't; only the recipient can delete. Recipient reads their whole node; a sender can read only their own outgoing entry.
+- `blocked/{ownerUid}/{blockedUid}` — owner-only read and write; value must be `true`.
+- `users/{uid}/friends/{friendId}` — the owner can write their own list; additionally `friendId` may add themselves only while a pending request from `uid` exists at `friendRequests/{friendId}/{uid}` (the accept flow's mutual multi-path update), and may always delete themselves (mutual unfriend).
+- `gatherings/` — readable by any authenticated user (rules are not filters; the calendar filters client-side for MVP); only the host can create/modify/delete a gathering; `host` must be the creator and is immutable, `initiator` is pinned to `auth.uid` at creation and immutable; an invited guest can write only their own `guests/{uid}` response (`'invited' | 'accepted' | 'declined'`), and the host can only seed `'invited'` or preserve an existing response — never answer on a guest's behalf; unknown keys are rejected via `$other`.
 
-Known accepted limitation (post-MVP): any authenticated user can read other users' phone/address — and, because the `users/` read rule cascades, also their `friendRequests` and `blocked` lists. Fixing this requires splitting public profile data from private data.
+Remaining accepted limitations are tracked in [`docs/security-findings.md`](docs/security-findings.md) — chiefly that any authenticated user can read other users' phone/address until the post-MVP public/private profile split.
 
 ## External API
 
@@ -141,7 +152,7 @@ BoardGameGeek XML API v2 — used in `GameSearch.vue`:
 
 ## Test Setup
 
-Single test in `test/Logo.spec.ts`. Vitest requires `environment: 'jsdom'` (set in `vitest.config.ts`). Vuetify must be inlined via `server.deps.inline: ['vuetify']` to avoid CSS import errors. Import `createVuetify` and pass it as a global plugin to `mount`.
+Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.spec.ts`); security-rules tests in `test/rules/` run via `yarn test:rules` against the RTDB emulator (`vitest.rules.config.ts`). Vitest requires `environment: 'jsdom'` (set in `vitest.config.ts`). Vuetify must be inlined via `server.deps.inline: ['vuetify']` to avoid CSS import errors. Import `createVuetify` and pass it as a global plugin to `mount`.
 
 ## Pull Requests
 
@@ -150,7 +161,3 @@ When writing PR descriptions (e.g. via `mcp__github__create_pull_request`), pass
 ## Deployment
 
 GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`. Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint` and `yarn test` on push to `main`.
-
-## Refactoring
-
-See [`docs/plans/component-refactoring.md`](docs/plans/component-refactoring.md) for the plan to break large pages into composables and sub-components. `GameSearch.vue` is done; `friends.vue`, `signin.vue`, and `calendar.vue` are next.

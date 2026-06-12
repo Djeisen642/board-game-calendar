@@ -67,6 +67,8 @@ let gamesById: Record<string, Game> = {}
 const editId = typeof route.query.id === 'string' ? route.query.id : null
 let existingState: GatheringState = 'pending'
 let existingGuests: Record<string, GuestResponse> = {}
+// initiator is pinned by the security rules: auth.uid at creation, immutable after
+let existingInitiator = ''
 
 useHead({ title: editId ? 'Edit Gathering' : 'New Gathering' })
 
@@ -117,6 +119,7 @@ onMounted(async () => {
       }
       existingState = gathering.state
       existingGuests = gathering.guests ?? {}
+      existingInitiator = gathering.initiator
       const dt = new Date(gathering.datetime)
       const pad = (n: number) => String(n).padStart(2, '0')
       date.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
@@ -164,7 +167,7 @@ async function createGathering() {
     const gathering: Gathering = {
       state: editId ? existingState : 'pending',
       datetime: datetime.toISOString(),
-      initiator: uid,
+      initiator: editId ? existingInitiator : uid,
       host: uid,
       maxGuests: Number(maxGuests.value || 0),
       // existing guests keep their response when editing; new ones start as invited

@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ref as dbRef, onValue, get, update, set, remove } from 'firebase/database'
+import { ref as dbRef, onValue, update, set, remove } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
@@ -118,11 +118,11 @@ const db = nuxtApp.$db
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const gatherings = ref<GatheringWithId[]>([])
-const names = ref<Record<string, string>>({})
 const loading = ref(true)
 let unsubscribe: (() => void) | null = null
 
 const uid = userStore.user!.uid
+const { names, resolveNames, guestEntries } = useGatheringDisplay()
 
 onMounted(() => {
   // Rules are not filters: any signed-in user may read gatherings, so load
@@ -131,7 +131,7 @@ onMounted(() => {
     const val = snapshot.val() as Record<string, Gathering> | null
     loading.value = false
     gatherings.value = val ? Object.entries(val).map(([id, gathering]) => ({ id, ...gathering })) : []
-    void resolveNames()
+    void resolveNames(sections.value)
   }, (err) => {
     loading.value = false
     snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
@@ -144,25 +144,6 @@ onUnmounted(() => { unsubscribe?.() })
 const sections = computed(() => splitGatherings(gatherings.value, uid))
 const hosting = computed(() => sections.value.hosting)
 const invited = computed(() => sections.value.invited)
-
-async function resolveNames() {
-  const wanted = new Set<string>()
-  for (const gathering of sections.value.hosting) Object.keys(gathering.guests ?? {}).forEach((guestUid) => wanted.add(guestUid))
-  for (const gathering of sections.value.invited) wanted.add(gathering.host)
-  const missing = [...wanted].filter((personUid) => !(personUid in names.value))
-  await Promise.all(missing.map(async (personUid) => {
-    try {
-      const snap = await get(dbRef(db, `users/${personUid}/name`))
-      names.value[personUid] = snap.val() ?? 'Unknown player'
-    } catch {
-      names.value[personUid] = 'Unknown player'
-    }
-  }))
-}
-
-function guestEntries(gathering: Gathering): { uid: string; response: GuestResponse }[] {
-  return Object.entries(gathering.guests ?? {}).map(([guestUid, response]) => ({ uid: guestUid, response }))
-}
 
 function myResponse(gathering: Gathering): GuestResponse | undefined {
   return gathering.guests?.[uid]

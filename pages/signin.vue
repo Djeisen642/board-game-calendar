@@ -12,7 +12,7 @@
             block
             size="large"
             class="mb-3 social-btn google-btn"
-            :loading="loading"
+            :loading="isLoading"
             @click="signInWithGoogle"
           >
             <v-icon start>mdi-google</v-icon>
@@ -22,7 +22,7 @@
             block
             size="large"
             class="mb-3 social-btn facebook-btn"
-            :loading="loading"
+            :loading="isLoading"
             @click="signInWithFacebook"
           >
             <v-icon start>mdi-facebook</v-icon>
@@ -35,7 +35,7 @@
             <v-divider />
           </div>
 
-          <v-form ref="emailForm" @submit.prevent="handleEmailSignIn">
+          <v-form ref="emailForm" @submit.prevent="submitEmailSignIn">
             <v-text-field
               v-model="email"
               label="Email"
@@ -59,8 +59,8 @@
                 variant="text"
                 size="small"
                 color="accent"
-                :disabled="loading"
-                @click="handleForgotPassword"
+                :disabled="isLoading"
+                @click="submitForgotPassword"
               >
                 Forgot password?
               </v-btn>
@@ -81,7 +81,7 @@
               block
               color="primary"
               size="large"
-              :loading="loading"
+              :loading="isLoading"
               class="mb-3"
             >
               Sign In
@@ -90,8 +90,8 @@
               block
               variant="text"
               color="accent"
-              :disabled="loading"
-              @click="handleEmailSignUp"
+              :disabled="isLoading"
+              @click="submitEmailSignUp"
             >
               Create Account
             </v-btn>
@@ -104,22 +104,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import {
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-} from 'firebase/auth'
-import { ref as dbRef, update } from 'firebase/database'
-import { parsePhoneNumber } from 'awesome-phonenumber'
+import { ref, watch, onMounted } from 'vue'
+import { GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth'
 import isEmail from 'validator/lib/isEmail'
 import Snackbar from '~/components/Snackbar.vue'
-import helpers from '~/helpers/helpers'
-import { authErrorMessage } from '~/helpers/authErrors'
 import routes from '~/helpers/routes'
 import type { FormInstance } from '~/helpers/types'
 
@@ -128,14 +116,8 @@ useHead({ title: 'Sign In' })
 const userStore = useUserStore()
 const router = useRouter()
 
-const nuxtApp = useNuxtApp()
-const auth = nuxtApp.$auth
-const db = nuxtApp.$db
-const logEvent = nuxtApp.$logEvent
-
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const emailForm = ref<FormInstance | null>(null)
-const loading = ref(false)
 const email = ref('')
 const password = ref('')
 const honeypot = ref('')
@@ -146,16 +128,27 @@ const turnstileToken = ref('')
 // gate is skipped entirely in that case.
 const turnstileEnabled = !!useRuntimeConfig().public.turnstileSiteKey
 
+const {
+  isLoading,
+  errorMessage,
+  handleOAuthSignIn,
+  handleEmailSignIn,
+  handleEmailSignUp,
+  handleForgotPassword,
+} = useAuthSignIn()
+
+watch(errorMessage, (message) => {
+  if (message) {
+    snackbar.value?.showSnackbarWithMessage(message, true)
+    errorMessage.value = null
+  }
+})
+
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
   isEmail: (v: string) => !v || isEmail(v) || 'Invalid email',
   // Firebase Auth's minimum password length
   isPassword: (v: string) => !v || v.length >= 6 || 'At least 6 characters',
-}
-
-function showAuthError(err: unknown) {
-  helpers.handleError(err) // logs to analytics
-  snackbar.value?.showSnackbarWithMessage(authErrorMessage(err), true)
 }
 
 onMounted(() => {
@@ -164,61 +157,38 @@ onMounted(() => {
   }
 })
 
-async function handleOAuthSignIn(
-  provider: GoogleAuthProvider | FacebookAuthProvider
-) {
-  loading.value = true
-  try {
-    const result = await signInWithPopup(auth, provider)
-    const user = result.user
-    userStore.setUser(user)
-    logEvent('login', { method: provider.providerId })
-    await update(dbRef(db, `users/${user.uid}`), {
-      name: user.displayName,
-      queryableName: user.displayName?.toLowerCase() ?? null,
-      email: user.email,
-      phoneNumber: user.phoneNumber
-        ? (parsePhoneNumber(user.phoneNumber, { regionCode: 'US' }).number
-            ?.national ?? user.phoneNumber)
-        : null,
-    })
-    router.push(routes.gameCollection)
-  } catch (err) {
-    showAuthError(err)
-  } finally {
-    loading.value = false
-  }
-}
-
 const signInWithGoogle = () => handleOAuthSignIn(new GoogleAuthProvider())
 const signInWithFacebook = () => handleOAuthSignIn(new FacebookAuthProvider())
 
-async function handleEmailSignIn() {
+// shared bot/validation gate for the email flows
+async function emailFormReady(): Promise<boolean> {
   const result = await emailForm.value?.validate()
-  if (!result?.valid) return
-  if (honeypot.value) return // bot trap
+  if (!result?.valid) return false
+  if (honeypot.value) return false // bot trap
   if (turnstileEnabled && !turnstileToken.value) {
     snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
-    return
+    return false
   }
-  loading.value = true
-  try {
-    const { user } = await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
+  return true
+}
+
+async function submitEmailSignIn() {
+  if (!(await emailFormReady())) return
+  await handleEmailSignIn(email.value, password.value)
+}
+
+async function submitEmailSignUp() {
+  if (!(await emailFormReady())) return
+  const created = await handleEmailSignUp(email.value, password.value)
+  if (created) {
+    snackbar.value?.showSnackbarWithMessage(
+      'Account created! Check your email to verify your address.',
+      false
     )
-    userStore.setUser(user)
-    logEvent('login', { method: 'email' })
-    router.push(routes.gameCollection)
-  } catch (err) {
-    showAuthError(err)
-  } finally {
-    loading.value = false
   }
 }
 
-async function handleForgotPassword() {
+async function submitForgotPassword() {
   if (!email.value || !isEmail(email.value)) {
     snackbar.value?.showSnackbarWithMessage(
       'Enter your email address above first, then click "Forgot password?".',
@@ -226,53 +196,12 @@ async function handleForgotPassword() {
     )
     return
   }
-  loading.value = true
-  try {
-    await sendPasswordResetEmail(auth, email.value)
+  const sent = await handleForgotPassword(email.value)
+  if (sent) {
     snackbar.value?.showSnackbarWithMessage(
       'Password reset email sent. Check your inbox.',
       false
     )
-  } catch (err) {
-    showAuthError(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function handleEmailSignUp() {
-  const result = await emailForm.value?.validate()
-  if (!result?.valid) return
-  if (honeypot.value) return // bot trap
-  if (turnstileEnabled && !turnstileToken.value) {
-    snackbar.value?.showSnackbarWithMessage('Please complete the security check.', true)
-    return
-  }
-  loading.value = true
-  try {
-    const { user } = await createUserWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    )
-    await sendEmailVerification(user)
-    userStore.setUser(user)
-    logEvent('sign_up', { method: 'email' })
-    await update(dbRef(db, `users/${user.uid}`), {
-      name: user.email,
-      queryableName: user.email?.toLowerCase() ?? null,
-      email: user.email,
-      emailVerified: false,
-    })
-    snackbar.value?.showSnackbarWithMessage(
-      'Account created! Check your email to verify your address.',
-      false
-    )
-    router.push(routes.gameCollection)
-  } catch (err) {
-    showAuthError(err)
-  } finally {
-    loading.value = false
   }
 }
 </script>

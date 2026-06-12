@@ -21,10 +21,14 @@ import {
 
 let testEnv: RulesTestEnvironment
 
-const db = (uid?: string) =>
+const db = (uid?: string, claims?: { email?: string }) =>
   uid
-    ? testEnv.authenticatedContext(uid).database()
+    ? testEnv.authenticatedContext(uid, claims).database()
     : testEnv.unauthenticatedContext().database()
+
+// email/queryableEmail are bound to the verified auth token, so profile
+// writes need a matching token email
+const alice = () => db('alice', { email: 'alice@example.com' })
 
 const seed = (path: string, value: unknown) =>
   testEnv.withSecurityRulesDisabled(async (ctx) => {
@@ -86,7 +90,7 @@ describe('users rules', () => {
   })
 
   it('only lets a user write their own profile', async () => {
-    await assertSucceeds(set(ref(db('alice'), 'users/alice'), aliceProfile))
+    await assertSucceeds(set(ref(alice(), 'users/alice'), aliceProfile))
     await assertFails(set(ref(db('bob'), 'users/alice'), aliceProfile))
   })
 
@@ -96,7 +100,7 @@ describe('users rules', () => {
       ref(db('bob'), 'users'),
       orderByChild('queryableName'),
       startAt('ali'),
-      endAt('ali'),
+      endAt('ali'),
       limitToFirst(10)
     )
     await assertSucceeds(get(q))
@@ -106,7 +110,7 @@ describe('users rules', () => {
           ref(db(), 'users'),
           orderByChild('queryableName'),
           startAt('ali'),
-          endAt('ali'),
+          endAt('ali'),
           limitToFirst(10)
         )
       )
@@ -115,26 +119,79 @@ describe('users rules', () => {
 
   it('validates field types and lengths', async () => {
     await assertFails(
-      set(ref(db('alice'), 'users/alice'), { ...aliceProfile, maxPeople: '6' })
+      set(ref(alice(), 'users/alice'), { ...aliceProfile, maxPeople: '6' })
     )
     await assertFails(
-      set(ref(db('alice'), 'users/alice'), {
+      set(ref(alice(), 'users/alice'), {
         ...aliceProfile,
         name: 'x'.repeat(101),
+        queryableName: 'x'.repeat(101),
       })
     )
     await assertSucceeds(
-      set(ref(db('alice'), 'users/alice/collection/g1'), {
+      set(ref(alice(), 'users/alice/collection/g1'), {
         id: '13',
         name: 'Catan',
         rating: 4.5,
       })
     )
     await assertFails(
-      set(ref(db('alice'), 'users/alice/collection/g1'), {
+      set(ref(alice(), 'users/alice/collection/g1'), {
         id: '13',
         name: 'Catan',
         rating: 11,
+      })
+    )
+  })
+
+  it('binds email and queryableEmail to the auth token email', async () => {
+    await assertSucceeds(set(ref(alice(), 'users/alice'), aliceProfile))
+    await assertFails(
+      set(ref(db('bob', { email: 'bob@example.com' }), 'users/bob'), {
+        ...aliceProfile,
+        name: 'Bob',
+        queryableName: 'bob',
+        // bob claiming alice's email to show up in her search results
+      })
+    )
+    await assertFails(
+      set(ref(alice(), 'users/alice'), {
+        ...aliceProfile,
+        queryableEmail: 'someoneelse@example.com',
+      })
+    )
+  })
+
+  it('requires queryableName to match the lowercased name', async () => {
+    await assertFails(
+      set(ref(alice(), 'users/alice'), {
+        ...aliceProfile,
+        queryableName: 'totally different',
+      })
+    )
+  })
+
+  it('requires queryablePhone to be digits only', async () => {
+    await assertFails(
+      set(ref(alice(), 'users/alice'), {
+        ...aliceProfile,
+        queryablePhone: '(555) 123-4567',
+      })
+    )
+  })
+
+  it('rejects unknown keys under a profile', async () => {
+    await assertFails(
+      set(ref(alice(), 'users/alice'), { ...aliceProfile, junk: 'x' })
+    )
+    await assertFails(
+      set(ref(alice(), 'users/alice/emailVerified'), true)
+    )
+    await assertFails(
+      set(ref(alice(), 'users/alice/collection/g1'), {
+        id: '13',
+        name: 'Catan',
+        junk: 'x',
       })
     )
   })
@@ -149,7 +206,7 @@ describe('friend search index rules', () => {
           ref(db('bob'), 'users'),
           orderByChild('queryableEmail'),
           startAt('alice@'),
-          endAt('alice@'),
+          endAt('alice@'),
           limitToFirst(10)
         )
       )
@@ -160,25 +217,10 @@ describe('friend search index rules', () => {
           ref(db('bob'), 'users'),
           orderByChild('queryablePhone'),
           startAt('5551234'),
-          endAt('5551234'),
+          endAt('5551234'),
           limitToFirst(10)
         )
       )
-    )
-  })
-
-  it('validates queryableEmail and queryablePhone types and lengths', async () => {
-    await assertFails(
-      set(ref(db('alice'), 'users/alice'), {
-        ...aliceProfile,
-        queryableEmail: 'x'.repeat(201),
-      })
-    )
-    await assertFails(
-      set(ref(db('alice'), 'users/alice'), {
-        ...aliceProfile,
-        queryablePhone: 5551234567,
-      })
     )
   })
 })
@@ -186,55 +228,62 @@ describe('friend search index rules', () => {
 describe('friend request rules', () => {
   it('lets a user send a pending request under their own uid', async () => {
     await assertSucceeds(
-      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+      set(ref(db('bob'), 'friendRequests/alice/bob'), 'pending')
     )
   })
 
   it('rejects values other than pending', async () => {
     await assertFails(
-      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'accepted')
+      set(ref(db('bob'), 'friendRequests/alice/bob'), 'accepted')
     )
   })
 
   it('blocks sending a request under someone else uid', async () => {
     await assertFails(
-      set(ref(db('mallory'), 'users/alice/friendRequests/bob'), 'pending')
+      set(ref(db('mallory'), 'friendRequests/alice/bob'), 'pending')
     )
   })
 
   it('blocks overwriting an existing request', async () => {
-    await seed('users/alice/friendRequests/bob', 'pending')
+    await seed('friendRequests/alice/bob', 'pending')
     await assertFails(
-      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+      set(ref(db('bob'), 'friendRequests/alice/bob'), 'pending')
     )
   })
 
   it('blocks requests from a sender the recipient has blocked', async () => {
-    await seed('users/alice/blocked/bob', true)
+    await seed('blocked/alice/bob', true)
     await assertFails(
-      set(ref(db('bob'), 'users/alice/friendRequests/bob'), 'pending')
+      set(ref(db('bob'), 'friendRequests/alice/bob'), 'pending')
     )
     // the block is directional: alice can still request bob
     await assertSucceeds(
-      set(ref(db('alice'), 'users/bob/friendRequests/alice'), 'pending')
+      set(ref(db('alice'), 'friendRequests/bob/alice'), 'pending')
     )
   })
 
   it('lets only the recipient delete a request', async () => {
-    await seed('users/alice/friendRequests/bob', 'pending')
-    await assertFails(remove(ref(db('bob'), 'users/alice/friendRequests/bob')))
-    await assertSucceeds(
-      remove(ref(db('alice'), 'users/alice/friendRequests/bob'))
-    )
+    await seed('friendRequests/alice/bob', 'pending')
+    await assertFails(remove(ref(db('bob'), 'friendRequests/alice/bob')))
+    await assertFails(remove(ref(db('mallory'), 'friendRequests/alice/bob')))
+    await assertSucceeds(remove(ref(db('alice'), 'friendRequests/alice/bob')))
+  })
+
+  it('lets the recipient read incoming requests and the sender their own entry', async () => {
+    await seed('friendRequests/alice/bob', 'pending')
+    await assertSucceeds(get(ref(db('alice'), 'friendRequests/alice')))
+    await assertSucceeds(get(ref(db('bob'), 'friendRequests/alice/bob')))
+    await assertFails(get(ref(db('mallory'), 'friendRequests/alice')))
+    await assertFails(get(ref(db('mallory'), 'friendRequests/alice/bob')))
   })
 
   it('lets the recipient accept via the mutual multi-path update', async () => {
-    await seed('users/alice/friendRequests/bob', 'pending')
+    await seed('friendRequests/alice/bob', 'pending')
     await assertSucceeds(
       update(ref(db('alice')), {
         'users/alice/friends/bob': true,
         'users/bob/friends/alice': true,
-        'users/alice/friendRequests/bob': null,
+        'friendRequests/alice/bob': null,
       })
     )
   })
@@ -244,12 +293,22 @@ describe('friend request rules', () => {
     await assertFails(set(ref(db('mallory'), 'users/bob/friends/alice'), true))
   })
 
+  it('blocks the forged-request self-insert (request authored by the recipient)', async () => {
+    // mallory can no longer forge a "request from bob" under her own subtree:
+    // requests live top-level and only the sender can create them
+    await assertFails(
+      set(ref(db('mallory'), 'friendRequests/mallory/bob'), 'pending')
+    )
+    // and without a real request from bob, she cannot add herself to his list
+    await assertFails(set(ref(db('mallory'), 'users/bob/friends/mallory'), true))
+  })
+
   it('lets the decline flow remove the request and block the sender', async () => {
-    await seed('users/alice/friendRequests/bob', 'pending')
+    await seed('friendRequests/alice/bob', 'pending')
     await assertSucceeds(
       update(ref(db('alice')), {
-        'users/alice/blocked/bob': true,
-        'users/alice/friendRequests/bob': null,
+        'blocked/alice/bob': true,
+        'friendRequests/alice/bob': null,
       })
     )
   })
@@ -268,15 +327,20 @@ describe('friend request rules', () => {
 
 describe('blocked list rules', () => {
   it('lets only the owner write their blocked list', async () => {
-    await assertSucceeds(set(ref(db('alice'), 'users/alice/blocked/bob'), true))
-    await assertFails(set(ref(db('bob'), 'users/alice/blocked/bob'), true))
+    await assertSucceeds(set(ref(db('alice'), 'blocked/alice/bob'), true))
+    await assertFails(set(ref(db('bob'), 'blocked/alice/bob'), true))
   })
 
   it('only allows true as a blocked value', async () => {
-    await assertFails(set(ref(db('alice'), 'users/alice/blocked/bob'), false))
-    await assertFails(
-      set(ref(db('alice'), 'users/alice/blocked/bob'), 'blocked')
-    )
+    await assertFails(set(ref(db('alice'), 'blocked/alice/bob'), false))
+    await assertFails(set(ref(db('alice'), 'blocked/alice/bob'), 'blocked'))
+  })
+
+  it('lets only the owner read their blocked list', async () => {
+    await seed('blocked/alice/bob', true)
+    await assertSucceeds(get(ref(db('alice'), 'blocked/alice')))
+    await assertFails(get(ref(db('bob'), 'blocked/alice')))
+    await assertFails(get(ref(db('bob'), 'blocked/alice/bob')))
   })
 })
 
@@ -309,11 +373,43 @@ describe('gatherings rules', () => {
     await assertSucceeds(remove(ref(db('host1'), 'gatherings/g1')))
   })
 
+  it('keeps host immutable after creation', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(
+      update(ref(db('host1'), 'gatherings/g1'), { host: 'alice' })
+    )
+  })
+
+  it('pins initiator to the creator and keeps it immutable', async () => {
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g1'), {
+        ...baseGathering,
+        initiator: 'alice',
+      })
+    )
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(
+      update(ref(db('host1'), 'gatherings/g1'), { initiator: 'alice' })
+    )
+  })
+
   it('validates gathering state values', async () => {
     await assertFails(
       set(ref(db('host1'), 'gatherings/g1'), {
         ...baseGathering,
         state: 'partying',
+      })
+    )
+  })
+
+  it('rejects unknown keys on a gathering', async () => {
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g1'), { ...baseGathering, junk: 'x' })
+    )
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g1'), {
+        ...baseGathering,
+        games: [{ id: '13', name: 'Catan', junk: 'x' }],
       })
     )
   })
@@ -331,10 +427,29 @@ describe('gatherings rules', () => {
     )
   })
 
-  it('blocks uninvited users from invite-only gatherings', async () => {
-    await seed('gatherings/g1', baseGathering)
+  it('blocks the host from answering on a guest behalf', async () => {
+    // seeding 'invited' and preserving an existing response are fine...
+    await assertSucceeds(
+      set(ref(db('host1'), 'gatherings/g1'), baseGathering)
+    )
+    await seed('gatherings/g1/guests/guest1', 'accepted')
+    await assertSucceeds(
+      update(ref(db('host1'), 'gatherings/g1'), {
+        guests: { guest1: 'accepted', guest2: 'invited' },
+      })
+    )
+    // ...but the host cannot flip a guest to accepted/declined themselves
     await assertFails(
-      set(ref(db('walkin'), 'gatherings/g1/guests/walkin'), 'accepted')
+      update(ref(db('host1'), 'gatherings/g1'), {
+        guests: { guest1: 'accepted', guest2: 'accepted' },
+      })
+    )
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g2'), {
+        ...baseGathering,
+        host: 'host1',
+        guests: { guest1: 'accepted' },
+      })
     )
   })
 
