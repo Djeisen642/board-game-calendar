@@ -138,13 +138,11 @@ export default defineNuxtConfig({
         'firebase/auth',
         'firebase/database',
         'validator/lib/isEmail', // CJS
-        'xml2js', // CJS
       ],
     },
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
       'process.env.G_APP_ID': JSON.stringify(process.env.G_APP_ID ?? ''),
-      'process.env.BGG_PROXY_URL': JSON.stringify(process.env.BGG_PROXY_URL),
     },
   },
 })

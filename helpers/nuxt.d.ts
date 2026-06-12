@@ -1,11 +1,13 @@
 import type { Database } from 'firebase/database'
 import type { Auth } from 'firebase/auth'
+import type { Functions } from 'firebase/functions'
 import type { LogLevel } from '~/plugins/01-firebase.client'
 
 declare module 'nuxt/app' {
   interface NuxtApp {
     $auth: Auth
     $db: Database
+    $functions: Functions
     $logEvent: (eventName: string, params?: Record<string, unknown>) => void
     $log: (
       logLevel: LogLevel,
@@ -19,6 +21,7 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     $auth: Auth
     $db: Database
+    $functions: Functions
     $logEvent: (eventName: string, params?: Record<string, unknown>) => void
     $log: (
       logLevel: LogLevel,
