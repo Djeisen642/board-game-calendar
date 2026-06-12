@@ -60,14 +60,15 @@ Deployed to GitHub Pages via GitHub Actions (`.github/workflows/cd.yml`) on push
 | `users/{uid}/friends/{friendId}` | Mutual friend (value: `true`) |
 | `friendRequests/{toUid}/{fromUid}` | Incoming request (value: `'pending'`) |
 | `blocked/{ownerUid}/{blockedUid}` | Blocked user (value: `true`) |
-| `gatherings/{pushId}` | A game night gathering |
+| `gatherings/{pushId}` | A game night gathering (visible to host + invited guests only) |
+| `userGatherings/{uid}/{gatheringId}` | Per-user calendar index (value: `true`) |
 
 ### Types
 
 **Public profile** (`profiles/{uid}`, readable by any signed-in user)
 - `name: string`
 - `queryableName: string` — lowercase name, indexed for friend search
-- `queryableEmail: string` — lowercase auth email, indexed for friend search
+- `queryableEmail: string` — lowercase auth email (verified accounts only), indexed for friend search
 - `queryablePhone: string` — digits-only phone, indexed for friend search
 
 **Private profile** (`users/{uid}`, owner-only)

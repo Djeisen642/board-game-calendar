@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, update, set, remove } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
@@ -117,21 +117,49 @@ const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
-const gatherings = ref<GatheringWithId[]>([])
+// gatherings are readable only by their participants, so the calendar follows
+// the user's own userGatherings/{uid} index and listens to each entry
+const gatheringsById = ref<Record<string, Gathering>>({})
 const loading = ref(true)
-let unsubscribe: (() => void) | null = null
+let unsubscribeIndex: (() => void) | null = null
+const gatheringListeners = new Map<string, () => void>()
 
 const uid = userStore.user!.uid
 const { names, resolveNames, guestEntries } = useGatheringDisplay()
 
+function dropGathering(id: string) {
+  const { [id]: _gone, ...rest } = gatheringsById.value
+  gatheringsById.value = rest
+}
+
+function watchGathering(id: string) {
+  const unsubscribe = onValue(dbRef(db, `gatherings/${id}`), (snapshot) => {
+    const val = snapshot.val() as Gathering | null
+    if (val) gatheringsById.value = { ...gatheringsById.value, [id]: val }
+    else dropGathering(id)
+  }, () => {
+    // unreadable: deleted or uninvited with the pointer left behind —
+    // drop it and clean up our own dangling index entry
+    dropGathering(id)
+    gatheringListeners.get(id)?.()
+    gatheringListeners.delete(id)
+    void remove(dbRef(db, `userGatherings/${uid}/${id}`)).catch(() => {})
+  })
+  gatheringListeners.set(id, unsubscribe)
+}
+
 onMounted(() => {
-  // Rules are not filters: any signed-in user may read gatherings, so load
-  // them all and split into hosting/invited client-side (MVP approach)
-  unsubscribe = onValue(dbRef(db, 'gatherings'), (snapshot) => {
-    const val = snapshot.val() as Record<string, Gathering> | null
+  unsubscribeIndex = onValue(dbRef(db, `userGatherings/${uid}`), (snapshot) => {
     loading.value = false
-    gatherings.value = val ? Object.entries(val).map(([id, gathering]) => ({ id, ...gathering })) : []
-    void resolveNames(sections.value)
+    const ids = new Set(Object.keys(snapshot.val() ?? {}))
+    for (const id of ids) if (!gatheringListeners.has(id)) watchGathering(id)
+    for (const [id, unsubscribe] of gatheringListeners) {
+      if (!ids.has(id)) {
+        unsubscribe()
+        gatheringListeners.delete(id)
+        dropGathering(id)
+      }
+    }
   }, (err) => {
     loading.value = false
     snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
@@ -139,11 +167,20 @@ onMounted(() => {
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubscribe?.() })
+onUnmounted(() => {
+  unsubscribeIndex?.()
+  for (const unsubscribe of gatheringListeners.values()) unsubscribe()
+  gatheringListeners.clear()
+})
 
+const gatherings = computed<GatheringWithId[]>(() =>
+  Object.entries(gatheringsById.value).map(([id, gathering]) => ({ id, ...gathering }))
+)
 const sections = computed(() => splitGatherings(gatherings.value, uid))
 const hosting = computed(() => sections.value.hosting)
 const invited = computed(() => sections.value.invited)
+
+watch(sections, (value) => { void resolveNames(value) })
 
 function myResponse(gathering: Gathering): GuestResponse | undefined {
   return gathering.guests?.[uid]
@@ -160,8 +197,18 @@ async function respond(gathering: GatheringWithId, response: GuestResponse) {
 }
 
 async function deleteGathering(gathering: GatheringWithId) {
-  try { await remove(dbRef(db, `gatherings/${gathering.id}`)) }
-  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  try {
+    // one atomic update: the rules check the pre-delete gathering, so the
+    // index entries can be removed alongside it
+    const updates: Record<string, null> = {
+      [`gatherings/${gathering.id}`]: null,
+      [`userGatherings/${uid}/${gathering.id}`]: null,
+    }
+    for (const guestUid of Object.keys(gathering.guests ?? {})) {
+      updates[`userGatherings/${guestUid}/${gathering.id}`] = null
+    }
+    await update(dbRef(db), updates)
+  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
 function editGathering(gathering: GatheringWithId) {

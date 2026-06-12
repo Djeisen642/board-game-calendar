@@ -110,8 +110,10 @@ onMounted(async () => {
     }
 
     if (editId) {
-      const gatheringSnap = await get(dbRef(db, `gatherings/${editId}`))
-      const gathering: Gathering | null = gatheringSnap.val()
+      // non-participants get a permission error rather than a null read
+      const gathering: Gathering | null = await get(dbRef(db, `gatherings/${editId}`))
+        .then((snap) => snap.val())
+        .catch(() => null)
       if (!gathering || gathering.host !== uid) {
         snackbar.value?.showSnackbarWithMessage('Gathering not found.', true)
         await router.replace(routes.calendar)
@@ -174,11 +176,30 @@ async function createGathering() {
       guests: Object.fromEntries(selectedGuests.value.map((guestId) => [guestId, existingGuests[guestId] ?? ('invited' as GuestResponse)])),
       games: selectedGameIds.value.map((id) => ({ id, name: gamesById[id]?.name ?? 'Unknown game' })),
     }
+    // The userGatherings index drives each participant's calendar. It can't
+    // be written in the same atomic update as the gathering — the rules
+    // validate index entries against the gathering as it exists *before* the
+    // write — so the gathering is written first, then the index.
+    let gatheringId = editId
     if (editId) {
       await update(dbRef(db, `gatherings/${editId}`), gathering)
     } else {
-      await set(push(dbRef(db, 'gatherings')), gathering)
+      const gatheringRef = push(dbRef(db, 'gatherings'))
+      await set(gatheringRef, gathering)
+      gatheringId = gatheringRef.key
     }
+    const indexUpdates: Record<string, true | null> = {
+      [`userGatherings/${uid}/${gatheringId}`]: true,
+    }
+    for (const guestId of selectedGuests.value) {
+      indexUpdates[`userGatherings/${guestId}/${gatheringId}`] = true
+    }
+    for (const guestId of Object.keys(existingGuests)) {
+      if (!selectedGuests.value.includes(guestId)) {
+        indexUpdates[`userGatherings/${guestId}/${gatheringId}`] = null
+      }
+    }
+    await update(dbRef(db), indexUpdates)
     logEvent(editId ? 'edit_gathering' : 'create_gathering', { guests: selectedGuests.value.length, games: selectedGameIds.value.length })
     await router.push(routes.calendar)
   } catch (err) {

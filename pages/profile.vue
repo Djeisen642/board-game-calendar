@@ -93,7 +93,10 @@ const validation = {
 }
 
 let unsubscribe: (() => void) | null = null
-let unsubscribeName: (() => void) | null = null
+let unsubscribePublic: (() => void) | null = null
+// the stored search email: written at sign-in once the address is verified;
+// the save flow preserves it rather than recomputing (see updateProfile)
+let storedQueryableEmail: string | null = null
 
 onMounted(() => {
   const uid = userStore.user!.uid
@@ -106,13 +109,15 @@ onMounted(() => {
     if (val) Object.assign(profile, val)
     loading.value = false
   }, showLoadError)
-  unsubscribeName = onValue(dbRef(db, `profiles/${uid}/name`), (snapshot) => {
-    profile.name = snapshot.val() ?? ''
+  unsubscribePublic = onValue(dbRef(db, `profiles/${uid}`), (snapshot) => {
+    const val = snapshot.val()
+    profile.name = val?.name ?? ''
+    storedQueryableEmail = val?.queryableEmail ?? null
   }, showLoadError)
   setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubscribe?.(); unsubscribeName?.() })
+onUnmounted(() => { unsubscribe?.(); unsubscribePublic?.() })
 
 function removeNewLines(str: string): string { return str.replace(/\n/g, ' ') }
 
@@ -123,12 +128,14 @@ async function updateProfile() {
     const uid = userStore.user!.uid
     const nationalPhone = profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null
     // the public node is replaced wholesale (the form covers all its fields);
-    // omitted keys — e.g. a cleared phone — are thereby deleted
+    // omitted keys — e.g. a cleared phone — are thereby deleted. The search
+    // email is preserved as stored, not recomputed: the rules only accept a
+    // *new* value from a freshly verified token, which sign-in handles
     const publicProfile: Record<string, string> = {
       name: profile.name,
       queryableName: profile.name.toLowerCase(),
     }
-    if (authEmail.value) publicProfile.queryableEmail = authEmail.value.toLowerCase()
+    if (storedQueryableEmail) publicProfile.queryableEmail = storedQueryableEmail
     if (nationalPhone) publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
     await update(dbRef(db), {
       [`profiles/${uid}`]: publicProfile,

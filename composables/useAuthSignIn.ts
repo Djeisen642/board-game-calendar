@@ -34,10 +34,13 @@ export function useAuthSignIn() {
     return false
   }
 
-  // queryableEmail is validated against auth.token.email by the security
-  // rules, so it always comes from the auth user, never form input. Absent
-  // fields are skipped, not nulled — a null in update() would delete profile
-  // data the user saved (e.g. their phone number) on every sign-in.
+  // queryableEmail is validated against the *verified* auth token email by
+  // the security rules (otherwise anyone could squat a stranger's address at
+  // signup), so it always comes from the auth user, never form input — and
+  // only once verified. The token is fresh at sign-in, so emailVerified is
+  // current here. Absent fields are skipped, not nulled — a null in update()
+  // would delete profile data the user saved (e.g. their phone number) on
+  // every sign-in.
   async function writeProfile(user: User, name: string | null) {
     // public, search-visible node
     const publicProfile: Record<string, string> = {}
@@ -45,7 +48,7 @@ export function useAuthSignIn() {
       publicProfile.name = name
       publicProfile.queryableName = name.toLowerCase()
     }
-    if (user.email) {
+    if (user.email && user.emailVerified) {
       publicProfile.queryableEmail = user.email.toLowerCase()
     }
     if (user.phoneNumber) {
@@ -113,9 +116,10 @@ export function useAuthSignIn() {
       await sendEmailVerification(user)
       userStore.setUser(user)
       logEvent('sign_up', { method: 'email' })
-      // no display name at signup; the email doubles as the name until the
-      // user edits their profile
-      await writeProfile(user, user.email)
+      // no display name at signup; default to the email's local part until
+      // the user edits their profile — never the full address, which is
+      // unverified at this point and would leak into public name search
+      await writeProfile(user, user.email?.split('@')[0] ?? null)
       await router.push(routes.gameCollection)
       return true
     } catch (err) {

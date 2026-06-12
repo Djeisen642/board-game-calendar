@@ -21,14 +21,15 @@ import {
 
 let testEnv: RulesTestEnvironment
 
-const db = (uid?: string, claims?: { email?: string }) =>
+const db = (uid?: string, claims?: { email?: string; email_verified?: boolean }) =>
   uid
     ? testEnv.authenticatedContext(uid, claims).database()
     : testEnv.unauthenticatedContext().database()
 
 // queryableEmail is bound to the verified auth token, so public-profile
-// writes need a matching token email
-const alice = () => db('alice', { email: 'alice@example.com' })
+// writes need a matching, verified token email
+const alice = () =>
+  db('alice', { email: 'alice@example.com', email_verified: true })
 
 const seed = (path: string, value: unknown) =>
   testEnv.withSecurityRulesDisabled(async (ctx) => {
@@ -130,14 +131,61 @@ describe('public profile (profiles/) rules', () => {
     )
   })
 
-  it('binds queryableEmail to the auth token email', async () => {
+  it('binds queryableEmail to the verified auth token email', async () => {
     await assertSucceeds(set(ref(alice(), 'profiles/alice'), alicePublicProfile))
     // bob claiming alice's email to show up in her search results
     await assertFails(
-      set(ref(db('bob', { email: 'bob@example.com' }), 'profiles/bob'), {
+      set(
+        ref(
+          db('bob', { email: 'bob@example.com', email_verified: true }),
+          'profiles/bob'
+        ),
+        {
+          ...alicePublicProfile,
+          name: 'Bob',
+          queryableName: 'bob',
+        }
+      )
+    )
+  })
+
+  it('rejects queryableEmail from an unverified email (signup squatting)', async () => {
+    // mallory signed up with alice's address but never verified it
+    const mallory = db('mallory', {
+      email: 'alice@example.com',
+      email_verified: false,
+    })
+    await assertFails(
+      set(ref(mallory, 'profiles/mallory'), {
+        name: 'Mallory',
+        queryableName: 'mallory',
+        queryableEmail: 'alice@example.com',
+      })
+    )
+    // omitting the field entirely is fine
+    await assertSucceeds(
+      set(ref(mallory, 'profiles/mallory'), {
+        name: 'Mallory',
+        queryableName: 'mallory',
+      })
+    )
+  })
+
+  it('lets a now-stale token preserve an already-verified queryableEmail', async () => {
+    await seed('profiles/alice', alicePublicProfile)
+    const staleAlice = db('alice', {
+      email: 'alice@example.com',
+      email_verified: false,
+    })
+    // rewriting the unchanged value succeeds (profile saves replace the node)
+    await assertSucceeds(
+      set(ref(staleAlice, 'profiles/alice'), alicePublicProfile)
+    )
+    // but it cannot be used to introduce a new value
+    await assertFails(
+      set(ref(staleAlice, 'profiles/alice'), {
         ...alicePublicProfile,
-        name: 'Bob',
-        queryableName: 'bob',
+        queryableEmail: 'other@example.com',
       })
     )
   })
@@ -391,19 +439,59 @@ describe('blocked list rules', () => {
   })
 })
 
+
+// the invite gate: a host may only invite users whose own friends list
+// contains the host (i.e. mutual friendship, which the host cannot forge)
+const seedFriendship = (guestUid: string, hostUid: string) =>
+  seed(`users/${guestUid}/friends/${hostUid}`, true)
+
 describe('gatherings rules', () => {
-  it('requires auth to read gatherings', async () => {
+  it('lets only the host and invited guests read a gathering', async () => {
     await seed('gatherings/g1', baseGathering)
-    await assertFails(get(ref(db(), 'gatherings')))
-    await assertSucceeds(get(ref(db('bob'), 'gatherings')))
+    await assertSucceeds(get(ref(db('host1'), 'gatherings/g1')))
+    await assertSucceeds(get(ref(db('guest1'), 'gatherings/g1')))
+    await assertFails(get(ref(db('stranger'), 'gatherings/g1')))
+    await assertFails(get(ref(db(), 'gatherings/g1')))
+  })
+
+  it('blocks listing all gatherings, even for signed-in users', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(get(ref(db('host1'), 'gatherings')))
+    await assertFails(get(ref(db('stranger'), 'gatherings')))
   })
 
   it('lets a user create a gathering only with themselves as host', async () => {
+    await seedFriendship('guest1', 'host1')
     await assertSucceeds(set(ref(db('host1'), 'gatherings/g1'), baseGathering))
     await assertFails(
       set(ref(db('mallory'), 'gatherings/g2'), {
         ...baseGathering,
         host: 'host1',
+      })
+    )
+  })
+
+  it('only lets a host invite users who have friended them back', async () => {
+    // stranger1 has not friended host1
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g1'), {
+        ...baseGathering,
+        guests: { stranger1: 'invited' },
+      })
+    )
+    // a one-sided "friendship" the host wrote into their own list doesn't count
+    await seed('users/host1/friends/stranger1', true)
+    await assertFails(
+      set(ref(db('host1'), 'gatherings/g1'), {
+        ...baseGathering,
+        guests: { stranger1: 'invited' },
+      })
+    )
+    await seedFriendship('stranger1', 'host1')
+    await assertSucceeds(
+      set(ref(db('host1'), 'gatherings/g1'), {
+        ...baseGathering,
+        guests: { stranger1: 'invited' },
       })
     )
   })
@@ -428,6 +516,7 @@ describe('gatherings rules', () => {
   })
 
   it('pins initiator to the creator and keeps it immutable', async () => {
+    await seedFriendship('guest1', 'host1')
     await assertFails(
       set(ref(db('host1'), 'gatherings/g1'), {
         ...baseGathering,
@@ -441,6 +530,7 @@ describe('gatherings rules', () => {
   })
 
   it('validates gathering state values', async () => {
+    await seedFriendship('guest1', 'host1')
     await assertFails(
       set(ref(db('host1'), 'gatherings/g1'), {
         ...baseGathering,
@@ -450,6 +540,7 @@ describe('gatherings rules', () => {
   })
 
   it('rejects unknown keys on a gathering', async () => {
+    await seedFriendship('guest1', 'host1')
     await assertFails(
       set(ref(db('host1'), 'gatherings/g1'), { ...baseGathering, junk: 'x' })
     )
@@ -475,10 +566,10 @@ describe('gatherings rules', () => {
   })
 
   it('blocks the host from answering on a guest behalf', async () => {
+    await seedFriendship('guest1', 'host1')
+    await seedFriendship('guest2', 'host1')
     // seeding 'invited' and preserving an existing response are fine...
-    await assertSucceeds(
-      set(ref(db('host1'), 'gatherings/g1'), baseGathering)
-    )
+    await assertSucceeds(set(ref(db('host1'), 'gatherings/g1'), baseGathering))
     await seed('gatherings/g1/guests/guest1', 'accepted')
     await assertSucceeds(
       update(ref(db('host1'), 'gatherings/g1'), {
@@ -494,7 +585,18 @@ describe('gatherings rules', () => {
     await assertFails(
       set(ref(db('host1'), 'gatherings/g2'), {
         ...baseGathering,
-        host: 'host1',
+        guests: { guest1: 'accepted' },
+      })
+    )
+  })
+
+  it('keeps a preserved response valid even after the friendship ends', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await seed('gatherings/g1/guests/guest1', 'accepted')
+    // no users/guest1/friends/host1 seeded — friendship is gone, but the
+    // host's edit rewrites the existing response unchanged
+    await assertSucceeds(
+      update(ref(db('host1'), 'gatherings/g1'), {
         guests: { guest1: 'accepted' },
       })
     )
@@ -504,6 +606,70 @@ describe('gatherings rules', () => {
     await seed('gatherings/g1', baseGathering)
     await assertFails(
       set(ref(db('walkin'), 'gatherings/g1/guests/walkin'), 'accepted')
+    )
+  })
+})
+
+describe('userGatherings index rules', () => {
+  it('lets only the owner read their index', async () => {
+    await seed('userGatherings/guest1/g1', true)
+    await assertSucceeds(get(ref(db('guest1'), 'userGatherings/guest1')))
+    await assertFails(get(ref(db('host1'), 'userGatherings/guest1')))
+    await assertFails(get(ref(db(), 'userGatherings/guest1')))
+  })
+
+  it('lets the host index themselves and actual guests after creating', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertSucceeds(
+      update(ref(db('host1')), {
+        'userGatherings/host1/g1': true,
+        'userGatherings/guest1/g1': true,
+      })
+    )
+  })
+
+  it('blocks indexing users who are not participants of the gathering', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(set(ref(db('host1'), 'userGatherings/stranger1/g1'), true))
+  })
+
+  it('blocks non-hosts from writing index entries', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(set(ref(db('mallory'), 'userGatherings/mallory/g1'), true))
+    await assertFails(set(ref(db('guest1'), 'userGatherings/guest1/g1'), true))
+  })
+
+  it('rejects entries pointing at nonexistent gatherings', async () => {
+    await assertFails(set(ref(db('host1'), 'userGatherings/host1/ghost'), true))
+  })
+
+  it('only allows true as an index value', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await assertFails(set(ref(db('host1'), 'userGatherings/host1/g1'), 'yes'))
+  })
+
+  it('lets a user always remove their own entry (dangling-pointer cleanup)', async () => {
+    await seed('userGatherings/guest1/ghost', true)
+    await assertFails(remove(ref(db('mallory'), 'userGatherings/guest1/ghost')))
+    await assertSucceeds(remove(ref(db('guest1'), 'userGatherings/guest1/ghost')))
+  })
+
+  it('lets the host remove a guest entry while uninviting', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await seed('userGatherings/guest1/g1', true)
+    await assertSucceeds(remove(ref(db('host1'), 'userGatherings/guest1/g1')))
+  })
+
+  it('supports the atomic delete of a gathering and all its index entries', async () => {
+    await seed('gatherings/g1', baseGathering)
+    await seed('userGatherings/host1/g1', true)
+    await seed('userGatherings/guest1/g1', true)
+    await assertSucceeds(
+      update(ref(db('host1')), {
+        'gatherings/g1': null,
+        'userGatherings/host1/g1': null,
+        'userGatherings/guest1/g1': null,
+      })
     )
   })
 })
