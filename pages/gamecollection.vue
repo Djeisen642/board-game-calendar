@@ -119,10 +119,6 @@ function onGameSearchError(error: Error) { snackbar.value?.showSnackbarWithMessa
 </script>
 
 <style scoped>
-.page-title { font-size: 1.5rem; font-weight: 600; }
-.empty-state { text-align: center; padding: 48px 24px; }
-.empty-title { font-size: 1.35rem; font-weight: 600; color: rgba(205,214,244,0.95); }
-.empty-desc { font-size: 1rem; color: rgba(205,214,244,0.75); margin-top: 8px; }
 .game-item { border-radius: 12px; transition: background 0.2s ease; }
 .game-item:hover { background: rgba(108,92,231,0.06); }
 </style>

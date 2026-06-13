@@ -12,7 +12,8 @@
         </v-card-text>
         <v-card-text v-else class="pa-6">
           <v-form ref="gatheringForm" @submit.prevent="createGathering">
-            <v-row dense>
+            <div class="section-label mb-2">When</div>
+            <v-row dense class="mb-2">
               <v-col cols="12" sm="6">
                 <v-text-field v-model="date" type="date" label="Date" :rules="[validation.isRequired]" prepend-inner-icon="mdi-calendar" />
               </v-col>
@@ -20,9 +21,12 @@
                 <v-text-field v-model="time" type="time" label="Start time" :rules="[validation.isRequired]" prepend-inner-icon="mdi-clock-outline" />
               </v-col>
             </v-row>
-            <v-text-field v-model="maxGuests" type="number" label="Max guests" :rules="[validation.isMaxGuests]" prepend-inner-icon="mdi-account-multiple-outline" class="mb-3" />
-            <v-select v-model="selectedGuests" :items="friendItems" multiple chips closable-chips label="Invite friends" prepend-inner-icon="mdi-account-group" :hint="friendItems.length ? '' : 'Add friends on the Friends page to invite them'" persistent-hint class="mb-1" />
-            <v-select v-model="selectedGameIds" :items="gameItems" multiple chips closable-chips label="Games to play" prepend-inner-icon="mdi-rhombus-split" :hint="gameItems.length ? '' : 'Add games on the Game Collection page to pick them'" persistent-hint class="mb-4" />
+            <div class="section-label mb-2">Details</div>
+            <v-text-field v-model="maxGuests" type="number" label="Max guests" :rules="[validation.isMaxGuests]" prepend-inner-icon="mdi-account-multiple-outline" class="mb-2" />
+            <div class="section-label mb-2">Guests</div>
+            <v-select v-model="selectedGuests" :items="friendItems" multiple chips closable-chips label="Invite friends" prepend-inner-icon="mdi-account-group" :hint="friendItems.length ? '' : 'Add friends on the Friends page to invite them'" persistent-hint class="mb-4" />
+            <div class="section-label mb-2">Games</div>
+            <v-select v-model="selectedGameIds" :items="gameItems" multiple chips closable-chips label="Games to play" prepend-inner-icon="mdi-rhombus-split" :hint="gameItems.length ? '' : 'Add games on the Game Collection page to pick them'" persistent-hint class="mb-6" />
             <v-btn type="submit" block color="primary" size="large" :loading="saving">
               <v-icon start>mdi-calendar-check</v-icon>{{ editId ? 'Save Changes' : 'Create Gathering' }}
             </v-btn>
@@ -210,6 +214,3 @@ async function createGathering() {
 }
 </script>
 
-<style scoped>
-.page-title { font-size: 1.5rem; font-weight: 600; }
-</style>

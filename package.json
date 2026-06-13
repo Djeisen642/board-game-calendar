@@ -58,7 +58,8 @@
     "vuetify-nuxt-module": "^0.19.5"
   },
   "resolutions": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "esbuild": "0.28.1"
   },
   "workspaces": [
     "functions"
