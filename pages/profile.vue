@@ -150,7 +150,6 @@ async function updateProfile() {
 </script>
 
 <style scoped>
-.page-title { font-size: 1.5rem; font-weight: 600; }
 .profile-fields { display: flex; flex-direction: column; gap: 20px; }
 .profile-field { display: flex; align-items: flex-start; gap: 14px; }
 .profile-field-icon { margin-top: 2px; opacity: 0.9; }

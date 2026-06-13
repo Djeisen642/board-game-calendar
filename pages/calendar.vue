@@ -26,7 +26,7 @@
         </v-card-text>
         <v-card-text v-else class="pa-6">
           <template v-if="hosting.length">
-            <div class="section-title mb-3">Hosting</div>
+            <div class="section-label mb-3">Hosting</div>
             <div v-for="gathering in hosting" :key="gathering.id" class="event-item pa-4 mb-3">
               <div class="d-flex align-center flex-wrap mb-2">
                 <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
@@ -62,7 +62,7 @@
           </template>
 
           <template v-if="invited.length">
-            <div class="section-title mb-3" :class="{ 'mt-4': hosting.length }">Invited</div>
+            <div class="section-label mb-3" :class="{ 'mt-4': hosting.length }">Invited</div>
             <div v-for="gathering in invited" :key="gathering.id" class="event-item pa-4 mb-3">
               <div class="d-flex align-center flex-wrap mb-2">
                 <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
@@ -217,11 +217,6 @@ function editGathering(gathering: GatheringWithId) {
 </script>
 
 <style scoped>
-.page-title { font-size: 1.5rem; font-weight: 600; }
-.section-title { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(205,214,244,0.75); }
-.empty-state { text-align: center; padding: 48px 24px; }
-.empty-title { font-size: 1.35rem; font-weight: 600; color: rgba(205,214,244,0.95); }
-.empty-desc { font-size: 1rem; color: rgba(205,214,244,0.75); margin-top: 8px; }
 .event-item { border-radius: 12px; background: rgba(108,92,231,0.04); border: 1px solid rgba(108,92,231,0.08); transition: all 0.2s ease; }
 .event-item:hover { background: rgba(108,92,231,0.08); border-color: rgba(108,92,231,0.15); }
 .event-line { font-size: 1rem; color: rgba(205,214,244,0.9); display: inline-flex; align-items: center; flex-wrap: wrap; }
