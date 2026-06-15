@@ -26,9 +26,15 @@ export type Friend = Person & {
 export type Game = {
   id: string
   name: string
+  publicNote?: string
+}
+
+// users/{uid}/gameOpinions/{gameId} — owner-only; keyed by BGG game ID so
+// opinions exist independently of the collection
+export type GameOpinion = {
+  name: string // denormalized so opinions on unowned games can be displayed
   rating?: number
   privateNote?: string
-  publicNote?: string
 }
 
 export type GatheringState = 'pending' | 'confirmed' | 'canceled'
