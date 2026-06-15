@@ -1,19 +1,36 @@
 import { ref, computed, watch } from 'vue'
 import type { Ref } from 'vue'
-import { Parser } from 'xml2js'
+import { httpsCallable } from 'firebase/functions'
+import { useNuxtApp } from 'nuxt/app'
 import helpers from '~/helpers/helpers'
-import type {
-  BoardGameSearchResult,
-  DisplayableItemType,
-  BoardGameGeekThingItemType,
-  BoardGameGeekItemsType,
-} from '~/helpers/types'
+import type { BoardGameSearchResult, DisplayableItemType } from '~/helpers/types'
 import constants from '~/helpers/constants'
+
+interface BggSearchResult {
+  id: string
+  type: string
+  name: string
+  yearpublished: string | null
+}
+
+interface BggThingResult {
+  id: string
+  name: string
+  description: string
+  image: string
+  yearpublished: string | null
+  minplayers: string | null
+  maxplayers: string | null
+  minplaytime: string | null
+  maxplaytime: string | null
+  minage: string | null
+}
 
 export function useBoardGameSearch(
   idsInCollection: Ref<string[]>,
   onError: (error: Error) => void
 ) {
+  const { $functions } = useNuxtApp()
   const searchResults = ref<BoardGameSearchResult[]>([])
   const selectedItem = ref<BoardGameSearchResult | null>(null)
   const searchInput = ref('')
@@ -57,49 +74,33 @@ export function useBoardGameSearch(
           .slice(0, constants.NumberToShow)
   }
 
-  function _getDisplayItemFromSearchResult(
-    entry: BoardGameGeekThingItemType
-  ): DisplayableItemType | null {
-    const item = entry.items.item
-    if (!item) return null
-    const primaryName = Array.isArray(item.name)
-      ? item.name.find((n) => n.$.type === constants.PrimaryNameType)
-      : item.name
-    if (!primaryName) return null
-    return {
-      id: item.$.id,
-      name: primaryName.$.value,
-      description: helpers.decodeHtml(item.description),
-      image: item.image,
-      url: `https://boardgamegeek.com/boardgame/${item.$.id}`,
-      maxplayers: item.maxplayers.$.value,
-      maxplaytime: item.maxplaytime.$.value,
-      minage: item.minage.$.value,
-      minplayers: item.minplayers.$.value,
-      minplaytime: item.minplaytime.$.value,
-      yearpublished: item.yearpublished.$.value,
-      incollection: false,
-    }
-  }
-
   async function displayEntries() {
     try {
       const entries = _getEntriesToShow()
-      const resultingEntries: BoardGameGeekThingItemType[] = await Promise.all(
-        entries.map(async (entry) => {
-          const params = new URLSearchParams({ id: entry.id }).toString()
-          const url = `${constants.BoardGameGeekBaseUrl}thing?${params}`
-          const response = await fetch(url.toString())
-          const string = await response.text()
-          const parser = new Parser({ explicitArray: false })
-          return parser.parseStringPromise(string)
-        })
+      const bggThingFn = httpsCallable<{ id: string }, BggThingResult>(
+        $functions,
+        'bggThing'
       )
-      queriedEntries.value = []
-      for (const entry of resultingEntries) {
-        const displayable = _getDisplayItemFromSearchResult(entry)
-        if (displayable) queriedEntries.value.push(displayable)
-      }
+      const results = await Promise.all(
+        entries.map((entry) => bggThingFn({ id: entry.id }))
+      )
+      queriedEntries.value = results
+        .map((r) => r.data)
+        .filter((item): item is BggThingResult => !!item)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          description: helpers.decodeHtml(item.description),
+          image: item.image,
+          url: `https://boardgamegeek.com/boardgame/${item.id}`,
+          maxplayers: item.maxplayers ?? '',
+          maxplaytime: item.maxplaytime ?? '',
+          minage: item.minage ?? '',
+          minplayers: item.minplayers ?? '',
+          minplaytime: item.minplaytime ?? '',
+          yearpublished: item.yearpublished ?? '',
+          incollection: false,
+        }))
     } catch (err) {
       onError(helpers.handleError(err))
     }
@@ -109,26 +110,22 @@ export function useBoardGameSearch(
     if (isLoading.value || !input || input.length < constants.MinSearchLength) return
     isLoading.value = true
     try {
-      const params = new URLSearchParams({
+      const bggSearchFn = httpsCallable<
+        { query: string; type: string },
+        { items: BggSearchResult[] }
+      >($functions, 'bggSearch')
+
+      const result = await bggSearchFn({
         query: input,
         type: constants.BggBoardGameType,
-      }).toString()
-      const url = `${constants.BoardGameGeekBaseUrl}search?${params}`
-      const response = await fetch(url.toString())
-      const string = await response.text()
-      const parser = new Parser({ explicitArray: false })
-      const json = (await parser.parseStringPromise(string)) as BoardGameGeekItemsType
-      if (!json.items.item) {
-        searchResults.value = []
-        return
-      }
-      searchResults.value = json.items.item.map((item) => ({
-        id: item.$.id,
+      })
+
+      searchResults.value = (result.data.items ?? []).map((item) => ({
+        id: item.id,
         displayname:
-          item.name.$.value +
-          (item.yearpublished ? ` (${item.yearpublished.$.value})` : ''),
-        name: item.name.$.value,
-        yearpublished: item.yearpublished?.$.value ?? '0',
+          item.name + (item.yearpublished ? ` (${item.yearpublished})` : ''),
+        name: item.name,
+        yearpublished: item.yearpublished ?? '0',
       }))
     } catch (err) {
       onError(helpers.handleError(err))

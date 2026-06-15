@@ -118,6 +118,7 @@ export default defineNuxtConfig({
     turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY ?? '',
     public: {
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY ?? '',
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY ?? '',
     },
   },
 
@@ -138,13 +139,11 @@ export default defineNuxtConfig({
         'firebase/auth',
         'firebase/database',
         'validator/lib/isEmail', // CJS
-        'xml2js', // CJS
       ],
     },
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
       'process.env.G_APP_ID': JSON.stringify(process.env.G_APP_ID ?? ''),
-      'process.env.BGG_PROXY_URL': JSON.stringify(process.env.BGG_PROXY_URL),
     },
   },
 })
