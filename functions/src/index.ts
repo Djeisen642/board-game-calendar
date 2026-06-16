@@ -1,11 +1,14 @@
 import { setGlobalOptions } from 'firebase-functions'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
+import { defineSecret } from 'firebase-functions/params'
 import { parseString } from 'xml2js'
 import { promisify } from 'util'
 
+const BGG_API_KEY = defineSecret('BGG_API_KEY')
+
 const parseXml = promisify(parseString)
 
-const BGG_BASE_URL = 'https://www.boardgamegeek.com/xmlapi2'
+const BGG_BASE_URL = 'https://boardgamegeek.com/xmlapi2'
 
 // BGG XML response shapes (minimal, only what we use)
 interface AttrValue {
@@ -46,7 +49,7 @@ setGlobalOptions({
 })
 
 export const bggSearch = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck: true, secrets: [BGG_API_KEY] },
   async (request) => {
     const { query, type } = request.data as { query: string; type: string }
     if (!query || !type) throw new HttpsError('invalid-argument', 'Missing query or type')
@@ -55,7 +58,9 @@ export const bggSearch = onCall(
     const url = `${BGG_BASE_URL}/search?${params}`
     console.log(`Proxying search to BGG: ${url}`)
 
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${BGG_API_KEY.value()}` },
+    })
     if (!response.ok) throw new HttpsError('internal', `BGG error: ${response.statusText}`)
 
     const xml = await response.text()
@@ -76,7 +81,7 @@ export const bggSearch = onCall(
 )
 
 export const bggThing = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck: true, secrets: [BGG_API_KEY] },
   async (request) => {
     const { id } = request.data as { id: string }
     if (!id) throw new HttpsError('invalid-argument', 'Missing id')
@@ -85,7 +90,9 @@ export const bggThing = onCall(
     const url = `${BGG_BASE_URL}/thing?${params}`
     console.log(`Proxying thing to BGG: ${url}`)
 
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${BGG_API_KEY.value()}` },
+    })
     if (!response.ok) throw new HttpsError('internal', `BGG error: ${response.statusText}`)
 
     const xml = await response.text()
