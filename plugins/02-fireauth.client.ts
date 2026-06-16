@@ -6,11 +6,17 @@ export default defineNuxtPlugin(async () => {
   const userStore = useUserStore()
   const auth = getAuth()
 
+  // Keep the listener alive for the lifetime of the app so that server-side
+  // account revocation, token refresh, and forced sign-out are reflected
+  // immediately rather than only on the next page load.
   await new Promise<void>((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    let resolved = false
+    onAuthStateChanged(auth, (user) => {
       userStore.setUser(user)
-      unsubscribe()
-      resolve()
+      if (!resolved) {
+        resolved = true
+        resolve()
+      }
     })
   })
 })

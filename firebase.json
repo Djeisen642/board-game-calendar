@@ -27,10 +27,6 @@
     ],
     "rewrites": [
       {
-        "source": "/api/bgg/**",
-        "function": "bggProxy"
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }
