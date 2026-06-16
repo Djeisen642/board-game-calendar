@@ -18,12 +18,25 @@ interface BggThingResult {
   name: string
   description: string
   image: string
+  thumbnail: string
   yearpublished: string | null
   minplayers: string | null
   maxplayers: string | null
   minplaytime: string | null
   maxplaytime: string | null
   minage: string | null
+}
+
+// Score a result by how closely its name matches the search query.
+// Lower score = better match. Tiebreak by year descending (more recent = better known).
+function relevanceScore(name: string, query: string): number {
+  const n = name.toLowerCase()
+  const q = query.toLowerCase()
+  if (n === q) return 0               // exact match
+  if (n.startsWith(q + ' ') || n.startsWith(q + ':')) return 1  // query is the full first word
+  if (n.startsWith(q)) return 2       // prefix match
+  if (n.includes(q)) return 3         // substring match
+  return 4                            // BGG matched it some other way (alternate name, etc.)
 }
 
 export function useBoardGameSearch(
@@ -36,6 +49,7 @@ export function useBoardGameSearch(
   const searchInput = ref('')
   const isLoading = ref(false)
   const queriedEntries = ref<DisplayableItemType[]>([])
+  const thumbnailById = ref<Record<string, string>>({})
   let searchTimerId: number | undefined
 
   const entriesToShow = computed(() =>
@@ -50,28 +64,13 @@ export function useBoardGameSearch(
     searchResults.value = []
     searchInput.value = ''
     queriedEntries.value = []
+    thumbnailById.value = {}
   }
 
   function _getEntriesToShow(): BoardGameSearchResult[] {
-    const lower = searchInput.value.toLowerCase()
     return selectedItem.value
       ? [selectedItem.value]
-      : searchResults.value
-          .slice(0)
-          .sort((a, b) => {
-            if (a.name.toLowerCase().startsWith(lower)) {
-              if (b.name.toLowerCase().startsWith(lower)) {
-                const lenDiff = a.name.length - b.name.length
-                if (lenDiff !== 0) return lenDiff
-              } else {
-                return -1
-              }
-            } else if (b.name.toLowerCase().startsWith(lower)) {
-              return 1
-            }
-            return +b.yearpublished - +a.yearpublished
-          })
-          .slice(0, constants.NumberToShow)
+      : searchResults.value.slice(0, constants.NumberToShow)
   }
 
   async function displayEntries() {
@@ -87,20 +86,25 @@ export function useBoardGameSearch(
       queriedEntries.value = results
         .map((r) => r.data)
         .filter((item): item is BggThingResult => !!item)
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          description: helpers.decodeHtml(item.description),
-          image: item.image,
-          url: `https://boardgamegeek.com/boardgame/${item.id}`,
-          maxplayers: item.maxplayers ?? '',
-          maxplaytime: item.maxplaytime ?? '',
-          minage: item.minage ?? '',
-          minplayers: item.minplayers ?? '',
-          minplaytime: item.minplaytime ?? '',
-          yearpublished: item.yearpublished ?? '',
-          incollection: false,
-        }))
+        .map((item) => {
+          if (item.thumbnail) {
+            thumbnailById.value = { ...thumbnailById.value, [item.id]: item.thumbnail }
+          }
+          return {
+            id: item.id,
+            name: item.name,
+            description: helpers.decodeHtml(item.description),
+            image: item.image,
+            url: `https://boardgamegeek.com/boardgame/${item.id}`,
+            maxplayers: item.maxplayers ?? '',
+            maxplaytime: item.maxplaytime ?? '',
+            minage: item.minage ?? '',
+            minplayers: item.minplayers ?? '',
+            minplaytime: item.minplaytime ?? '',
+            yearpublished: item.yearpublished ?? '',
+            incollection: false,
+          }
+        })
     } catch (err) {
       onError(helpers.handleError(err))
     }
@@ -120,13 +124,24 @@ export function useBoardGameSearch(
         type: constants.BggBoardGameType,
       })
 
-      searchResults.value = (result.data.items ?? []).map((item) => ({
-        id: item.id,
-        displayname:
-          item.name + (item.yearpublished ? ` (${item.yearpublished})` : ''),
-        name: item.name,
-        yearpublished: item.yearpublished ?? '0',
-      }))
+      const query = input
+      searchResults.value = (result.data.items ?? [])
+        .map((item) => ({
+          id: item.id,
+          displayname:
+            item.name + (item.yearpublished ? ` (${item.yearpublished})` : ''),
+          name: item.name,
+          yearpublished: item.yearpublished ?? '0',
+        }))
+        .sort((a, b) => {
+          const scoreDiff = relevanceScore(a.name, query) - relevanceScore(b.name, query)
+          if (scoreDiff !== 0) return scoreDiff
+          // Within the same relevance tier: shorter name first (less noise),
+          // then more recent year as tiebreaker
+          const lenDiff = a.name.length - b.name.length
+          if (lenDiff !== 0) return lenDiff
+          return +b.yearpublished - +a.yearpublished
+        })
     } catch (err) {
       onError(helpers.handleError(err))
     } finally {
@@ -148,6 +163,7 @@ export function useBoardGameSearch(
     searchInput,
     isLoading,
     entriesToShow,
+    thumbnailById,
     resetData,
     displayEntries,
   }

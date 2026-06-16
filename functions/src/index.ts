@@ -154,11 +154,14 @@ export const bggThing = onCall(
     const descriptionRaw = first(itemObj.description)
     const imageRaw = first(itemObj.image)
 
+    const thumbnailRaw = first(itemObj.thumbnail)
+
     return {
       id: itemId,
       name,
       description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
       image: typeof imageRaw === 'string' ? imageRaw : '',
+      thumbnail: typeof thumbnailRaw === 'string' ? thumbnailRaw : '',
       yearpublished: attrValue(itemObj.yearpublished),
       minplayers: attrValue(itemObj.minplayers),
       maxplayers: attrValue(itemObj.maxplayers),

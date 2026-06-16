@@ -40,7 +40,13 @@
             >
               <v-icon start>mdi-plus-circle</v-icon>Add
             </v-btn>
-            <v-btn :href="item.url" target="_blank" rel="noopener noreferrer" color="primary" size="small">
+            <v-btn
+              :href="item.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="primary"
+              size="small"
+            >
               <v-icon start>mdi-link</v-icon>Link
             </v-btn>
           </div>
@@ -69,8 +75,17 @@ const emit = defineEmits<{ error: [error: Error] }>()
 
 const boardGameSearch = ref<{ blur: () => void } | null>(null)
 
-const { searchResults, selectedItem, searchInput, isLoading, entriesToShow, resetData, displayEntries } =
-  useBoardGameSearch(toRef(props, 'idsInCollection'), (err) => emit('error', err))
+const {
+  searchResults,
+  selectedItem,
+  searchInput,
+  isLoading,
+  entriesToShow,
+  resetData,
+  displayEntries,
+} = useBoardGameSearch(toRef(props, 'idsInCollection'), (err) =>
+  emit('error', err)
+)
 
 function searchEnterPressed() {
   if (!searchResults.value.length) return
