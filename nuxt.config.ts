@@ -144,6 +144,7 @@ export default defineNuxtConfig({
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
       'process.env.G_APP_ID': JSON.stringify(process.env.G_APP_ID ?? ''),
+      'process.env.RECAPTCHA_SITE_KEY': JSON.stringify(process.env.RECAPTCHA_SITE_KEY ?? ''),
     },
   },
 })
