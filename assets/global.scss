@@ -1,5 +1,24 @@
 // ─── Design System: Global Styles ────────────────────────────────────────────
 
+// ── Page utility classes ──────────────────────────────────────────────────────
+.page-title { font-size: 1.5rem; font-weight: 600; }
+
+.section-label {
+  font-size: 0.875rem;
+  color: rgba(205, 214, 244, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.empty-state { text-align: center; padding: 48px 24px; }
+.empty-title { font-size: 1.35rem; font-weight: 600; color: rgba(205, 214, 244, 0.95); }
+.empty-desc { font-size: 1rem; color: rgba(205, 214, 244, 0.75); margin-top: 8px; }
+
+// ── Form field sizing ─────────────────────────────────────────────────────────
+.v-field__input { font-size: 1rem; }
+.v-messages__message { font-size: 0.875rem; }
+
 // ── Custom Scrollbar ─────────────────────────────────────────────────────────
 ::-webkit-scrollbar {
   width: 6px;
