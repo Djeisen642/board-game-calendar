@@ -25,6 +25,8 @@ export default defineNuxtPlugin(() => {
   const app = getApp()
   const config = useRuntimeConfig()
 
+  console.log('[AppCheck] recaptchaSiteKey present:', !!config.public.recaptchaSiteKey)
+
   if (config.public.recaptchaSiteKey) {
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(config.public.recaptchaSiteKey as string),
