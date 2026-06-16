@@ -14,43 +14,38 @@ const ALLOWED_BGG_TYPES = new Set(['boardgame', 'boardgameexpansion', 'boardgame
 
 const BGG_BASE_URL = 'https://boardgamegeek.com/xmlapi2'
 
-// BGG XML response shapes (minimal, only what we use)
-interface AttrValue {
-  $: { value: string }
-}
-
-interface BggSearchItem {
-  $: { id: string; type: string }
-  name: { $: { type: string; value: string } }
-  yearpublished?: AttrValue
-}
-
-interface BggSearchResponse {
-  items: { item?: BggSearchItem | BggSearchItem[] }
-}
-
-interface BggThingItem {
-  $: { id: string; type: string }
-  name: { $: { type: string; value: string } } | { $: { type: string; value: string } }[]
-  description?: string
-  image?: string
-  yearpublished?: AttrValue
-  minplayers?: AttrValue
-  maxplayers?: AttrValue
-  minplaytime?: AttrValue
-  maxplaytime?: AttrValue
-  minage?: AttrValue
-}
-
-interface BggThingResponse {
-  items: { item?: BggThingItem }
-}
-
 setGlobalOptions({
   maxInstances: 5,
   serviceAccount:
     'firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com',
 })
+
+// xml2js wraps repeated XML elements as arrays but single occurrences as plain
+// objects, so any field may be either. Always normalise to the first element.
+function first(node: unknown): unknown {
+  return Array.isArray(node) ? node[0] : node
+}
+
+// Safely read a BGG AttrValue: { $: { value: string } }
+// Handles both the plain-object and single-element-array forms xml2js may emit.
+function attrValue(node: unknown): string | null {
+  const n = first(node)
+  if (n == null || typeof n !== 'object') return null
+  const $ = (n as Record<string, unknown>).$
+  if ($ == null || typeof $ !== 'object') return null
+  const v = ($ as Record<string, unknown>).value
+  return typeof v === 'string' ? v : null
+}
+
+// Safely read item.$.prop
+function itemAttr(item: unknown, prop: string): string | null {
+  const n = first(item)
+  if (n == null || typeof n !== 'object') return null
+  const $ = (n as Record<string, unknown>).$
+  if ($ == null || typeof $ !== 'object') return null
+  const v = ($ as Record<string, unknown>)[prop]
+  return typeof v === 'string' ? v : null
+}
 
 export const bggSearch = onCall(
   { enforceAppCheck: true, secrets: [BGG_API_KEY] },
@@ -69,21 +64,44 @@ export const bggSearch = onCall(
     if (!response.ok) throw new HttpsError('internal', `BGG error: ${response.statusText}`)
 
     const xml = await response.text()
-    const parsed = await parseXml(xml) as BggSearchResponse
 
-    const items = parsed?.items?.item ?? []
-    const itemArray = Array.isArray(items) ? items : [items]
-
-    return {
-      items: itemArray
-        .filter((item) => item.name?.$.value)
-        .map((item) => ({
-          id: item.$.id,
-          type: item.$.type,
-          name: item.name.$.value,
-          yearpublished: item.yearpublished?.$.value ?? null,
-        })),
+    let parsed: unknown
+    try {
+      parsed = await parseXml(xml)
+    } catch (err) {
+      console.error('Failed to parse BGG search XML:', err, '\nRaw XML:', xml.slice(0, 500))
+      throw new HttpsError('internal', 'Invalid response from BGG')
     }
+
+    // Validate top-level shape before touching nested fields
+    const rawItems = (parsed as Record<string, unknown>)?.items
+    if (rawItems == null || typeof rawItems !== 'object') {
+      console.error('Unexpected BGG search response shape:', JSON.stringify(parsed)?.slice(0, 500))
+      throw new HttpsError('internal', 'Unexpected response format from BGG')
+    }
+
+    const itemField = (rawItems as Record<string, unknown>).item ?? []
+    const itemArray: unknown[] = Array.isArray(itemField) ? itemField : [itemField]
+
+    const mappedItems = []
+    for (const item of itemArray) {
+      const id = itemAttr(item, 'id')
+      const itemType = itemAttr(item, 'type')
+      const nameField = (item as Record<string, unknown>)?.name
+      const name = attrValue(nameField)
+      if (!id || !name) {
+        console.warn('Skipping BGG search item missing id or name:', JSON.stringify(item))
+        continue
+      }
+      mappedItems.push({
+        id,
+        type: itemType ?? '',
+        name,
+        yearpublished: attrValue((item as Record<string, unknown>).yearpublished),
+      })
+    }
+
+    return { items: mappedItems }
   }
 )
 
@@ -103,24 +121,53 @@ export const bggThing = onCall(
     if (!response.ok) throw new HttpsError('internal', `BGG error: ${response.statusText}`)
 
     const xml = await response.text()
-    const parsed = await parseXml(xml) as BggThingResponse
-    const item = parsed?.items?.item
-    if (!item) throw new HttpsError('not-found', 'Item not found')
 
-    const names = Array.isArray(item.name) ? item.name : [item.name]
-    const primaryName = names.find((n) => n.$.type === 'primary') ?? names[0]
+    let parsed: unknown
+    try {
+      parsed = await parseXml(xml)
+    } catch (err) {
+      console.error('Failed to parse BGG thing XML:', err, '\nRaw XML:', xml.slice(0, 500))
+      throw new HttpsError('internal', 'Invalid response from BGG')
+    }
+
+    const rawItems = (parsed as Record<string, unknown>)?.items
+    if (rawItems == null || typeof rawItems !== 'object') {
+      console.error('Unexpected BGG thing response shape:', JSON.stringify(parsed)?.slice(0, 500))
+      throw new HttpsError('internal', 'Unexpected response format from BGG')
+    }
+
+    const item = first((rawItems as Record<string, unknown>).item)
+    if (item == null || typeof item !== 'object') {
+      throw new HttpsError('not-found', 'Item not found')
+    }
+
+    const itemObj = item as Record<string, unknown>
+    const itemId = itemAttr(item, 'id')
+    if (!itemId) throw new HttpsError('not-found', 'Item missing id')
+
+    const nameField = itemObj.name
+    const nameArray: unknown[] = Array.isArray(nameField) ? nameField : [nameField]
+    const primaryNameNode = nameArray.find((n) => itemAttr(n, 'type') === 'primary') ?? nameArray[0]
+    const name = attrValue(primaryNameNode) ?? ''
+
+    // xml2js wraps text-only nodes as string arrays; unwrap with first()
+    const descriptionRaw = first(itemObj.description)
+    const imageRaw = first(itemObj.image)
+
+    const thumbnailRaw = first(itemObj.thumbnail)
 
     return {
-      id: item.$.id,
-      name: primaryName?.$.value ?? '',
-      description: item.description ?? '',
-      image: item.image ?? '',
-      yearpublished: item.yearpublished?.$.value ?? null,
-      minplayers: item.minplayers?.$.value ?? null,
-      maxplayers: item.maxplayers?.$.value ?? null,
-      minplaytime: item.minplaytime?.$.value ?? null,
-      maxplaytime: item.maxplaytime?.$.value ?? null,
-      minage: item.minage?.$.value ?? null,
+      id: itemId,
+      name,
+      description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
+      image: typeof imageRaw === 'string' ? imageRaw : '',
+      thumbnail: typeof thumbnailRaw === 'string' ? thumbnailRaw : '',
+      yearpublished: attrValue(itemObj.yearpublished),
+      minplayers: attrValue(itemObj.minplayers),
+      maxplayers: attrValue(itemObj.maxplayers),
+      minplaytime: attrValue(itemObj.minplaytime),
+      maxplaytime: attrValue(itemObj.maxplaytime),
+      minage: attrValue(itemObj.minage),
     }
   }
 )

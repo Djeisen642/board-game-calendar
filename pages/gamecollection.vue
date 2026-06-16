@@ -105,6 +105,17 @@
                         />
                         <div class="d-flex gap-1">
                           <v-btn
+                            density="compact"
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            :href="`https://boardgamegeek.com/boardgame/${item.id}`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <v-icon>mdi-link</v-icon>
+                          </v-btn>
+                          <v-btn
                             v-if="!isFriendView"
                             density="compact"
                             size="small"
