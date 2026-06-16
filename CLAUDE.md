@@ -165,7 +165,8 @@ BoardGameGeek XML API v2 — proxied via Firebase Cloud Functions (`bggSearch`, 
 - Search: `https://boardgamegeek.com/xmlapi2/search?query=<term>&type=boardgame`
 - Detail: `https://boardgamegeek.com/xmlapi2/thing?id=<id>`
 - XML is parsed server-side in the functions using `xml2js`; the client receives JSON
-- No API key required; subject to rate limits and occasional 202 "try again" responses
+- **Authorization is required.** Every request must include an `Authorization: Bearer <token>` header. Tokens are created at https://boardgamegeek.com/applications after registering an application (non-commercial license is free). The token is stored in Secret Manager as `BGG_API_KEY` and accessed via `defineSecret('BGG_API_KEY')` in the Cloud Functions. Requests must go to `boardgamegeek.com` (no `www.` prefix) or the token will not work.
+- Subject to rate limits and occasional 202 "try again" responses
 - Client calls via `httpsCallable` from `firebase/functions`; App Check enforced
 
 ## Test Setup
