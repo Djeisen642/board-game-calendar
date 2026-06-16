@@ -36,6 +36,7 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
         },
         "collection": {
+          ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('friends').child($uid).val() === true",
           "$pushId": {
             "id": {
               ".validate": "newData.isString() && newData.val().length <= 20"
@@ -43,13 +44,23 @@
             "name": {
               ".validate": "newData.isString() && newData.val().length <= 200"
             },
+            "publicNote": {
+              ".validate": "newData.isString() && newData.val().length <= 2000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "gameOpinions": {
+          "$gameId": {
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
             "rating": {
               ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
             },
             "privateNote": {
-              ".validate": "newData.isString() && newData.val().length <= 2000"
-            },
-            "publicNote": {
               ".validate": "newData.isString() && newData.val().length <= 2000"
             },
             "$other": {

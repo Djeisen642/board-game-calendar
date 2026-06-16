@@ -55,6 +55,9 @@
                   </v-avatar>
                 </template>
                 <template #append>
+                  <v-btn density="compact" size="small" variant="text" color="primary" class="mr-1" :to="`${routes.gameCollection}?uid=${friend.userId}`">
+                    <v-icon start>mdi-cards-outline</v-icon>Collection
+                  </v-btn>
                   <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleRemove(friend.userId)">
                     <v-icon start>mdi-minus-circle</v-icon>Remove
                   </v-btn>
@@ -101,6 +104,7 @@ import { ref as dbRef, onValue, get } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import constants from '~/helpers/constants'
+import routes from '~/helpers/routes'
 import type { Friend, Person } from '~/helpers/types'
 
 useHead({ title: 'Friends' })
