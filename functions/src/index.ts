@@ -8,6 +8,10 @@ const BGG_API_KEY = defineSecret('BGG_API_KEY')
 
 const parseXml = promisify(parseString)
 
+// BGG search only supports a fixed set of item types; allowlist to avoid
+// forwarding arbitrary strings to the upstream API.
+const ALLOWED_BGG_TYPES = new Set(['boardgame', 'boardgameexpansion', 'boardgameaccessory'])
+
 const BGG_BASE_URL = 'https://boardgamegeek.com/xmlapi2'
 
 // BGG XML response shapes (minimal, only what we use)
@@ -53,6 +57,7 @@ export const bggSearch = onCall(
   async (request) => {
     const { query, type } = request.data as { query: string; type: string }
     if (!query || !type) throw new HttpsError('invalid-argument', 'Missing query or type')
+    if (!ALLOWED_BGG_TYPES.has(type)) throw new HttpsError('invalid-argument', 'Invalid type')
 
     const params = new URLSearchParams({ query, type }).toString()
     const url = `${BGG_BASE_URL}/search?${params}`
