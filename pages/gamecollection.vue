@@ -7,19 +7,41 @@
           <span class="page-title">{{ pageTitle }}</span>
           <v-spacer />
           <template v-if="isFriendView">
-            <v-btn :to="routes.friends" variant="elevated" color="primary" size="small">
+            <v-btn
+              :to="routes.friends"
+              variant="elevated"
+              color="primary"
+              size="small"
+            >
               <v-icon start>mdi-arrow-left-circle</v-icon>Back
             </v-btn>
           </template>
           <template v-else-if="activeArea === 'collection'">
-            <v-btn variant="elevated" color="primary" size="small" class="mr-2" @click.stop="activeArea = 'addGame'">
+            <v-btn
+              variant="elevated"
+              color="primary"
+              size="small"
+              class="mr-2"
+              @click.stop="activeArea = 'addGame'"
+            >
               <v-icon start>mdi-plus-circle</v-icon>Add Game
             </v-btn>
-            <v-btn variant="elevated" color="secondary" size="small" @click.stop="openRateArea">
+            <v-btn
+              variant="elevated"
+              color="secondary"
+              size="small"
+              @click.stop="openRateArea"
+            >
               <v-icon start>mdi-star-outline</v-icon>Rate
             </v-btn>
           </template>
-          <v-btn v-else variant="elevated" color="primary" size="small" @click.stop="activeArea = 'collection'">
+          <v-btn
+            v-else
+            variant="elevated"
+            color="primary"
+            size="small"
+            @click.stop="activeArea = 'collection'"
+          >
             <v-icon start>mdi-arrow-left-circle</v-icon>Back
           </v-btn>
         </v-card-title>
@@ -32,16 +54,38 @@
           <!-- Collection list (owner or friend) -->
           <div v-else-if="activeArea === 'collection'">
             <div v-if="!collection" class="empty-state">
-              <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-cards-outline</v-icon>
+              <v-icon
+                size="64"
+                color="primary"
+                class="mb-4"
+                style="opacity: 0.3"
+                >mdi-cards-outline</v-icon
+              >
               <div class="empty-title">No games yet</div>
-              <div v-if="!isFriendView" class="empty-desc">Add games from BoardGameGeek to build your collection.</div>
-              <div v-else class="empty-desc">This friend hasn't added any games yet.</div>
-              <v-btn v-if="!isFriendView" variant="elevated" color="primary" class="mt-4" @click.stop="activeArea = 'addGame'">
+              <div v-if="!isFriendView" class="empty-desc">
+                Add games from BoardGameGeek to build your collection.
+              </div>
+              <div v-else class="empty-desc">
+                This friend hasn't added any games yet.
+              </div>
+              <v-btn
+                v-if="!isFriendView"
+                variant="elevated"
+                color="primary"
+                class="mt-4"
+                @click.stop="activeArea = 'addGame'"
+              >
                 <v-icon start>mdi-plus-circle</v-icon>Add Games
               </v-btn>
             </div>
             <div v-else>
-              <v-text-field v-model="filterGames" label="Filter Games" prepend-inner-icon="mdi-magnify" clearable class="mb-4" />
+              <v-text-field
+                v-model="filterGames"
+                label="Filter Games"
+                prepend-inner-icon="mdi-magnify"
+                clearable
+                class="mb-4"
+              />
               <v-list>
                 <template v-for="(item, id) in gamesMatchingFilter" :key="id">
                   <v-list-item :title="item.name" class="game-item mb-2">
@@ -55,7 +99,9 @@
                           size="small"
                           color="secondary"
                           active-color="secondary"
-                          @update:model-value="(val) => updateGameRating(item, val)"
+                          @update:model-value="
+                            (val) => updateGameRating(item, val)
+                          "
                         />
                         <div class="d-flex gap-1">
                           <v-btn
@@ -63,7 +109,11 @@
                             density="compact"
                             size="small"
                             variant="text"
-                            :color="expandedItems.has(String(id)) ? 'primary' : 'default'"
+                            :color="
+                              expandedItems.has(String(id))
+                                ? 'primary'
+                                : 'default'
+                            "
                             @click.stop="toggleExpanded(String(id))"
                           >
                             <v-icon>mdi-note-text-outline</v-icon>
@@ -82,7 +132,10 @@
                       </div>
                     </template>
                   </v-list-item>
-                  <v-list-item v-if="!isFriendView && expandedItems.has(String(id))" class="px-4 pb-2">
+                  <v-list-item
+                    v-if="!isFriendView && expandedItems.has(String(id))"
+                    class="px-4 pb-2"
+                  >
                     <v-textarea
                       :model-value="opinions[item.id]?.privateNote ?? ''"
                       label="Private Note"
@@ -90,7 +143,13 @@
                       density="compact"
                       rows="2"
                       hide-details
-                      @blur="(e: FocusEvent) => updateGameNote(item, (e.target as HTMLTextAreaElement).value)"
+                      @blur="
+                        (e: FocusEvent) =>
+                          updateGameNote(
+                            item,
+                            (e.target as HTMLTextAreaElement).value
+                          )
+                      "
                     />
                   </v-list-item>
                 </template>
@@ -113,29 +172,51 @@
                           size="small"
                           color="secondary"
                           active-color="secondary"
-                          @update:model-value="(val) => updateOpinionRating(entry.gameId, entry.name, val)"
+                          @update:model-value="
+                            (val) =>
+                              updateOpinionRating(entry.gameId, entry.name, val)
+                          "
                         />
                         <div class="d-flex gap-1">
                           <v-btn
                             density="compact"
                             size="small"
                             variant="text"
-                            :color="expandedItems.has(entry.gameId) ? 'primary' : 'default'"
+                            :color="
+                              expandedItems.has(entry.gameId)
+                                ? 'primary'
+                                : 'default'
+                            "
                             @click.stop="toggleExpanded(entry.gameId)"
                           >
                             <v-icon>mdi-note-text-outline</v-icon>
                           </v-btn>
-                          <v-btn density="compact" size="small" variant="text" color="success" @click.stop="addOpinionGameToCollection(entry)">
+                          <v-btn
+                            density="compact"
+                            size="small"
+                            variant="text"
+                            color="success"
+                            @click.stop="addOpinionGameToCollection(entry)"
+                          >
                             <v-icon start>mdi-plus-circle</v-icon>Add
                           </v-btn>
-                          <v-btn density="compact" size="small" variant="text" color="error" @click.stop="deleteOpinion(entry.gameId)">
+                          <v-btn
+                            density="compact"
+                            size="small"
+                            variant="text"
+                            color="error"
+                            @click.stop="deleteOpinion(entry.gameId)"
+                          >
                             <v-icon>mdi-delete-outline</v-icon>
                           </v-btn>
                         </div>
                       </div>
                     </template>
                   </v-list-item>
-                  <v-list-item v-if="expandedItems.has(entry.gameId)" class="px-4 pb-2">
+                  <v-list-item
+                    v-if="expandedItems.has(entry.gameId)"
+                    class="px-4 pb-2"
+                  >
                     <v-textarea
                       :model-value="entry.privateNote ?? ''"
                       label="Private Note"
@@ -143,7 +224,14 @@
                       density="compact"
                       rows="2"
                       hide-details
-                      @blur="(e: FocusEvent) => updateOpinionNote(entry.gameId, entry.name, (e.target as HTMLTextAreaElement).value)"
+                      @blur="
+                        (e: FocusEvent) =>
+                          updateOpinionNote(
+                            entry.gameId,
+                            entry.name,
+                            (e.target as HTMLTextAreaElement).value
+                          )
+                      "
                     />
                   </v-list-item>
                 </template>
@@ -178,9 +266,16 @@
             />
             <v-card v-if="opinionSelectedItem" variant="outlined" class="pa-4">
               <div class="d-flex align-center mb-3">
-                <span class="font-weight-medium">{{ opinionSelectedItem.name }}</span>
+                <span class="font-weight-medium">{{
+                  opinionSelectedItem.name
+                }}</span>
                 <v-spacer />
-                <v-btn size="small" icon variant="text" @click.stop="opinionSelectedItem = null">
+                <v-btn
+                  size="small"
+                  icon
+                  variant="text"
+                  @click.stop="opinionSelectedItem = null"
+                >
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
               </div>
@@ -203,11 +298,24 @@
                 class="mb-3"
               />
               <div class="d-flex gap-2">
-                <v-btn color="primary" size="small" @click.stop="saveOpinionEntry">Save</v-btn>
-                <v-btn variant="text" size="small" @click.stop="opinionSelectedItem = null">Cancel</v-btn>
+                <v-btn
+                  color="primary"
+                  size="small"
+                  @click.stop="saveOpinionEntry"
+                  >Save</v-btn
+                >
+                <v-btn
+                  variant="text"
+                  size="small"
+                  @click.stop="opinionSelectedItem = null"
+                  >Cancel</v-btn
+                >
                 <v-spacer />
                 <v-btn
-                  v-if="opinionSelectedItem && !idsInCollection.includes(opinionSelectedItem.id)"
+                  v-if="
+                    opinionSelectedItem &&
+                    !idsInCollection.includes(opinionSelectedItem.id)
+                  "
                   color="success"
                   size="small"
                   @click.stop="addSelectedOpinionGameToCollection"
@@ -226,13 +334,25 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ref as dbRef, onValue, push, set, remove, get } from 'firebase/database'
-import { Parser } from 'xml2js'
+import {
+  ref as dbRef,
+  onValue,
+  push,
+  set,
+  remove,
+  get,
+} from 'firebase/database'
+import { httpsCallable } from 'firebase/functions'
 import Snackbar from '~/components/Snackbar.vue'
 import GameSearch from '~/components/GameSearch.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
-import type { DisplayableItemType, Game, GameOpinion, BoardGameSearchResult, BoardGameGeekItemsType } from '~/helpers/types'
+import type {
+  DisplayableItemType,
+  Game,
+  GameOpinion,
+  BoardGameSearchResult,
+} from '~/helpers/types'
 import constants from '~/helpers/constants'
 
 useHead({ title: 'Game Collection' })
@@ -243,10 +363,13 @@ const route = useRoute()
 const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
+const $functions = nuxtApp.$functions
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 
 const ownUid = userStore.user!.uid
-const viewingUid = computed(() => (route.query.uid as string | undefined) ?? ownUid)
+const viewingUid = computed(
+  () => (route.query.uid as string | undefined) ?? ownUid
+)
 const isFriendView = computed(() => viewingUid.value !== ownUid)
 
 const friendName = ref('')
@@ -261,7 +384,8 @@ let unsubCollection: (() => void) | null = null
 let unsubOpinions: (() => void) | null = null
 
 const pageTitle = computed(() => {
-  if (isFriendView.value) return friendName.value ? `${friendName.value}'s Collection` : 'Collection'
+  if (isFriendView.value)
+    return friendName.value ? `${friendName.value}'s Collection` : 'Collection'
   if (activeArea.value === 'addGame') return 'Add Game'
   if (activeArea.value === 'addOpinion') return 'Rate a Game'
   return 'Game Collection'
@@ -300,7 +424,10 @@ let opinionSearchTimer: number | undefined
 watch(opinionSearchInput, (input) => {
   if (opinionSelectedItem.value) return
   clearTimeout(opinionSearchTimer)
-  opinionSearchTimer = window.setTimeout(() => fetchOpinionSearch(input), constants.DebounceThrottleInMs)
+  opinionSearchTimer = window.setTimeout(
+    () => fetchOpinionSearch(input),
+    constants.DebounceThrottleInMs
+  )
 })
 
 watch(opinionSelectedItem, (item) => {
@@ -311,24 +438,32 @@ watch(opinionSelectedItem, (item) => {
 })
 
 async function fetchOpinionSearch(input: string) {
-  if (!input || input.length < constants.MinSearchLength) { opinionSearchItems.value = []; return }
+  if (!input || input.length < constants.MinSearchLength) {
+    opinionSearchItems.value = []
+    return
+  }
   opinionSearchLoading.value = true
   try {
-    const params = new URLSearchParams({ query: input, type: constants.BggBoardGameType })
-    const response = await fetch(`${constants.BoardGameGeekBaseUrl}search?${params}`)
-    const text = await response.text()
-    const parser = new Parser({ explicitArray: false })
-    const json = (await parser.parseStringPromise(text)) as BoardGameGeekItemsType
-    opinionSearchItems.value = json.items.item
-      ? json.items.item.map((item) => ({
-          id: item.$.id,
-          name: item.name.$.value,
-          displayname: item.name.$.value + (item.yearpublished ? ` (${item.yearpublished.$.value})` : ''),
-          yearpublished: item.yearpublished?.$.value ?? '0',
-        }))
-      : []
+    const bggSearchFn = httpsCallable<
+      { query: string; type: string },
+      { items: { id: string; name: string; yearpublished: string | null }[] }
+    >($functions, 'bggSearch')
+    const result = await bggSearchFn({
+      query: input,
+      type: constants.BggBoardGameType,
+    })
+    opinionSearchItems.value = (result.data.items ?? []).map((item) => ({
+      id: item.id,
+      name: item.name,
+      displayname:
+        item.name + (item.yearpublished ? ` (${item.yearpublished})` : ''),
+      yearpublished: item.yearpublished ?? '0',
+    }))
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     opinionSearchLoading.value = false
   }
@@ -347,19 +482,35 @@ onMounted(async () => {
   const collRef = dbRef(db, `users/${viewingUid.value}/collection`)
   unsubCollection = onValue(
     collRef,
-    (snapshot) => { collection.value = snapshot.val(); loading.value = false },
-    (err) => { loading.value = false; snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+    (snapshot) => {
+      collection.value = snapshot.val()
+      loading.value = false
+    },
+    (err) => {
+      loading.value = false
+      snackbar.value?.showSnackbarWithMessage(
+        helpers.handleError(err).message,
+        true
+      )
+    }
   )
 
   if (!isFriendView.value) {
     const opRef = dbRef(db, `users/${ownUid}/gameOpinions`)
-    unsubOpinions = onValue(opRef, (snapshot) => { opinions.value = snapshot.val() ?? {} })
+    unsubOpinions = onValue(opRef, (snapshot) => {
+      opinions.value = snapshot.val() ?? {}
+    })
   }
 
-  setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
+  setTimeout(() => {
+    loading.value = false
+  }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubCollection?.(); unsubOpinions?.() })
+onUnmounted(() => {
+  unsubCollection?.()
+  unsubOpinions?.()
+})
 
 function toggleExpanded(id: string) {
   const next = new Set(expandedItems.value)
@@ -381,19 +532,36 @@ async function addToCollection(item: DisplayableItemType) {
   try {
     const collRef = dbRef(db, `users/${ownUid}/collection`)
     await set(push(collRef), { id: item.id, name: item.name })
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function removeGameFromCollection(id: string) {
-  try { await remove(dbRef(db, `users/${ownUid}/collection/${id}`)) }
-  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  try {
+    await remove(dbRef(db, `users/${ownUid}/collection/${id}`))
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
-async function persistOpinion(gameId: string, name: string, rating: number, privateNote: string) {
+async function persistOpinion(
+  gameId: string,
+  name: string,
+  rating: number,
+  privateNote: string
+) {
   const hasRating = rating > 0
   const hasNote = privateNote.trim() !== ''
   if (!hasRating && !hasNote) {
-    if (opinions.value[gameId]) await remove(dbRef(db, `users/${ownUid}/gameOpinions/${gameId}`))
+    if (opinions.value[gameId])
+      await remove(dbRef(db, `users/${ownUid}/gameOpinions/${gameId}`))
     return
   }
   const payload: Record<string, unknown> = { name }
@@ -405,67 +573,135 @@ async function persistOpinion(gameId: string, name: string, rating: number, priv
 async function updateGameRating(game: Game, rating: number) {
   try {
     const existing = opinions.value[game.id]
-    await persistOpinion(game.id, game.name, rating, existing?.privateNote ?? '')
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+    await persistOpinion(
+      game.id,
+      game.name,
+      rating,
+      existing?.privateNote ?? ''
+    )
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function updateGameNote(game: Game, note: string) {
   try {
     const existing = opinions.value[game.id]
     await persistOpinion(game.id, game.name, existing?.rating ?? 0, note)
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
-async function updateOpinionRating(gameId: string, name: string, rating: number) {
+async function updateOpinionRating(
+  gameId: string,
+  name: string,
+  rating: number
+) {
   try {
     const existing = opinions.value[gameId]
     await persistOpinion(gameId, name, rating, existing?.privateNote ?? '')
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function updateOpinionNote(gameId: string, name: string, note: string) {
   try {
     const existing = opinions.value[gameId]
     await persistOpinion(gameId, name, existing?.rating ?? 0, note)
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function deleteOpinion(gameId: string) {
-  try { await remove(dbRef(db, `users/${ownUid}/gameOpinions/${gameId}`)) }
-  catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  try {
+    await remove(dbRef(db, `users/${ownUid}/gameOpinions/${gameId}`))
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
-async function addOpinionGameToCollection(entry: { gameId: string; name: string }) {
+async function addOpinionGameToCollection(entry: {
+  gameId: string
+  name: string
+}) {
   try {
     const collRef = dbRef(db, `users/${ownUid}/collection`)
     await set(push(collRef), { id: entry.gameId, name: entry.name })
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function saveOpinionEntry() {
   if (!opinionSelectedItem.value) return
   try {
-    await persistOpinion(opinionSelectedItem.value.id, opinionSelectedItem.value.name, pendingRating.value, pendingNote.value)
+    await persistOpinion(
+      opinionSelectedItem.value.id,
+      opinionSelectedItem.value.name,
+      pendingRating.value,
+      pendingNote.value
+    )
     opinionSelectedItem.value = null
     activeArea.value = 'collection'
     snackbar.value?.showSnackbarWithMessage('Opinion saved', false)
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
 async function addSelectedOpinionGameToCollection() {
   if (!opinionSelectedItem.value) return
   try {
     const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), { id: opinionSelectedItem.value.id, name: opinionSelectedItem.value.name })
+    await set(push(collRef), {
+      id: opinionSelectedItem.value.id,
+      name: opinionSelectedItem.value.name,
+    })
     opinionSelectedItem.value = null
     activeArea.value = 'collection'
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 
-function onGameSearchError(error: Error) { snackbar.value?.showSnackbarWithMessage(error.message, true) }
+function onGameSearchError(error: Error) {
+  snackbar.value?.showSnackbarWithMessage(error.message, true)
+}
 </script>
 
 <style scoped>
-.game-item { border-radius: 12px; transition: background 0.2s ease; }
-.game-item:hover { background: rgba(108,92,231,0.06); }
+.game-item {
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+.game-item:hover {
+  background: rgba(108, 92, 231, 0.06);
+}
 </style>
