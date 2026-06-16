@@ -136,7 +136,7 @@ export const bggThing = onCall(
       throw new HttpsError('internal', 'Unexpected response format from BGG')
     }
 
-    const item = (rawItems as Record<string, unknown>).item
+    const item = first((rawItems as Record<string, unknown>).item)
     if (item == null || typeof item !== 'object') {
       throw new HttpsError('not-found', 'Item not found')
     }
@@ -150,11 +150,15 @@ export const bggThing = onCall(
     const primaryNameNode = nameArray.find((n) => itemAttr(n, 'type') === 'primary') ?? nameArray[0]
     const name = attrValue(primaryNameNode) ?? ''
 
+    // xml2js wraps text-only nodes as string arrays; unwrap with first()
+    const descriptionRaw = first(itemObj.description)
+    const imageRaw = first(itemObj.image)
+
     return {
       id: itemId,
       name,
-      description: typeof itemObj.description === 'string' ? itemObj.description : '',
-      image: typeof itemObj.image === 'string' ? itemObj.image : '',
+      description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
+      image: typeof imageRaw === 'string' ? imageRaw : '',
       yearpublished: attrValue(itemObj.yearpublished),
       minplayers: attrValue(itemObj.minplayers),
       maxplayers: attrValue(itemObj.maxplayers),
