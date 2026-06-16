@@ -75,12 +75,14 @@ export const bggSearch = onCall(
     const itemArray = Array.isArray(items) ? items : [items]
 
     return {
-      items: itemArray.map((item) => ({
-        id: item.$.id,
-        type: item.$.type,
-        name: item.name.$.value,
-        yearpublished: item.yearpublished?.$.value ?? null,
-      })),
+      items: itemArray
+        .filter((item) => item.name?.$.value)
+        .map((item) => ({
+          id: item.$.id,
+          type: item.$.type,
+          name: item.name.$.value,
+          yearpublished: item.yearpublished?.$.value ?? null,
+        })),
     }
   }
 )
