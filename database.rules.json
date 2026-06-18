@@ -36,7 +36,7 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
         },
         "collection": {
-          ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('friends').child($uid).val() === true",
+          ".read": "$uid === auth.uid || (root.child('users').child(auth.uid).child('friends').child($uid).val() === true && root.child('users').child($uid).child('friends').child(auth.uid).val() === true)",
           "$pushId": {
             "id": {
               ".validate": "newData.isString() && newData.val().length <= 20"
