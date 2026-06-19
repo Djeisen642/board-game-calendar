@@ -28,10 +28,11 @@
           <template v-if="hosting.length">
             <div class="section-label mb-3">Hosting</div>
             <div v-for="gathering in hosting" :key="gathering.id" class="event-item pa-4 mb-3">
-              <div class="d-flex align-center flex-wrap mb-2">
-                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
+              <div class="d-flex align-center flex-wrap gap-2 mb-2">
+                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="text-capitalize">{{ gathering.state }}</v-chip>
                 <span class="event-line"><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>{{ formatDatetime(gathering.datetime) }}</span>
-                <v-spacer />
+              </div>
+              <div class="event-actions">
                 <v-btn v-if="gathering.state === 'pending'" density="compact" size="small" variant="text" color="success" @click.stop="setState(gathering, 'confirmed')">
                   <v-icon start>mdi-check-circle</v-icon>Confirm
                 </v-btn>
@@ -64,8 +65,8 @@
           <template v-if="invited.length">
             <div class="section-label mb-3" :class="{ 'mt-4': hosting.length }">Invited</div>
             <div v-for="gathering in invited" :key="gathering.id" class="event-item pa-4 mb-3">
-              <div class="d-flex align-center flex-wrap mb-2">
-                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="mr-2 text-capitalize">{{ gathering.state }}</v-chip>
+              <div class="d-flex align-center flex-wrap gap-2 mb-2">
+                <v-chip :color="stateColor(gathering.state)" size="small" variant="tonal" class="text-capitalize">{{ gathering.state }}</v-chip>
                 <span class="event-line"><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>{{ formatDatetime(gathering.datetime) }}</span>
               </div>
               <div class="event-line mb-2">
@@ -75,8 +76,8 @@
                 <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
                 <v-chip v-for="game in gathering.games" :key="game.id" size="x-small" variant="outlined" class="mr-1">{{ game.name }}</v-chip>
               </div>
-              <div v-if="gathering.state !== 'canceled'" class="d-flex align-center mt-1">
-                <v-btn density="compact" size="small" :variant="myResponse(gathering) === 'accepted' ? 'tonal' : 'text'" color="success" class="mr-2" @click.stop="respond(gathering, 'accepted')">
+              <div v-if="gathering.state !== 'canceled'" class="event-actions">
+                <v-btn density="compact" size="small" :variant="myResponse(gathering) === 'accepted' ? 'tonal' : 'text'" color="success" @click.stop="respond(gathering, 'accepted')">
                   <v-icon start>mdi-check-circle</v-icon>Accept
                 </v-btn>
                 <v-btn density="compact" size="small" :variant="myResponse(gathering) === 'declined' ? 'tonal' : 'text'" color="error" @click.stop="respond(gathering, 'declined')">

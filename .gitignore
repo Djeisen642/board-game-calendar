@@ -98,3 +98,7 @@ sw.*
 
 # Firebase local deploy cache
 .firebase/
+
+# Screenshot output
+screenshots/
+.playwright-auth.json

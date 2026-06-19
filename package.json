@@ -11,7 +11,8 @@
     "prepare": "husky",
     "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('yarn') === -1) throw new Error('You must use Yarn to install, not NPM')\"",
     "test": "vitest run",
-    "test:rules": "npx firebase-tools emulators:exec --only database --project board-game-calendar-3ae94 'vitest run --config vitest.rules.config.ts'"
+    "test:rules": "npx firebase-tools emulators:exec --only database --project board-game-calendar-3ae94 'vitest run --config vitest.rules.config.ts'",
+    "screenshot": "node scripts/screenshot.mjs"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
@@ -48,6 +49,7 @@
     "lint-staged": "^17.0.7",
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
+    "playwright": "^1.61.0",
     "prettier": "^3.8.4",
     "sass-embedded": "^1.100.0",
     "typescript": "^6.0.3",
