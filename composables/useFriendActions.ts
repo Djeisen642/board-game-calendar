@@ -6,15 +6,19 @@ import { ref as dbRef, set, update } from 'firebase/database'
 // remove it), so callers should expect permission errors — e.g. when blocked.
 export function useFriendActions() {
   const userStore = useUserStore()
-  const db = useNuxtApp().$db
+  const nuxtApp = useNuxtApp()
+  const db = nuxtApp.$db
+  const logEvent = nuxtApp.$logEvent
 
   const ownUid = () => userStore.user!.uid
 
   function sendFriendRequest(targetUid: string) {
+    logEvent('friend_request_sent')
     return set(dbRef(db, `friendRequests/${targetUid}/${ownUid()}`), 'pending')
   }
 
   function acceptRequest(fromUid: string) {
+    logEvent('friend_request_accepted')
     const uid = ownUid()
     return update(dbRef(db), {
       [`users/${uid}/friends/${fromUid}`]: true,
@@ -24,6 +28,7 @@ export function useFriendActions() {
   }
 
   function declineRequest(fromUid: string) {
+    logEvent('friend_request_declined')
     const uid = ownUid()
     return update(dbRef(db), {
       [`blocked/${uid}/${fromUid}`]: true,
@@ -32,6 +37,7 @@ export function useFriendActions() {
   }
 
   function removeFriend(friendId: string) {
+    logEvent('friend_removed')
     const uid = ownUid()
     return update(dbRef(db), {
       [`users/${uid}/friends/${friendId}`]: null,
