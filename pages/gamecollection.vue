@@ -99,47 +99,45 @@
                     >
                       {{ formatGameInfo(item) }}
                     </div>
-                    <template #append>
-                      <div class="d-flex align-center">
-                        <v-btn
-                          icon
-                          size="small"
-                          variant="text"
-                          color="accent"
-                          :href="`https://boardgamegeek.com/boardgame/${item.id}`"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="Open on BGG"
-                          title="Open on BGG"
-                        >
-                          <v-icon>mdi-open-in-new</v-icon>
-                        </v-btn>
-                        <v-btn
-                          v-if="!isFriendView"
-                          icon
-                          size="small"
-                          variant="text"
-                          :color="expandedItems.has(String(id)) ? 'primary' : 'default'"
-                          :aria-label="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
-                          :title="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
-                          @click.stop="toggleExpanded(String(id))"
-                        >
-                          <v-icon>mdi-note-text-outline</v-icon>
-                        </v-btn>
-                        <v-btn
-                          v-if="!isFriendView"
-                          icon
-                          size="small"
-                          variant="text"
-                          color="error"
-                          aria-label="Remove from collection"
-                          title="Remove from collection"
-                          @click.stop="removeGameFromCollection(String(id))"
-                        >
-                          <v-icon>mdi-delete-outline</v-icon>
-                        </v-btn>
-                      </div>
-                    </template>
+                    <div class="event-actions">
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="text"
+                        color="accent"
+                        :href="`https://boardgamegeek.com/boardgame/${item.id}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Open on BGG"
+                        title="Open on BGG"
+                      >
+                        <v-icon>mdi-open-in-new</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-if="!isFriendView"
+                        icon
+                        size="small"
+                        variant="text"
+                        :color="expandedItems.has(String(id)) ? 'primary' : 'default'"
+                        :aria-label="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
+                        :title="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
+                        @click.stop="toggleExpanded(String(id))"
+                      >
+                        <v-icon>mdi-note-text-outline</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-if="!isFriendView"
+                        icon
+                        size="small"
+                        variant="text"
+                        color="error"
+                        aria-label="Remove from collection"
+                        title="Remove from collection"
+                        @click.stop="removeGameFromCollection(String(id))"
+                      >
+                        <v-icon>mdi-delete-outline</v-icon>
+                      </v-btn>
+                    </div>
                   </v-list-item>
                   <v-list-item
                     v-if="!isFriendView && expandedItems.has(String(id))"
@@ -184,43 +182,41 @@
                           updateOpinionRating(entry.gameId, entry.name, val)
                       "
                     />
-                    <template #append>
-                      <div class="d-flex align-center">
-                        <v-btn
-                          icon
-                          size="small"
-                          variant="text"
-                          :color="expandedItems.has(entry.gameId) ? 'primary' : 'default'"
-                          :aria-label="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
-                          :title="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
-                          @click.stop="toggleExpanded(entry.gameId)"
-                        >
-                          <v-icon>mdi-note-text-outline</v-icon>
-                        </v-btn>
-                        <v-btn
-                          icon
-                          size="small"
-                          variant="text"
-                          color="success"
-                          aria-label="Add to collection"
-                          title="Add to collection"
-                          @click.stop="addOpinionGameToCollection(entry)"
-                        >
-                          <v-icon>mdi-plus-circle</v-icon>
-                        </v-btn>
-                        <v-btn
-                          icon
-                          size="small"
-                          variant="text"
-                          color="error"
-                          aria-label="Delete rating"
-                          title="Delete rating"
-                          @click.stop="deleteOpinion(entry.gameId)"
-                        >
-                          <v-icon>mdi-delete-outline</v-icon>
-                        </v-btn>
-                      </div>
-                    </template>
+                    <div class="event-actions">
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="text"
+                        :color="expandedItems.has(entry.gameId) ? 'primary' : 'default'"
+                        :aria-label="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
+                        :title="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
+                        @click.stop="toggleExpanded(entry.gameId)"
+                      >
+                        <v-icon>mdi-note-text-outline</v-icon>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="text"
+                        color="success"
+                        aria-label="Add to collection"
+                        title="Add to collection"
+                        @click.stop="addOpinionGameToCollection(entry)"
+                      >
+                        <v-icon>mdi-plus-circle</v-icon>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="text"
+                        color="error"
+                        aria-label="Delete rating"
+                        title="Delete rating"
+                        @click.stop="deleteOpinion(entry.gameId)"
+                      >
+                        <v-icon>mdi-delete-outline</v-icon>
+                      </v-btn>
+                    </div>
                   </v-list-item>
                   <v-list-item
                     v-if="expandedItems.has(entry.gameId)"
