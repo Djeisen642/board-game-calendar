@@ -55,6 +55,7 @@ jobs:
 
       - name: Deploy functions to Firebase
         run: |
+          echo "Deploying as: $(python3 -c "import json; print(json.load(open('/tmp/sa.json'))['client_email'])")"
           npx firebase-tools@latest deploy --only functions --project board-game-calendar-3ae94
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
