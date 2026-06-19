@@ -1,5 +1,5 @@
 <template>
-  <v-card-text>
+  <div>
     <v-autocomplete
       ref="boardGameSearch"
       v-model="selectedItem"
@@ -20,8 +20,8 @@
     <v-list>
       <v-list-item v-for="(item, i) in entriesToShow" :key="i">
         <template #prepend>
-          <v-avatar rounded="0" size="56">
-            <v-img :src="item.image" />
+          <v-avatar rounded="0" size="56" color="surface-variant">
+            <v-img :src="item.thumbnail" :alt="item.name" />
           </v-avatar>
         </template>
 
@@ -57,7 +57,7 @@
       Showing the top {{ constants.NumberToShow }} matches — refine your search
       to narrow the results.
     </div>
-  </v-card-text>
+  </div>
 </template>
 
 <script setup lang="ts">

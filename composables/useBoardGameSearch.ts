@@ -95,6 +95,7 @@ export function useBoardGameSearch(
             name: item.name,
             description: helpers.decodeHtml(item.description),
             image: item.image,
+            thumbnail: item.thumbnail ?? '',
             url: `https://boardgamegeek.com/boardgame/${item.id}`,
             maxplayers: item.maxplayers ?? '',
             maxplaytime: item.maxplaytime ?? '',

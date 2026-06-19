@@ -44,6 +44,24 @@
             "name": {
               ".validate": "newData.isString() && newData.val().length <= 200"
             },
+            "thumbnail": {
+              ".validate": "newData.isString() && newData.val().length <= 500"
+            },
+            "minplayers": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            },
+            "maxplayers": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            },
+            "minplaytime": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            },
+            "maxplaytime": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            },
+            "yearpublished": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            },
             "publicNote": {
               ".validate": "newData.isString() && newData.val().length <= 2000"
             },

@@ -88,58 +88,74 @@
               />
               <v-list>
                 <template v-for="(item, id) in gamesMatchingFilter" :key="id">
-                  <v-list-item :title="item.name" class="game-item mb-2">
+                  <v-list-item class="game-item mb-2">
+                    <template #prepend>
+                      <v-avatar
+                        rounded="0"
+                        size="56"
+                        color="surface-variant"
+                        class="mr-3"
+                      >
+                        <v-img :src="item.thumbnail" :alt="item.name" />
+                      </v-avatar>
+                    </template>
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-rating
+                      v-if="!isFriendView"
+                      :model-value="opinions[item.id]?.rating ?? 0"
+                      half-increments
+                      hover
+                      size="x-small"
+                      density="compact"
+                      color="secondary"
+                      active-color="secondary"
+                      @update:model-value="
+                        (val) => updateGameRating(item, val)
+                      "
+                    />
+                    <div
+                      v-if="formatGameInfo(item)"
+                      class="text-caption text-medium-emphasis"
+                    >
+                      {{ formatGameInfo(item) }}
+                    </div>
                     <template #append>
-                      <div class="d-flex flex-column align-end gap-1">
-                        <v-rating
-                          v-if="!isFriendView"
-                          :model-value="opinions[item.id]?.rating ?? 0"
-                          half-increments
-                          hover
+                      <div class="d-flex align-center gap-1">
+                        <v-btn
+                          density="compact"
                           size="small"
-                          color="secondary"
-                          active-color="secondary"
-                          @update:model-value="
-                            (val) => updateGameRating(item, val)
+                          variant="text"
+                          color="primary"
+                          :href="`https://boardgamegeek.com/boardgame/${item.id}`"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          BGG
+                        </v-btn>
+                        <v-btn
+                          v-if="!isFriendView"
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          :color="
+                            expandedItems.has(String(id))
+                              ? 'primary'
+                              : 'default'
                           "
-                        />
-                        <div class="d-flex gap-1">
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="primary"
-                            :href="`https://boardgamegeek.com/boardgame/${item.id}`"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <v-icon>mdi-link</v-icon>
-                          </v-btn>
-                          <v-btn
-                            v-if="!isFriendView"
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            :color="
-                              expandedItems.has(String(id))
-                                ? 'primary'
-                                : 'default'
-                            "
-                            @click.stop="toggleExpanded(String(id))"
-                          >
-                            <v-icon>mdi-note-text-outline</v-icon>
-                          </v-btn>
-                          <v-btn
-                            v-if="!isFriendView"
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="error"
-                            @click.stop="removeGameFromCollection(String(id))"
-                          >
-                            <v-icon start>mdi-minus-circle</v-icon>Remove
-                          </v-btn>
-                        </div>
+                          @click.stop="toggleExpanded(String(id))"
+                        >
+                          <v-icon>mdi-note-text-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          v-if="!isFriendView"
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="error"
+                          @click.stop="removeGameFromCollection(String(id))"
+                        >
+                          <v-icon>mdi-delete-outline</v-icon>
+                        </v-btn>
                       </div>
                     </template>
                   </v-list-item>
@@ -173,54 +189,54 @@
               <div class="section-label mb-3">Also Rated</div>
               <v-list>
                 <template v-for="entry in alsoRatedGames" :key="entry.gameId">
-                  <v-list-item :title="entry.name" class="game-item mb-2">
+                  <v-list-item class="game-item mb-2">
+                    <v-list-item-title>{{ entry.name }}</v-list-item-title>
+                    <v-rating
+                      :model-value="entry.rating ?? 0"
+                      half-increments
+                      hover
+                      size="x-small"
+                      density="compact"
+                      color="secondary"
+                      active-color="secondary"
+                      @update:model-value="
+                        (val) =>
+                          updateOpinionRating(entry.gameId, entry.name, val)
+                      "
+                    />
                     <template #append>
-                      <div class="d-flex flex-column align-end gap-1">
-                        <v-rating
-                          :model-value="entry.rating ?? 0"
-                          half-increments
-                          hover
+                      <div class="d-flex align-center gap-1">
+                        <v-btn
+                          density="compact"
                           size="small"
-                          color="secondary"
-                          active-color="secondary"
-                          @update:model-value="
-                            (val) =>
-                              updateOpinionRating(entry.gameId, entry.name, val)
+                          variant="text"
+                          :color="
+                            expandedItems.has(entry.gameId)
+                              ? 'primary'
+                              : 'default'
                           "
-                        />
-                        <div class="d-flex gap-1">
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            :color="
-                              expandedItems.has(entry.gameId)
-                                ? 'primary'
-                                : 'default'
-                            "
-                            @click.stop="toggleExpanded(entry.gameId)"
-                          >
-                            <v-icon>mdi-note-text-outline</v-icon>
-                          </v-btn>
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="success"
-                            @click.stop="addOpinionGameToCollection(entry)"
-                          >
-                            <v-icon start>mdi-plus-circle</v-icon>Add
-                          </v-btn>
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="error"
-                            @click.stop="deleteOpinion(entry.gameId)"
-                          >
-                            <v-icon>mdi-delete-outline</v-icon>
-                          </v-btn>
-                        </div>
+                          @click.stop="toggleExpanded(entry.gameId)"
+                        >
+                          <v-icon>mdi-note-text-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="success"
+                          @click.stop="addOpinionGameToCollection(entry)"
+                        >
+                          <v-icon>mdi-plus-circle</v-icon>
+                        </v-btn>
+                        <v-btn
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="error"
+                          @click.stop="deleteOpinion(entry.gameId)"
+                        >
+                          <v-icon>mdi-delete-outline</v-icon>
+                        </v-btn>
                       </div>
                     </template>
                   </v-list-item>
@@ -539,10 +555,59 @@ function openRateArea() {
   activeArea.value = 'addOpinion'
 }
 
+type BggGameMeta = {
+  name?: string
+  thumbnail?: string
+  minplayers?: string | null
+  maxplayers?: string | null
+  minplaytime?: string | null
+  maxplaytime?: string | null
+  yearpublished?: string | null
+}
+
+function formatGameInfo(game: Game): string {
+  const parts: string[] = []
+  const { minplayers: minP, maxplayers: maxP, minplaytime: minT, maxplaytime: maxT } = game
+  if (minP && maxP) {
+    parts.push(minP === maxP ? `${minP} players` : `${minP}–${maxP} players`)
+  } else if (minP ?? maxP) {
+    parts.push(`${minP ?? maxP} players`)
+  }
+  if (minT && maxT) {
+    parts.push(minT === maxT ? `${minT} min` : `${minT}–${maxT} min`)
+  } else if (minT ?? maxT) {
+    parts.push(`${minT ?? maxT} min`)
+  }
+  return parts.join(' · ')
+}
+
+function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
+  const game: Game = {
+    id,
+    name: data.name ?? fallbackName,
+    thumbnail: data.thumbnail ?? '',
+  }
+  if (data.minplayers) game.minplayers = data.minplayers
+  if (data.maxplayers) game.maxplayers = data.maxplayers
+  if (data.minplaytime) game.minplaytime = data.minplaytime
+  if (data.maxplaytime) game.maxplaytime = data.maxplaytime
+  if (data.yearpublished && data.yearpublished !== '0')
+    game.yearpublished = data.yearpublished
+  return game
+}
+
+async function fetchAndCollect(id: string, fallbackName: string): Promise<void> {
+  const fn = httpsCallable<{ id: string }, BggGameMeta>($functions, 'bggThing')
+  const { data } = await fn({ id })
+  await set(push(dbRef(db, `users/${ownUid}/collection`)), buildGame(id, data, fallbackName))
+}
+
 async function addToCollection(item: DisplayableItemType) {
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), { id: item.id, name: item.name })
+    await set(
+      push(dbRef(db, `users/${ownUid}/collection`)),
+      buildGame(item.id, item, item.name)
+    )
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
@@ -654,8 +719,7 @@ async function addOpinionGameToCollection(entry: {
   name: string
 }) {
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), { id: entry.gameId, name: entry.name })
+    await fetchAndCollect(entry.gameId, entry.name)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
@@ -687,11 +751,10 @@ async function saveOpinionEntry() {
 async function addSelectedOpinionGameToCollection() {
   if (!opinionSelectedItem.value) return
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), {
-      id: opinionSelectedItem.value.id,
-      name: opinionSelectedItem.value.name,
-    })
+    await fetchAndCollect(
+      opinionSelectedItem.value.id,
+      opinionSelectedItem.value.name
+    )
     opinionSelectedItem.value = null
     activeArea.value = 'collection'
   } catch (err) {
