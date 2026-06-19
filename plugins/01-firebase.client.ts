@@ -7,6 +7,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import {
   getAnalytics,
   logEvent as firebaseLogEvent,
+  setUserId as firebaseSetUserId,
   isSupported,
 } from 'firebase/analytics'
 import firebaseConf from '~/firebase.config'
@@ -39,10 +40,16 @@ export default defineNuxtPlugin(() => {
   const functions = getFunctions(app)
 
   let _analytics: ReturnType<typeof getAnalytics> | null = null
+  let _pendingUserId: string | null | undefined = undefined
 
   if (typeof window !== 'undefined') {
     isSupported().then((yes) => {
-      if (yes) _analytics = getAnalytics(app)
+      if (yes) {
+        _analytics = getAnalytics(app)
+        if (_pendingUserId !== undefined) {
+          firebaseSetUserId(_analytics, _pendingUserId)
+        }
+      }
     })
   }
 
@@ -63,6 +70,14 @@ export default defineNuxtPlugin(() => {
     logEvent(logLevel, { message, ...details })
   }
 
+  const setAnalyticsUserId = (uid: string | null): void => {
+    if (_analytics) {
+      firebaseSetUserId(_analytics, uid)
+    } else {
+      _pendingUserId = uid
+    }
+  }
+
   return {
     provide: {
       auth,
@@ -70,6 +85,7 @@ export default defineNuxtPlugin(() => {
       functions,
       logEvent,
       log,
+      setAnalyticsUserId,
     },
   }
 })

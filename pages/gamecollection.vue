@@ -371,6 +371,7 @@ const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
 const $functions = nuxtApp.$functions
+const logEvent = nuxtApp.$logEvent
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 
 const ownUid = userStore.user!.uid
@@ -593,6 +594,7 @@ async function addToCollection(item: DisplayableItemType) {
       push(dbRef(db, `users/${ownUid}/collection`)),
       buildGame(item.id, item, item.name)
     )
+    logEvent('game_added_to_collection', { name: item.name })
     activeArea.value = 'collection'
     snackbar.value?.showSnackbarWithMessage(`${item.name} added to collection`, false)
   } catch (err) {
@@ -606,6 +608,7 @@ async function addToCollection(item: DisplayableItemType) {
 async function removeGameFromCollection(id: string) {
   try {
     await remove(dbRef(db, `users/${ownUid}/collection/${id}`))
+    logEvent('game_removed_from_collection')
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,

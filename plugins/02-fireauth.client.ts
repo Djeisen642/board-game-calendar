@@ -2,7 +2,7 @@ import { onAuthStateChanged, getAuth } from 'firebase/auth'
 import { defineNuxtPlugin } from 'nuxt/app'
 import { useUserStore } from '~/stores/user'
 
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const userStore = useUserStore()
   const auth = getAuth()
 
@@ -13,6 +13,7 @@ export default defineNuxtPlugin(async () => {
     let resolved = false
     onAuthStateChanged(auth, (user) => {
       userStore.setUser(user)
+      nuxtApp.$setAnalyticsUserId(user?.uid ?? null)
       if (!resolved) {
         resolved = true
         resolve()
