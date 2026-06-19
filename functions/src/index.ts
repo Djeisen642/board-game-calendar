@@ -153,15 +153,17 @@ export const bggThing = onCall(
     // xml2js wraps text-only nodes as string arrays; unwrap with first()
     const descriptionRaw = first(itemObj.description)
     const imageRaw = first(itemObj.image)
-
     const thumbnailRaw = first(itemObj.thumbnail)
+
+    const imageUrl = typeof imageRaw === 'string' ? imageRaw : ''
+    const thumbnailUrl = typeof thumbnailRaw === 'string' && thumbnailRaw ? thumbnailRaw : imageUrl
 
     return {
       id: itemId,
       name,
       description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
-      image: typeof imageRaw === 'string' ? imageRaw : '',
-      thumbnail: typeof thumbnailRaw === 'string' ? thumbnailRaw : '',
+      image: imageUrl,
+      thumbnail: thumbnailUrl,
       yearpublished: attrValue(itemObj.yearpublished),
       minplayers: attrValue(itemObj.minplayers),
       maxplayers: attrValue(itemObj.maxplayers),
