@@ -96,7 +96,8 @@
                         color="surface-variant"
                         class="mr-3"
                       >
-                        <v-img :src="item.thumbnail" :alt="item.name" />
+                        <v-img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.name" />
+                        <v-icon v-else size="32">mdi-gamepad-variant-outline</v-icon>
                       </v-avatar>
                     </template>
                     <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -120,9 +121,8 @@
                       {{ formatGameInfo(item) }}
                     </div>
                     <template #append>
-                      <div class="d-flex align-center gap-2">
+                      <div class="d-flex align-center">
                         <v-btn
-                          density="compact"
                           size="small"
                           variant="text"
                           color="primary"
@@ -134,7 +134,6 @@
                         </v-btn>
                         <v-btn
                           v-if="!isFriendView"
-                          density="compact"
                           size="small"
                           variant="text"
                           :color="
@@ -148,7 +147,6 @@
                         </v-btn>
                         <v-btn
                           v-if="!isFriendView"
-                          density="compact"
                           size="small"
                           variant="text"
                           color="error"
@@ -205,9 +203,8 @@
                       "
                     />
                     <template #append>
-                      <div class="d-flex align-center gap-2">
+                      <div class="d-flex align-center">
                         <v-btn
-                          density="compact"
                           size="small"
                           variant="text"
                           :color="
@@ -220,7 +217,6 @@
                           <v-icon>mdi-note-text-outline</v-icon>
                         </v-btn>
                         <v-btn
-                          density="compact"
                           size="small"
                           variant="text"
                           color="success"
@@ -229,7 +225,6 @@
                           <v-icon>mdi-plus-circle</v-icon>
                         </v-btn>
                         <v-btn
-                          density="compact"
                           size="small"
                           variant="text"
                           color="error"
@@ -581,11 +576,16 @@ function formatGameInfo(game: Game): string {
   return parts.join(' · ')
 }
 
+function normalizeThumb(url: string | null | undefined): string {
+  if (!url) return ''
+  return url.startsWith('//') ? `https:${url}` : url
+}
+
 function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
   const game: Game = {
     id,
     name: data.name ?? fallbackName,
-    thumbnail: data.thumbnail ?? '',
+    thumbnail: normalizeThumb(data.thumbnail),
   }
   if (data.minplayers) game.minplayers = data.minplayers
   if (data.maxplayers) game.maxplayers = data.maxplayers
