@@ -46,9 +46,15 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
 
-      - name: Deploy functions and database rules to Firebase
+      - name: Deploy database rules to Firebase
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_3AE94 }}' > /tmp/sa.json
-          npx firebase-tools@latest deploy --only functions,database --project board-game-calendar-3ae94
+          npx firebase-tools@latest deploy --only database --project board-game-calendar-3ae94
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
+
+      - name: Deploy functions to Firebase
+        run: |
+          npx firebase-tools@latest deploy --only functions --project board-game-calendar-3ae94
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
