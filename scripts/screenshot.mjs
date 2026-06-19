@@ -147,7 +147,8 @@ const route = args.find((a) => a.startsWith('/')) ?? '/'
 const mobileOnly = args.includes('--mobile')
 const desktopOnly = args.includes('--desktop')
 const fullPage = args.includes('--full-page')
-const fixtureArg = args[args.indexOf('--fixture') + 1]
+const fixtureIdx = args.indexOf('--fixture')
+const fixtureArg = fixtureIdx !== -1 ? args[fixtureIdx + 1] : undefined
 const fixturePath = fixtureArg ? resolve(process.cwd(), fixtureArg) : DEFAULT_FIXTURE
 const viewports = mobileOnly ? ['mobile'] : desktopOnly ? ['desktop'] : ['mobile', 'desktop']
 
