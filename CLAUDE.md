@@ -26,11 +26,9 @@ yarn screenshot /calendar --desktop --full-page
 yarn screenshot /gatherings/new --fixture scripts/fixtures/custom.json
 ```
 
-Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). **No Firebase credentials needed** — the dev server starts automatically in screenshot mode (`NUXT_PUBLIC_SCREENSHOT_MODE=true`), which replaces all `firebase/*` imports with local mocks via Vite aliases. A fake authenticated user (`screenshot-uid-1`, "Alex Johnson") is injected by `helpers/screenshot/firebase-auth.ts` so the auth middleware passes on every route.
+Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). No Firebase credentials needed — the dev server starts automatically with all Firebase modules mocked and a fake logged-in user (`screenshot-uid-1`, "Alex Johnson").
 
-Fixture data lives in `scripts/fixtures/default.json` and follows the Firebase Realtime Database path structure exactly (`profiles/`, `users/`, `gatherings/`, etc.). The `firebase/database` mock reads from `window.__SCREENSHOT_FIXTURE`, which is injected by Playwright before any page JS runs. To add a page-specific fixture, copy `default.json`, edit the data, and pass `--fixture scripts/fixtures/my-fixture.json`.
-
-The slash command `/screenshot` in Claude Code is a thin wrapper around `yarn screenshot`.
+Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB path structure (`profiles/`, `users/`, `gatherings/`, etc.). To use custom data, copy it, edit, and pass `--fixture scripts/fixtures/my-fixture.json`. The `/screenshot` slash command in Claude Code wraps `yarn screenshot`.
 
 ## Stack
 
@@ -128,8 +126,6 @@ type Game = {
   id: string // BoardGameGeek game ID
   name: string
   rating?: number
-  privateNote?: string // defined but not yet written/read in UI
-  publicNote?: string // defined but not yet written/read in UI
 }
 
 // users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
@@ -190,7 +186,7 @@ Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.sp
 
 ## Design Conventions
 
-The app uses a consistent dark glassmorphism design system. All new UI must follow these conventions — do not introduce new colors, spacing values, or component patterns without updating this section first.
+The app uses a consistent dark glassmorphism design system. All new UI must follow these conventions.
 
 ### Color palette (defined in `nuxt.config.ts` → `vuetifyOptions.theme.themes.dark.colors`)
 
@@ -363,7 +359,6 @@ All pages target mobile-first. Breakpoints:
 }
 ```
 
-**Accessibility**: icon-only buttons require `aria-label` + `title`. Do not rely on color alone — pair status colors with icons or labels. Never use `color="primary"` for text/icon buttons on card backgrounds (contrast fails WCAG AA).
 
 ## Pull Requests
 
