@@ -2,48 +2,29 @@
   <v-row justify="center">
     <v-col cols="12" sm="11" md="9" lg="7">
       <v-card>
-        <v-card-title class="d-flex align-center pa-6">
-          <v-icon color="primary" class="mr-3">mdi-rhombus-split</v-icon>
-          <span class="page-title">{{ pageTitle }}</span>
-          <v-spacer />
-          <template v-if="isFriendView">
-            <v-btn
-              :to="routes.friends"
-              variant="elevated"
-              color="primary"
-              size="small"
-            >
+        <v-card-title class="page-card-title">
+          <div class="d-flex align-center">
+            <v-icon color="primary" class="mr-3 flex-shrink-0">mdi-rhombus-split</v-icon>
+            <span class="page-title">{{ pageTitle }}</span>
+          </div>
+          <div class="page-header-actions">
+            <template v-if="isFriendView">
+              <v-btn :to="routes.friends" variant="elevated" color="primary" size="small">
+                <v-icon start>mdi-arrow-left-circle</v-icon>Back
+              </v-btn>
+            </template>
+            <template v-else-if="activeArea === 'collection'">
+              <v-btn variant="elevated" color="primary" size="small" @click.stop="activeArea = 'addGame'">
+                <v-icon start>mdi-plus-circle</v-icon>Add Game
+              </v-btn>
+              <v-btn variant="elevated" color="secondary" size="small" @click.stop="openRateArea">
+                <v-icon start>mdi-star-outline</v-icon>Rate
+              </v-btn>
+            </template>
+            <v-btn v-else variant="elevated" color="primary" size="small" @click.stop="activeArea = 'collection'">
               <v-icon start>mdi-arrow-left-circle</v-icon>Back
             </v-btn>
-          </template>
-          <template v-else-if="activeArea === 'collection'">
-            <v-btn
-              variant="elevated"
-              color="primary"
-              size="small"
-              class="mr-2"
-              @click.stop="activeArea = 'addGame'"
-            >
-              <v-icon start>mdi-plus-circle</v-icon>Add Game
-            </v-btn>
-            <v-btn
-              variant="elevated"
-              color="secondary"
-              size="small"
-              @click.stop="openRateArea"
-            >
-              <v-icon start>mdi-star-outline</v-icon>Rate
-            </v-btn>
-          </template>
-          <v-btn
-            v-else
-            variant="elevated"
-            color="primary"
-            size="small"
-            @click.stop="activeArea = 'collection'"
-          >
-            <v-icon start>mdi-arrow-left-circle</v-icon>Back
-          </v-btn>
+          </div>
         </v-card-title>
         <v-divider />
         <v-card-text class="pa-6">
@@ -123,33 +104,38 @@
                     <template #append>
                       <div class="d-flex align-center">
                         <v-btn
+                          icon
                           size="small"
                           variant="text"
-                          color="primary"
+                          color="accent"
                           :href="`https://boardgamegeek.com/boardgame/${item.id}`"
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label="Open on BGG"
+                          title="Open on BGG"
                         >
-                          BGG
+                          <v-icon>mdi-open-in-new</v-icon>
                         </v-btn>
                         <v-btn
                           v-if="!isFriendView"
+                          icon
                           size="small"
                           variant="text"
-                          :color="
-                            expandedItems.has(String(id))
-                              ? 'primary'
-                              : 'default'
-                          "
+                          :color="expandedItems.has(String(id)) ? 'primary' : 'default'"
+                          :aria-label="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
+                          :title="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
                           @click.stop="toggleExpanded(String(id))"
                         >
                           <v-icon>mdi-note-text-outline</v-icon>
                         </v-btn>
                         <v-btn
                           v-if="!isFriendView"
+                          icon
                           size="small"
                           variant="text"
                           color="error"
+                          aria-label="Remove from collection"
+                          title="Remove from collection"
                           @click.stop="removeGameFromCollection(String(id))"
                         >
                           <v-icon>mdi-delete-outline</v-icon>
@@ -205,29 +191,34 @@
                     <template #append>
                       <div class="d-flex align-center">
                         <v-btn
+                          icon
                           size="small"
                           variant="text"
-                          :color="
-                            expandedItems.has(entry.gameId)
-                              ? 'primary'
-                              : 'default'
-                          "
+                          :color="expandedItems.has(entry.gameId) ? 'primary' : 'default'"
+                          :aria-label="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
+                          :title="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
                           @click.stop="toggleExpanded(entry.gameId)"
                         >
                           <v-icon>mdi-note-text-outline</v-icon>
                         </v-btn>
                         <v-btn
+                          icon
                           size="small"
                           variant="text"
                           color="success"
+                          aria-label="Add to collection"
+                          title="Add to collection"
                           @click.stop="addOpinionGameToCollection(entry)"
                         >
                           <v-icon>mdi-plus-circle</v-icon>
                         </v-btn>
                         <v-btn
+                          icon
                           size="small"
                           variant="text"
                           color="error"
+                          aria-label="Delete rating"
+                          title="Delete rating"
                           @click.stop="deleteOpinion(entry.gameId)"
                         >
                           <v-icon>mdi-delete-outline</v-icon>
@@ -782,5 +773,14 @@ function onGameSearchError(error: Error) {
 }
 .game-item:hover {
   background: rgba(108, 92, 231, 0.06);
+}
+/* Allow titles to wrap to a second line rather than clipping with ellipsis */
+.game-item :deep(.v-list-item-title) {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
 }
 </style>

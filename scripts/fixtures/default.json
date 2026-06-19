@@ -1,0 +1,155 @@
+{
+  "profiles": {
+    "screenshot-uid-1": {
+      "name": "Alex Johnson",
+      "queryableName": "alex johnson",
+      "queryableEmail": "alex@example.com",
+      "queryablePhone": "5558675309"
+    },
+    "screenshot-uid-2": {
+      "name": "Sam Taylor",
+      "queryableName": "sam taylor",
+      "queryableEmail": "sam@example.com",
+      "queryablePhone": "5552345678"
+    },
+    "screenshot-uid-3": {
+      "name": "Jordan Park",
+      "queryableName": "jordan park",
+      "queryableEmail": "jordan@example.com",
+      "queryablePhone": ""
+    }
+  },
+  "users": {
+    "screenshot-uid-1": {
+      "phoneNumber": "555-867-5309",
+      "address": "123 Game Night Lane\nBoard City, BC 12345",
+      "maxPeople": 6,
+      "collection": {
+        "game-001": {
+          "id": "174430",
+          "name": "Gloomhaven",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "4",
+          "minplaytime": "60",
+          "maxplaytime": "120",
+          "yearpublished": "2017"
+        },
+        "game-002": {
+          "id": "167791",
+          "name": "Terraforming Mars",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "5",
+          "minplaytime": "120",
+          "maxplaytime": "120",
+          "yearpublished": "2016"
+        },
+        "game-003": {
+          "id": "169786",
+          "name": "Scythe",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "5",
+          "minplaytime": "90",
+          "maxplaytime": "115",
+          "yearpublished": "2016"
+        },
+        "game-004": {
+          "id": "220308",
+          "name": "Gaia Project",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "4",
+          "minplaytime": "60",
+          "maxplaytime": "150",
+          "yearpublished": "2017"
+        },
+        "game-005": {
+          "id": "316554",
+          "name": "Ark Nova",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "4",
+          "minplaytime": "90",
+          "maxplaytime": "150",
+          "yearpublished": "2021"
+        }
+      },
+      "friends": {
+        "screenshot-uid-2": true,
+        "screenshot-uid-3": true
+      },
+      "gameOpinions": {
+        "174430": { "name": "Gloomhaven", "rating": 4.5 },
+        "167791": { "name": "Terraforming Mars", "rating": 4 },
+        "224517": { "name": "Brass: Birmingham", "rating": 5 }
+      }
+    },
+    "screenshot-uid-2": {
+      "collection": {
+        "game-a": {
+          "id": "167791",
+          "name": "Terraforming Mars",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "5",
+          "minplaytime": "120",
+          "maxplaytime": "120"
+        },
+        "game-b": {
+          "id": "266192",
+          "name": "Wingspan",
+          "thumbnail": "",
+          "minplayers": "1",
+          "maxplayers": "5",
+          "minplaytime": "40",
+          "maxplaytime": "70",
+          "yearpublished": "2019"
+        }
+      }
+    }
+  },
+  "gatherings": {
+    "gathering-001": {
+      "state": "pending",
+      "datetime": "2026-06-25T18:00:00.000Z",
+      "initiator": "screenshot-uid-1",
+      "host": "screenshot-uid-1",
+      "maxGuests": 4,
+      "guests": {
+        "screenshot-uid-2": "accepted",
+        "screenshot-uid-3": "invited"
+      },
+      "games": [
+        { "id": "174430", "name": "Gloomhaven" },
+        { "id": "169786", "name": "Scythe" }
+      ]
+    },
+    "gathering-002": {
+      "state": "confirmed",
+      "datetime": "2026-06-28T20:00:00.000Z",
+      "initiator": "screenshot-uid-2",
+      "host": "screenshot-uid-2",
+      "maxGuests": 6,
+      "guests": {
+        "screenshot-uid-1": "accepted"
+      },
+      "games": [
+        { "id": "167791", "name": "Terraforming Mars" }
+      ]
+    }
+  },
+  "userGatherings": {
+    "screenshot-uid-1": {
+      "gathering-001": true,
+      "gathering-002": true
+    }
+  },
+  "friendRequests": {
+    "screenshot-uid-1": {
+      "screenshot-uid-3": "pending"
+    }
+  },
+  "blocked": {}
+}
