@@ -26,12 +26,12 @@ export type Friend = Person & {
 export type Game = {
   id: string
   name: string
-  thumbnail?: string
-  minplayers?: string
-  maxplayers?: string
-  minplaytime?: string
-  maxplaytime?: string
-  yearpublished?: string
+  thumbnail: string   // always present in BGG
+  minplayers?: string // nullable in BGG
+  maxplayers?: string // nullable in BGG
+  minplaytime?: string // nullable in BGG
+  maxplaytime?: string // nullable in BGG
+  yearpublished?: string // nullable in BGG
   publicNote?: string
 }
 

@@ -96,18 +96,7 @@
                         color="surface-variant"
                         class="mr-3"
                       >
-                        <v-img
-                          v-if="item.thumbnail"
-                          :src="item.thumbnail"
-                          :alt="item.name"
-                        />
-                        <v-icon
-                          v-else
-                          size="28"
-                          color="primary"
-                          style="opacity: 0.4"
-                          >mdi-cards-outline</v-icon
-                        >
+                        <v-img :src="item.thumbnail" :alt="item.name" />
                       </v-avatar>
                     </template>
                     <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -566,6 +555,16 @@ function openRateArea() {
   activeArea.value = 'addOpinion'
 }
 
+type BggGameMeta = {
+  name?: string
+  thumbnail?: string
+  minplayers?: string | null
+  maxplayers?: string | null
+  minplaytime?: string | null
+  maxplaytime?: string | null
+  yearpublished?: string | null
+}
+
 function formatGameInfo(game: Game): string {
   const parts: string[] = []
   const { minplayers: minP, maxplayers: maxP, minplaytime: minT, maxplaytime: maxT } = game
@@ -582,18 +581,33 @@ function formatGameInfo(game: Game): string {
   return parts.join(' · ')
 }
 
+function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
+  const game: Game = {
+    id,
+    name: data.name ?? fallbackName,
+    thumbnail: data.thumbnail ?? '',
+  }
+  if (data.minplayers) game.minplayers = data.minplayers
+  if (data.maxplayers) game.maxplayers = data.maxplayers
+  if (data.minplaytime) game.minplaytime = data.minplaytime
+  if (data.maxplaytime) game.maxplaytime = data.maxplaytime
+  if (data.yearpublished && data.yearpublished !== '0')
+    game.yearpublished = data.yearpublished
+  return game
+}
+
+async function fetchAndCollect(id: string, fallbackName: string): Promise<void> {
+  const fn = httpsCallable<{ id: string }, BggGameMeta>($functions, 'bggThing')
+  const { data } = await fn({ id })
+  await set(push(dbRef(db, `users/${ownUid}/collection`)), buildGame(id, data, fallbackName))
+}
+
 async function addToCollection(item: DisplayableItemType) {
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    const gameData: Record<string, string> = { id: item.id, name: item.name }
-    if (item.thumbnail) gameData.thumbnail = item.thumbnail
-    if (item.minplayers) gameData.minplayers = item.minplayers
-    if (item.maxplayers) gameData.maxplayers = item.maxplayers
-    if (item.minplaytime) gameData.minplaytime = item.minplaytime
-    if (item.maxplaytime) gameData.maxplaytime = item.maxplaytime
-    if (item.yearpublished && item.yearpublished !== '0')
-      gameData.yearpublished = item.yearpublished
-    await set(push(collRef), gameData)
+    await set(
+      push(dbRef(db, `users/${ownUid}/collection`)),
+      buildGame(item.id, item, item.name)
+    )
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
@@ -705,8 +719,7 @@ async function addOpinionGameToCollection(entry: {
   name: string
 }) {
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), { id: entry.gameId, name: entry.name })
+    await fetchAndCollect(entry.gameId, entry.name)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
@@ -738,11 +751,10 @@ async function saveOpinionEntry() {
 async function addSelectedOpinionGameToCollection() {
   if (!opinionSelectedItem.value) return
   try {
-    const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), {
-      id: opinionSelectedItem.value.id,
-      name: opinionSelectedItem.value.name,
-    })
+    await fetchAndCollect(
+      opinionSelectedItem.value.id,
+      opinionSelectedItem.value.name
+    )
     opinionSelectedItem.value = null
     activeArea.value = 'collection'
   } catch (err) {

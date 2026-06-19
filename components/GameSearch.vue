@@ -20,8 +20,8 @@
     <v-list>
       <v-list-item v-for="(item, i) in entriesToShow" :key="i">
         <template #prepend>
-          <v-avatar rounded="0" size="56">
-            <v-img :src="item.image" />
+          <v-avatar rounded="0" size="56" color="surface-variant">
+            <v-img :src="item.thumbnail" :alt="item.name" />
           </v-avatar>
         </template>
 
