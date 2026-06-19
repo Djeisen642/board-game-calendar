@@ -107,7 +107,7 @@
                           icon
                           size="small"
                           variant="text"
-                          color="secondary"
+                          color="accent"
                           :href="`https://boardgamegeek.com/boardgame/${item.id}`"
                           target="_blank"
                           rel="noopener noreferrer"
