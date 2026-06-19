@@ -115,6 +115,7 @@ const userStore = useUserStore()
 const router = useRouter()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
+const logEvent = nuxtApp.$logEvent
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 // gatherings are readable only by their participants, so the calendar follows
@@ -187,12 +188,18 @@ function myResponse(gathering: Gathering): GuestResponse | undefined {
 }
 
 async function setState(gathering: GatheringWithId, state: GatheringState) {
-  try { await update(dbRef(db, `gatherings/${gathering.id}`), { state }) }
+  try {
+    await update(dbRef(db, `gatherings/${gathering.id}`), { state })
+    logEvent('gathering_state_changed', { state })
+  }
   catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
 async function respond(gathering: GatheringWithId, response: GuestResponse) {
-  try { await set(dbRef(db, `gatherings/${gathering.id}/guests/${uid}`), response) }
+  try {
+    await set(dbRef(db, `gatherings/${gathering.id}/guests/${uid}`), response)
+    logEvent('gathering_rsvp', { response })
+  }
   catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
@@ -208,6 +215,7 @@ async function deleteGathering(gathering: GatheringWithId) {
       updates[`userGatherings/${guestUid}/${gathering.id}`] = null
     }
     await update(dbRef(db), updates)
+    logEvent('gathering_deleted')
   } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
 }
 
