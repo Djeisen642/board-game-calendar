@@ -17,6 +17,21 @@ To manage packages in the `functions` workspace, use `yarn workspace functions a
 
 Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
 
+### Screenshots
+
+```bash
+yarn screenshot /calendar              # mobile + desktop
+yarn screenshot /gamecollection --mobile
+yarn screenshot /calendar --desktop --full-page
+yarn screenshot /gatherings/new --fixture scripts/fixtures/custom.json
+```
+
+Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). **No Firebase credentials needed** — the dev server starts automatically in screenshot mode (`NUXT_PUBLIC_SCREENSHOT_MODE=true`), which replaces all `firebase/*` imports with local mocks via Vite aliases. A fake authenticated user (`screenshot-uid-1`, "Alex Johnson") is injected by `helpers/screenshot/firebase-auth.ts` so the auth middleware passes on every route.
+
+Fixture data lives in `scripts/fixtures/default.json` and follows the Firebase Realtime Database path structure exactly (`profiles/`, `users/`, `gatherings/`, etc.). The `firebase/database` mock reads from `window.__SCREENSHOT_FIXTURE`, which is injected by Playwright before any page JS runs. To add a page-specific fixture, copy `default.json`, edit the data, and pass `--fixture scripts/fixtures/my-fixture.json`.
+
+The slash command `/screenshot` in Claude Code is a thin wrapper around `yarn screenshot`.
+
 ## Stack
 
 | Layer     | Choice                                              | Notes                                                                                                     |
