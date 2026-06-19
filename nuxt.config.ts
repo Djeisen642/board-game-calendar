@@ -1,3 +1,11 @@
+import { fileURLToPath } from 'node:url'
+
+const SCREENSHOT_MODE = process.env.NUXT_PUBLIC_SCREENSHOT_MODE === 'true'
+
+function mockAlias(name: string) {
+  return fileURLToPath(new URL(`./helpers/screenshot/${name}`, import.meta.url))
+}
+
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-01-01',
@@ -119,6 +127,7 @@ export default defineNuxtConfig({
     public: {
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY ?? '',
       recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY ?? '',
+      screenshotMode: SCREENSHOT_MODE,
     },
   },
 
@@ -129,15 +138,27 @@ export default defineNuxtConfig({
     build: {
       cssMinify: 'lightningcss',
     },
+    resolve: {
+      alias: SCREENSHOT_MODE ? {
+        'firebase/analytics': mockAlias('firebase-analytics.ts'),
+        'firebase/app-check': mockAlias('firebase-app-check.ts'),
+        'firebase/auth': mockAlias('firebase-auth.ts'),
+        'firebase/database': mockAlias('firebase-database.ts'),
+        'firebase/functions': mockAlias('firebase-functions.ts'),
+      } : {},
+    },
     optimizeDeps: {
       include: [
         '@vue/devtools-core',
         '@vue/devtools-kit',
         'awesome-phonenumber',
-        'firebase/analytics',
-        'firebase/app',
-        'firebase/auth',
-        'firebase/database',
+        // Omit firebase/* in screenshot mode — they are aliased to local mocks
+        ...(SCREENSHOT_MODE ? [] : [
+          'firebase/analytics',
+          'firebase/app',
+          'firebase/auth',
+          'firebase/database',
+        ]),
         'validator/lib/isEmail', // CJS
       ],
     },
