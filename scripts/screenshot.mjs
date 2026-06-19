@@ -50,12 +50,27 @@ async function waitForPort(port, timeoutMs = 60_000) {
 }
 
 function ensureChromium() {
-  try {
-    chromium.executablePath()
-  } catch {
-    console.log('Installing Playwright Chromium...')
-    execSync('npx playwright install chromium --with-deps', { stdio: 'inherit', cwd: ROOT })
+  let defaultPath = null
+  try { defaultPath = chromium.executablePath() } catch { /* no default */ }
+
+  if (defaultPath && existsSync(defaultPath)) return null
+
+  // Try well-known fallback paths before attempting download
+  const fallbacks = [
+    '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome',
+  ]
+  for (const p of fallbacks) {
+    if (existsSync(p)) {
+      console.log(`Using existing Chromium at ${p}`)
+      return p
+    }
   }
+  console.log('Installing Playwright Chromium...')
+  execSync('npx playwright install chromium --with-deps', { stdio: 'inherit', cwd: ROOT })
+  return null
 }
 
 // ── Dev server ─────────────────────────────────────────────────────────────
@@ -92,8 +107,10 @@ function stopDevServer() {
 
 // ── Screenshot ─────────────────────────────────────────────────────────────
 
-async function takeScreenshots(route, viewportNames, fullPage, fixture) {
-  const browser = await chromium.launch({ headless: true })
+async function takeScreenshots(route, viewportNames, fullPage, fixture, executablePath) {
+  const launchOpts = { headless: true }
+  if (executablePath) launchOpts.executablePath = executablePath
+  const browser = await chromium.launch(launchOpts)
   const saved = []
 
   try {
@@ -160,10 +177,10 @@ const fixture = JSON.parse(readFileSync(fixturePath, 'utf-8'))
 
 let startedServer = false
 try {
-  ensureChromium()
+  const executablePath = ensureChromium()
   startedServer = await ensureDevServer()
   console.log(`\nScreenshotting ${route} (${viewports.join(', ')})...`)
-  const files = await takeScreenshots(route, viewports, fullPage, fixture)
+  const files = await takeScreenshots(route, viewports, fullPage, fixture, executablePath)
   console.log(`\nDone. ${files.length} file(s) saved to screenshots/`)
 } catch (err) {
   console.error('Error:', err.message)
