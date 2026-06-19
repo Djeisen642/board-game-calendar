@@ -105,13 +105,49 @@ export const bggSearch = onCall(
   }
 )
 
+function parseBggThingItem(item: unknown) {
+  const itemObj = item as Record<string, unknown>
+  const itemId = itemAttr(item, 'id')
+  if (!itemId) return null
+
+  const nameField = itemObj.name
+  const nameArray: unknown[] = Array.isArray(nameField) ? nameField : [nameField]
+  const primaryNameNode = nameArray.find((n) => itemAttr(n, 'type') === 'primary') ?? nameArray[0]
+  const name = attrValue(primaryNameNode) ?? ''
+
+  const descriptionRaw = first(itemObj.description)
+  const imageRaw = first(itemObj.image)
+  const thumbnailRaw = first(itemObj.thumbnail)
+
+  const imageUrl = typeof imageRaw === 'string' ? imageRaw : ''
+  const thumbnailUrl = typeof thumbnailRaw === 'string' && thumbnailRaw ? thumbnailRaw : imageUrl
+
+  return {
+    id: itemId,
+    name,
+    description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
+    image: imageUrl,
+    thumbnail: thumbnailUrl,
+    yearpublished: attrValue(itemObj.yearpublished),
+    minplayers: attrValue(itemObj.minplayers),
+    maxplayers: attrValue(itemObj.maxplayers),
+    minplaytime: attrValue(itemObj.minplaytime),
+    maxplaytime: attrValue(itemObj.maxplaytime),
+    minage: attrValue(itemObj.minage),
+  }
+}
+
 export const bggThing = onCall(
   { enforceAppCheck: true, secrets: [BGG_API_KEY] },
   async (request) => {
-    const { id } = request.data as { id: string }
-    if (!id) throw new HttpsError('invalid-argument', 'Missing id')
+    const { ids } = request.data as { ids: string[] }
+    if (!Array.isArray(ids) || ids.length === 0)
+      throw new HttpsError('invalid-argument', 'Missing ids')
+    if (ids.length > 20) throw new HttpsError('invalid-argument', 'Too many ids (max 20)')
+    if (ids.some((id) => !/^\d+$/.test(id)))
+      throw new HttpsError('invalid-argument', 'Invalid id format')
 
-    const params = new URLSearchParams({ id }).toString()
+    const params = new URLSearchParams({ id: ids.join(',') }).toString()
     const url = `${BGG_BASE_URL}/thing?${params}`
     console.log(`Proxying thing to BGG: ${url}`)
 
@@ -136,40 +172,13 @@ export const bggThing = onCall(
       throw new HttpsError('internal', 'Unexpected response format from BGG')
     }
 
-    const item = first((rawItems as Record<string, unknown>).item)
-    if (item == null || typeof item !== 'object') {
-      throw new HttpsError('not-found', 'Item not found')
-    }
+    const itemField = (rawItems as Record<string, unknown>).item ?? []
+    const itemArray: unknown[] = Array.isArray(itemField) ? itemField : [itemField]
 
-    const itemObj = item as Record<string, unknown>
-    const itemId = itemAttr(item, 'id')
-    if (!itemId) throw new HttpsError('not-found', 'Item missing id')
+    const items = itemArray
+      .map(parseBggThingItem)
+      .filter((item): item is NonNullable<ReturnType<typeof parseBggThingItem>> => item !== null)
 
-    const nameField = itemObj.name
-    const nameArray: unknown[] = Array.isArray(nameField) ? nameField : [nameField]
-    const primaryNameNode = nameArray.find((n) => itemAttr(n, 'type') === 'primary') ?? nameArray[0]
-    const name = attrValue(primaryNameNode) ?? ''
-
-    // xml2js wraps text-only nodes as string arrays; unwrap with first()
-    const descriptionRaw = first(itemObj.description)
-    const imageRaw = first(itemObj.image)
-    const thumbnailRaw = first(itemObj.thumbnail)
-
-    const imageUrl = typeof imageRaw === 'string' ? imageRaw : ''
-    const thumbnailUrl = typeof thumbnailRaw === 'string' && thumbnailRaw ? thumbnailRaw : imageUrl
-
-    return {
-      id: itemId,
-      name,
-      description: typeof descriptionRaw === 'string' ? descriptionRaw : '',
-      image: imageUrl,
-      thumbnail: thumbnailUrl,
-      yearpublished: attrValue(itemObj.yearpublished),
-      minplayers: attrValue(itemObj.minplayers),
-      maxplayers: attrValue(itemObj.maxplayers),
-      minplaytime: attrValue(itemObj.minplaytime),
-      maxplaytime: attrValue(itemObj.maxplaytime),
-      minage: attrValue(itemObj.minage),
-    }
+    return { items }
   }
 )

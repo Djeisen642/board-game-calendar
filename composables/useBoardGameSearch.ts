@@ -74,15 +74,12 @@ export function useBoardGameSearch(
   async function displayEntries() {
     try {
       const entries = _getEntriesToShow()
-      const bggThingFn = httpsCallable<{ id: string }, BggThingResult>(
+      const bggThingFn = httpsCallable<{ ids: string[] }, { items: BggThingResult[] }>(
         $functions,
         'bggThing'
       )
-      const results = await Promise.all(
-        entries.map((entry) => bggThingFn({ id: entry.id }))
-      )
-      queriedEntries.value = results
-        .map((r) => r.data)
+      const result = await bggThingFn({ ids: entries.map((e) => e.id) })
+      queriedEntries.value = (result.data.items ?? [])
         .filter((item): item is BggThingResult => !!item)
         .map((item) => {
           const thumb = item.thumbnail ?? ''

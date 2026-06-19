@@ -579,9 +579,10 @@ function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
 }
 
 async function fetchAndCollect(id: string, fallbackName: string): Promise<void> {
-  const fn = httpsCallable<{ id: string }, BggGameMeta>($functions, 'bggThing')
-  const { data } = await fn({ id })
-  await set(push(dbRef(db, `users/${ownUid}/collection`)), buildGame(id, data, fallbackName))
+  const fn = httpsCallable<{ ids: string[] }, { items: BggGameMeta[] }>($functions, 'bggThing')
+  const { data } = await fn({ ids: [id] })
+  const item = data.items?.[0] ?? {}
+  await set(push(dbRef(db, `users/${ownUid}/collection`)), buildGame(id, item, fallbackName))
 }
 
 async function addToCollection(item: DisplayableItemType) {
