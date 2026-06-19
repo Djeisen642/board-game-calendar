@@ -26,6 +26,12 @@ export type Friend = Person & {
 export type Game = {
   id: string
   name: string
+  thumbnail?: string
+  minplayers?: string
+  maxplayers?: string
+  minplaytime?: string
+  maxplaytime?: string
+  yearpublished?: string
   publicNote?: string
 }
 
@@ -63,6 +69,7 @@ export type DisplayableItemType = {
   name: string
   description: string
   image: string
+  thumbnail: string
   url: string
   maxplayers: string
   maxplaytime: string

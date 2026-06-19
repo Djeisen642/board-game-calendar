@@ -89,6 +89,27 @@
               <v-list>
                 <template v-for="(item, id) in gamesMatchingFilter" :key="id">
                   <v-list-item class="game-item mb-2">
+                    <template #prepend>
+                      <v-avatar
+                        rounded="0"
+                        size="56"
+                        color="surface-variant"
+                        class="mr-3"
+                      >
+                        <v-img
+                          v-if="item.thumbnail"
+                          :src="item.thumbnail"
+                          :alt="item.name"
+                        />
+                        <v-icon
+                          v-else
+                          size="28"
+                          color="primary"
+                          style="opacity: 0.4"
+                          >mdi-cards-outline</v-icon
+                        >
+                      </v-avatar>
+                    </template>
                     <v-list-item-title>{{ item.name }}</v-list-item-title>
                     <v-rating
                       v-if="!isFriendView"
@@ -103,6 +124,12 @@
                         (val) => updateGameRating(item, val)
                       "
                     />
+                    <div
+                      v-if="formatGameInfo(item)"
+                      class="text-caption text-medium-emphasis"
+                    >
+                      {{ formatGameInfo(item) }}
+                    </div>
                     <template #append>
                       <div class="d-flex align-center gap-1">
                         <v-btn
@@ -114,7 +141,7 @@
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <v-icon>mdi-link</v-icon>
+                          BGG
                         </v-btn>
                         <v-btn
                           v-if="!isFriendView"
@@ -539,10 +566,34 @@ function openRateArea() {
   activeArea.value = 'addOpinion'
 }
 
+function formatGameInfo(game: Game): string {
+  const parts: string[] = []
+  const { minplayers: minP, maxplayers: maxP, minplaytime: minT, maxplaytime: maxT } = game
+  if (minP && maxP) {
+    parts.push(minP === maxP ? `${minP} players` : `${minP}–${maxP} players`)
+  } else if (minP ?? maxP) {
+    parts.push(`${minP ?? maxP} players`)
+  }
+  if (minT && maxT) {
+    parts.push(minT === maxT ? `${minT} min` : `${minT}–${maxT} min`)
+  } else if (minT ?? maxT) {
+    parts.push(`${minT ?? maxT} min`)
+  }
+  return parts.join(' · ')
+}
+
 async function addToCollection(item: DisplayableItemType) {
   try {
     const collRef = dbRef(db, `users/${ownUid}/collection`)
-    await set(push(collRef), { id: item.id, name: item.name })
+    const gameData: Record<string, string> = { id: item.id, name: item.name }
+    if (item.thumbnail) gameData.thumbnail = item.thumbnail
+    if (item.minplayers) gameData.minplayers = item.minplayers
+    if (item.maxplayers) gameData.maxplayers = item.maxplayers
+    if (item.minplaytime) gameData.minplaytime = item.minplaytime
+    if (item.maxplaytime) gameData.maxplaytime = item.maxplaytime
+    if (item.yearpublished && item.yearpublished !== '0')
+      gameData.yearpublished = item.yearpublished
+    await set(push(collRef), gameData)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
