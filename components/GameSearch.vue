@@ -21,7 +21,8 @@
       <v-list-item v-for="(item, i) in entriesToShow" :key="i">
         <template #prepend>
           <v-avatar rounded="0" size="56" color="surface-variant">
-            <v-img :src="item.thumbnail" :alt="item.name" />
+            <v-img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.name" />
+            <v-icon v-else size="32">mdi-gamepad-variant-outline</v-icon>
           </v-avatar>
         </template>
 
@@ -31,11 +32,12 @@
         <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
 
         <template #append>
-          <div class="d-flex gap-2">
+          <div class="d-flex">
             <v-btn
               :disabled="item.incollection"
               color="primary"
               size="small"
+              class="mr-2"
               @click.stop="addToCollection(item)"
             >
               <v-icon start>mdi-plus-circle</v-icon>Add

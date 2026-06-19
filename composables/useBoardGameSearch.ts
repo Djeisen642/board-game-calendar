@@ -49,7 +49,6 @@ export function useBoardGameSearch(
   const searchInput = ref('')
   const isLoading = ref(false)
   const queriedEntries = ref<DisplayableItemType[]>([])
-  const thumbnailById = ref<Record<string, string>>({})
   let searchTimerId: number | undefined
 
   const entriesToShow = computed(() =>
@@ -64,7 +63,6 @@ export function useBoardGameSearch(
     searchResults.value = []
     searchInput.value = ''
     queriedEntries.value = []
-    thumbnailById.value = {}
   }
 
   function _getEntriesToShow(): BoardGameSearchResult[] {
@@ -87,15 +85,14 @@ export function useBoardGameSearch(
         .map((r) => r.data)
         .filter((item): item is BggThingResult => !!item)
         .map((item) => {
-          if (item.thumbnail) {
-            thumbnailById.value = { ...thumbnailById.value, [item.id]: item.thumbnail }
-          }
+          const thumb = item.thumbnail ?? ''
+          const thumbnailUrl = thumb.startsWith('//') ? `https:${thumb}` : thumb
           return {
             id: item.id,
             name: item.name,
             description: helpers.decodeHtml(item.description),
             image: item.image,
-            thumbnail: item.thumbnail ?? '',
+            thumbnail: thumbnailUrl,
             url: `https://boardgamegeek.com/boardgame/${item.id}`,
             maxplayers: item.maxplayers ?? '',
             maxplaytime: item.maxplaytime ?? '',
@@ -164,7 +161,6 @@ export function useBoardGameSearch(
     searchInput,
     isLoading,
     entriesToShow,
-    thumbnailById,
     resetData,
     displayEntries,
   }
