@@ -1,5 +1,5 @@
 <template>
-  <v-card-text>
+  <div>
     <v-autocomplete
       ref="boardGameSearch"
       v-model="selectedItem"
@@ -57,7 +57,7 @@
       Showing the top {{ constants.NumberToShow }} matches — refine your search
       to narrow the results.
     </div>
-  </v-card-text>
+  </div>
 </template>
 
 <script setup lang="ts">

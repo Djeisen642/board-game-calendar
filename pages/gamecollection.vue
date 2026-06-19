@@ -88,58 +88,58 @@
               />
               <v-list>
                 <template v-for="(item, id) in gamesMatchingFilter" :key="id">
-                  <v-list-item :title="item.name" class="game-item mb-2">
+                  <v-list-item class="game-item mb-2">
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-rating
+                      v-if="!isFriendView"
+                      :model-value="opinions[item.id]?.rating ?? 0"
+                      half-increments
+                      hover
+                      size="x-small"
+                      density="compact"
+                      color="secondary"
+                      active-color="secondary"
+                      @update:model-value="
+                        (val) => updateGameRating(item, val)
+                      "
+                    />
                     <template #append>
-                      <div class="d-flex flex-column align-end gap-1">
-                        <v-rating
-                          v-if="!isFriendView"
-                          :model-value="opinions[item.id]?.rating ?? 0"
-                          half-increments
-                          hover
+                      <div class="d-flex align-center gap-1">
+                        <v-btn
+                          density="compact"
                           size="small"
-                          color="secondary"
-                          active-color="secondary"
-                          @update:model-value="
-                            (val) => updateGameRating(item, val)
+                          variant="text"
+                          color="primary"
+                          :href="`https://boardgamegeek.com/boardgame/${item.id}`"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <v-icon>mdi-link</v-icon>
+                        </v-btn>
+                        <v-btn
+                          v-if="!isFriendView"
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          :color="
+                            expandedItems.has(String(id))
+                              ? 'primary'
+                              : 'default'
                           "
-                        />
-                        <div class="d-flex gap-1">
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="primary"
-                            :href="`https://boardgamegeek.com/boardgame/${item.id}`"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <v-icon>mdi-link</v-icon>
-                          </v-btn>
-                          <v-btn
-                            v-if="!isFriendView"
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            :color="
-                              expandedItems.has(String(id))
-                                ? 'primary'
-                                : 'default'
-                            "
-                            @click.stop="toggleExpanded(String(id))"
-                          >
-                            <v-icon>mdi-note-text-outline</v-icon>
-                          </v-btn>
-                          <v-btn
-                            v-if="!isFriendView"
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="error"
-                            @click.stop="removeGameFromCollection(String(id))"
-                          >
-                            <v-icon start>mdi-minus-circle</v-icon>Remove
-                          </v-btn>
-                        </div>
+                          @click.stop="toggleExpanded(String(id))"
+                        >
+                          <v-icon>mdi-note-text-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          v-if="!isFriendView"
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="error"
+                          @click.stop="removeGameFromCollection(String(id))"
+                        >
+                          <v-icon>mdi-delete-outline</v-icon>
+                        </v-btn>
                       </div>
                     </template>
                   </v-list-item>
@@ -173,54 +173,54 @@
               <div class="section-label mb-3">Also Rated</div>
               <v-list>
                 <template v-for="entry in alsoRatedGames" :key="entry.gameId">
-                  <v-list-item :title="entry.name" class="game-item mb-2">
+                  <v-list-item class="game-item mb-2">
+                    <v-list-item-title>{{ entry.name }}</v-list-item-title>
+                    <v-rating
+                      :model-value="entry.rating ?? 0"
+                      half-increments
+                      hover
+                      size="x-small"
+                      density="compact"
+                      color="secondary"
+                      active-color="secondary"
+                      @update:model-value="
+                        (val) =>
+                          updateOpinionRating(entry.gameId, entry.name, val)
+                      "
+                    />
                     <template #append>
-                      <div class="d-flex flex-column align-end gap-1">
-                        <v-rating
-                          :model-value="entry.rating ?? 0"
-                          half-increments
-                          hover
+                      <div class="d-flex align-center gap-1">
+                        <v-btn
+                          density="compact"
                           size="small"
-                          color="secondary"
-                          active-color="secondary"
-                          @update:model-value="
-                            (val) =>
-                              updateOpinionRating(entry.gameId, entry.name, val)
+                          variant="text"
+                          :color="
+                            expandedItems.has(entry.gameId)
+                              ? 'primary'
+                              : 'default'
                           "
-                        />
-                        <div class="d-flex gap-1">
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            :color="
-                              expandedItems.has(entry.gameId)
-                                ? 'primary'
-                                : 'default'
-                            "
-                            @click.stop="toggleExpanded(entry.gameId)"
-                          >
-                            <v-icon>mdi-note-text-outline</v-icon>
-                          </v-btn>
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="success"
-                            @click.stop="addOpinionGameToCollection(entry)"
-                          >
-                            <v-icon start>mdi-plus-circle</v-icon>Add
-                          </v-btn>
-                          <v-btn
-                            density="compact"
-                            size="small"
-                            variant="text"
-                            color="error"
-                            @click.stop="deleteOpinion(entry.gameId)"
-                          >
-                            <v-icon>mdi-delete-outline</v-icon>
-                          </v-btn>
-                        </div>
+                          @click.stop="toggleExpanded(entry.gameId)"
+                        >
+                          <v-icon>mdi-note-text-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="success"
+                          @click.stop="addOpinionGameToCollection(entry)"
+                        >
+                          <v-icon>mdi-plus-circle</v-icon>
+                        </v-btn>
+                        <v-btn
+                          density="compact"
+                          size="small"
+                          variant="text"
+                          color="error"
+                          @click.stop="deleteOpinion(entry.gameId)"
+                        >
+                          <v-icon>mdi-delete-outline</v-icon>
+                        </v-btn>
                       </div>
                     </template>
                   </v-list-item>
