@@ -120,7 +120,7 @@
                       {{ formatGameInfo(item) }}
                     </div>
                     <template #append>
-                      <div class="d-flex align-center gap-1">
+                      <div class="d-flex align-center gap-2">
                         <v-btn
                           density="compact"
                           size="small"
@@ -205,7 +205,7 @@
                       "
                     />
                     <template #append>
-                      <div class="d-flex align-center gap-1">
+                      <div class="d-flex align-center gap-2">
                         <v-btn
                           density="compact"
                           size="small"
@@ -608,6 +608,8 @@ async function addToCollection(item: DisplayableItemType) {
       push(dbRef(db, `users/${ownUid}/collection`)),
       buildGame(item.id, item, item.name)
     )
+    activeArea.value = 'collection'
+    snackbar.value?.showSnackbarWithMessage(`${item.name} added to collection`, false)
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
