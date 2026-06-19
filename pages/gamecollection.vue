@@ -85,10 +85,8 @@
                     <v-rating
                       v-if="!isFriendView"
                       :model-value="opinions[item.id]?.rating ?? 0"
-                      half-increments
                       hover
-                      size="x-small"
-                      density="compact"
+                      size="small"
                       color="secondary"
                       active-color="secondary"
                       @update:model-value="
@@ -177,10 +175,8 @@
                     <v-list-item-title>{{ entry.name }}</v-list-item-title>
                     <v-rating
                       :model-value="entry.rating ?? 0"
-                      half-increments
                       hover
-                      size="x-small"
-                      density="compact"
+                      size="small"
                       color="secondary"
                       active-color="secondary"
                       @update:model-value="
@@ -294,9 +290,7 @@
               </div>
               <v-rating
                 v-model="pendingRating"
-                half-increments
                 hover
-                size="small"
                 color="secondary"
                 active-color="secondary"
                 class="mb-3"
