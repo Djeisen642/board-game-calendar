@@ -17,6 +17,19 @@ To manage packages in the `functions` workspace, use `yarn workspace functions a
 
 Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
 
+### Screenshots
+
+```bash
+yarn screenshot /calendar              # mobile + desktop
+yarn screenshot /gamecollection --mobile
+yarn screenshot /calendar --desktop --full-page
+yarn screenshot /gatherings/new --fixture scripts/fixtures/custom.json
+```
+
+Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). No Firebase credentials needed — the dev server starts automatically with all Firebase modules mocked and a fake logged-in user (`screenshot-uid-1`, "Alex Johnson").
+
+Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB path structure (`profiles/`, `users/`, `gatherings/`, etc.). To use custom data, copy it, edit, and pass `--fixture scripts/fixtures/my-fixture.json`. The `/screenshot` slash command in Claude Code wraps `yarn screenshot`.
+
 ## Stack
 
 | Layer     | Choice                                              | Notes                                                                                                     |
@@ -113,8 +126,6 @@ type Game = {
   id: string // BoardGameGeek game ID
   name: string
   rating?: number
-  privateNote?: string // defined but not yet written/read in UI
-  publicNote?: string // defined but not yet written/read in UI
 }
 
 // users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
@@ -175,7 +186,7 @@ Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.sp
 
 ## Design Conventions
 
-The app uses a consistent dark glassmorphism design system. All new UI must follow these conventions — do not introduce new colors, spacing values, or component patterns without updating this section first.
+The app uses a consistent dark glassmorphism design system. All new UI must follow these conventions.
 
 ### Color palette (defined in `nuxt.config.ts` → `vuetifyOptions.theme.themes.dark.colors`)
 
@@ -348,7 +359,6 @@ All pages target mobile-first. Breakpoints:
 }
 ```
 
-**Accessibility**: icon-only buttons require `aria-label` + `title`. Do not rely on color alone — pair status colors with icons or labels. Never use `color="primary"` for text/icon buttons on card backgrounds (contrast fails WCAG AA).
 
 ## Pull Requests
 
