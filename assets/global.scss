@@ -183,3 +183,31 @@
   background: rgba(108, 92, 231, 0.3);
   color: #fff;
 }
+
+// ── Responsive page card header ───────────────────────────────────────────────
+// Apply page-card-title to v-card-title. Title and action buttons sit on one
+// row at desktop width; actions wrap below the title on narrow viewports.
+.page-card-title {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 16px 20px !important;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+// ── Event / list-item action row ─────────────────────────────────────────────
+// Separate action buttons from event metadata so they never fight for width.
+.event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}

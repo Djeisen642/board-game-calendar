@@ -173,6 +173,81 @@ BoardGameGeek XML API v2 — proxied via Firebase Cloud Functions (`bggSearch`, 
 
 Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.spec.ts`); security-rules tests in `test/rules/` run via `yarn test:rules` against the RTDB emulator (`vitest.rules.config.ts`). Vitest requires `environment: 'jsdom'` (set in `vitest.config.ts`). Vuetify must be inlined via `server.deps.inline: ['vuetify']` to avoid CSS import errors. Import `createVuetify` and pass it as a global plugin to `mount`.
 
+## Mobile Design Conventions
+
+The app targets mobile-first. All pages use `cols="12"` at `xs` and narrow at `sm`/`md`.
+
+### Breakpoints (Vuetify 4)
+
+| Token | Width |
+|-------|-------|
+| `xs` | < 600 px — single-column mobile |
+| `sm` | 600–960 px — tablet portrait |
+| `md` | 960–1280 px — small desktop |
+| `lg`/`xl` | 1280 px+ — desktop |
+
+### Reusable classes (`assets/global.scss`)
+
+| Class | Where | Behavior |
+|-------|-------|----------|
+| `page-card-title` | `v-card-title` | `flex-wrap` container; title and actions sit in one row at desktop, actions wrap below on narrow viewports |
+| `page-header-actions` | wrapper `div` inside `page-card-title` | `margin-left: auto` so actions right-align on desktop; wraps naturally on `xs` |
+| `event-actions` | bottom of an event/list-item card | `flex-wrap` row for action buttons; keeps them off the metadata row |
+
+### Patterns
+
+**Every page card header** uses:
+```html
+<v-card-title class="page-card-title">
+  <div class="d-flex align-center">
+    <v-icon color="primary" class="mr-3 flex-shrink-0">mdi-icon</v-icon>
+    <span class="page-title">Title</span>
+  </div>
+  <div class="page-header-actions">
+    <v-btn ...>Action</v-btn>
+  </div>
+</v-card-title>
+```
+
+**Event / gathering cards** separate metadata from actions:
+```html
+<div class="d-flex align-center flex-wrap gap-2 mb-2">
+  <v-chip ...>state</v-chip>
+  <span>datetime</span>
+</div>
+<!-- info rows (host, games, guests) -->
+<div class="event-actions">
+  <v-btn density="compact" size="small" ...>Primary</v-btn>
+  <v-btn density="compact" size="small" ...>Secondary</v-btn>
+</div>
+```
+
+**List item action buttons** (3 or more in an `#append` slot) use `icon` prop + `aria-label` + `title`:
+```html
+<v-btn icon size="small" variant="text" color="secondary"
+  aria-label="Open on BGG" title="Open on BGG"
+  :href="bggUrl" target="_blank" rel="noopener noreferrer">
+  <v-icon>mdi-open-in-new</v-icon>
+</v-btn>
+```
+
+### Accessibility rules
+
+- **Color contrast**: never use `color="primary"` (purple `#6c5ce7`) for text or icon buttons on dark card backgrounds — contrast ratio is ~2.3:1, below WCAG AA. Use `color="secondary"` (teal `#00cec9`, ~8.5:1) for links/secondary actions.
+- **Icon-only buttons**: always include `aria-label` (screen readers) and `title` (mouse tooltip). No exceptions.
+- **Don't rely on color alone**: pair status colors with icons or text labels (e.g., error state uses red chip + "Cancel" label).
+- **`v-list-item-title` clipping**: Vuetify 4 clips titles to one line with `white-space: nowrap`. When a list item has a prepend avatar and multiple append buttons, the title will truncate badly on mobile. Fix in scoped CSS:
+  ```scss
+  .my-item :deep(.v-list-item-title) {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.35;
+  }
+  ```
+
 ## Pull Requests
 
 When writing PR descriptions (e.g. via `mcp__github__create_pull_request`), pass the `body` string as a plain JSON string — **never** wrap it in a shell heredoc like `$(cat <<'EOF' ... EOF)`. The GitHub MCP tool receives the value directly as a JSON parameter; heredoc syntax will be passed literally as the PR body text rather than being interpolated. Similarly, do **not** use `\n` escape sequences in the body string — use actual line breaks in the JSON string value instead.
