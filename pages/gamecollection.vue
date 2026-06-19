@@ -121,7 +121,7 @@
                       {{ formatGameInfo(item) }}
                     </div>
                     <template #append>
-                      <div class="d-flex align-center">
+                      <div class="d-flex align-center gap-2">
                         <v-btn
                           size="small"
                           variant="text"
@@ -203,7 +203,7 @@
                       "
                     />
                     <template #append>
-                      <div class="d-flex align-center">
+                      <div class="d-flex align-center gap-2">
                         <v-btn
                           size="small"
                           variant="text"
