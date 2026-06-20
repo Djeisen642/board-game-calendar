@@ -111,6 +111,31 @@
                 >
                   <v-icon start>mdi-check-circle</v-icon>Confirm
                 </v-btn>
+                <v-menu v-if="gathering.state !== 'canceled'">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      density="compact"
+                      size="small"
+                      variant="text"
+                      color="accent"
+                    >
+                      <v-icon start>mdi-calendar-export</v-icon>Add to calendar
+                    </v-btn>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      prepend-icon="mdi-google"
+                      title="Google Calendar"
+                      @click="addToGoogle(gathering)"
+                    />
+                    <v-list-item
+                      prepend-icon="mdi-calendar-arrow-right"
+                      title="Apple / Outlook (.ics)"
+                      @click="addToApple(gathering)"
+                    />
+                  </v-list>
+                </v-menu>
                 <v-btn
                   v-if="gathering.state !== 'canceled'"
                   density="compact"
@@ -205,6 +230,31 @@
                 >
                   <v-icon start>mdi-close-circle</v-icon>Decline
                 </v-btn>
+                <v-menu>
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      density="compact"
+                      size="small"
+                      variant="text"
+                      color="accent"
+                    >
+                      <v-icon start>mdi-calendar-export</v-icon>Add to calendar
+                    </v-btn>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      prepend-icon="mdi-google"
+                      title="Google Calendar"
+                      @click="addToGoogle(gathering)"
+                    />
+                    <v-list-item
+                      prepend-icon="mdi-calendar-arrow-right"
+                      title="Apple / Outlook (.ics)"
+                      @click="addToApple(gathering)"
+                    />
+                  </v-list>
+                </v-menu>
               </div>
             </div>
           </template>
@@ -230,12 +280,18 @@ import {
   formatDatetime,
   type GatheringWithId,
 } from '~/helpers/gatherings'
+import {
+  googleCalendarUrl,
+  downloadIcs,
+  toCalendarEventInput,
+} from '~/helpers/calendar'
 import type { Gathering, GatheringState, GuestResponse } from '~/helpers/types'
 
 useHead({ title: 'Calendar' })
 
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
 const logEvent = nuxtApp.$logEvent
@@ -250,6 +306,39 @@ const gatheringListeners = new Map<string, () => void>()
 
 const uid = userStore.user!.uid
 const { names, resolveNames, guestEntries } = useGatheringDisplay()
+
+// Email "Accept"/"Decline" buttons deep-link here as
+// /calendar?id={gatheringId}&respond=accepted|declined. The RSVP is applied
+// once the gathering loads and we confirm the user is one of its invited guests.
+const pendingRsvp = ref<{ id: string; response: GuestResponse } | null>(null)
+
+function appUrl(): string {
+  return window.location.origin
+}
+
+function calendarInput(gathering: GatheringWithId) {
+  return toCalendarEventInput(gathering, names.value[gathering.host])
+}
+
+function addToGoogle(gathering: GatheringWithId) {
+  window.open(
+    googleCalendarUrl(calendarInput(gathering), appUrl()),
+    '_blank',
+    'noopener'
+  )
+  logEvent('gathering_add_to_calendar', { provider: 'google' })
+}
+
+function addToApple(gathering: GatheringWithId) {
+  downloadIcs(calendarInput(gathering), appUrl())
+  logEvent('gathering_add_to_calendar', { provider: 'ics' })
+}
+
+function clearRsvpQuery() {
+  if (route.query.respond || route.query.id) {
+    void router.replace({ path: routes.calendar })
+  }
+}
 
 function dropGathering(id: string) {
   const { [id]: _gone, ...rest } = gatheringsById.value
@@ -277,6 +366,14 @@ function watchGathering(id: string) {
 }
 
 onMounted(() => {
+  const respondParam = route.query.respond
+  const idParam = route.query.id
+  if (
+    (respondParam === 'accepted' || respondParam === 'declined') &&
+    typeof idParam === 'string'
+  ) {
+    pendingRsvp.value = { id: idParam, response: respondParam }
+  }
   unsubscribeIndex = onValue(
     dbRef(db, `userGatherings/${uid}`),
     (snapshot) => {
@@ -322,6 +419,39 @@ const invited = computed(() => sections.value.invited)
 
 watch(sections, (value) => {
   void resolveNames(value)
+})
+
+// Apply an email-deep-linked RSVP once its gathering has loaded. Fires when
+// gatherings arrive (or when the intent is first set).
+watch([gatheringsById, pendingRsvp], async () => {
+  const intent = pendingRsvp.value
+  if (!intent) return
+  const gathering = gatheringsById.value[intent.id]
+  if (!gathering) return // not loaded yet (or the user isn't a participant)
+  // Only invited guests can RSVP; hosts and non-invitees are ignored.
+  if (gathering.host === uid || !(uid in (gathering.guests ?? {}))) {
+    pendingRsvp.value = null
+    clearRsvpQuery()
+    return
+  }
+  const { response } = intent
+  pendingRsvp.value = null // clear before awaiting to avoid re-entry
+  if (gathering.state === 'canceled') {
+    snackbar.value?.showSnackbarWithMessage(
+      'This gathering has been canceled.',
+      true
+    )
+    clearRsvpQuery()
+    return
+  }
+  await respond({ id: intent.id, ...gathering }, response)
+  snackbar.value?.showSnackbarWithMessage(
+    response === 'accepted'
+      ? 'You accepted the invitation.'
+      : 'You declined the invitation.',
+    false
+  )
+  clearRsvpQuery()
 })
 
 function myResponse(gathering: Gathering): GuestResponse | undefined {

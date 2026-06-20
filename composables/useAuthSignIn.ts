@@ -14,6 +14,7 @@ import routes from '~/helpers/routes'
 export function useAuthSignIn() {
   const userStore = useUserStore()
   const router = useRouter()
+  const route = useRoute()
   const nuxtApp = useNuxtApp()
   const auth = nuxtApp.$auth
   const db = nuxtApp.$db
@@ -26,6 +27,16 @@ export function useAuthSignIn() {
     helpers.handleError(err)
     errorMessage.value = authErrorMessage(err)
     return false
+  }
+
+  // Honor ?redirect=… set by the auth middleware (e.g. an email RSVP
+  // deep-link), but only for internal paths to avoid an open-redirect.
+  function redirectTarget(): string {
+    const redirect = route.query.redirect
+    if (typeof redirect === 'string' && /^\/(?!\/)/.test(redirect)) {
+      return redirect
+    }
+    return routes.gameCollection
   }
 
   // queryableEmail is validated against the *verified* auth token email by
@@ -67,7 +78,7 @@ export function useAuthSignIn() {
       userStore.setUser(user)
       logEvent('login', { method: provider.providerId })
       await writeProfile(user, user.displayName)
-      await router.push(routes.gameCollection)
+      await router.push(redirectTarget())
       return true
     } catch (err) {
       return fail(err)
