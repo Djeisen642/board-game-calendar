@@ -67,7 +67,7 @@ Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB
 - `plugins/firebase.ts` — exports `db`, `auth`, `logEvent`, `log`; uses Firebase 12 modular SDK (`firebase/app`, `/auth`, `/database`, `/analytics`)
 - `plugins/fireauth.client.ts` — Nuxt 4 client-only plugin; awaits first `onAuthStateChanged` callback to hydrate the Pinia store before navigation runs
 - `stores/user.ts` — Pinia store; state: `{ user: User | null }`; actions: `setUser`, `signInWithGoogle`, `signOut`
-- `middleware/auth.global.ts` — Nuxt 4 auto-global route middleware; redirects unauthenticated users to `/signin`, authenticated users away from `/signin`
+- `middleware/auth.global.ts` — Nuxt 4 auto-global route middleware; redirects unauthenticated users to `/signin?redirect={intended fullPath}` (so email RSVP deep-links survive login), authenticated users away from `/signin`. `useAuthSignIn` reads `?redirect` after sign-in (internal paths only, open-redirect-guarded; falls back to `/gamecollection`)
 - `firebase.config.ts` — Firebase credentials (dev vs prod via `NODE_ENV`; committed; public project)
 - `helpers/types.ts` — shared TypeScript types including `FormInstance` for Vuetify 4 form refs
 - `helpers/routes.ts` — route path constants
@@ -75,6 +75,7 @@ Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB
 - `helpers/constants.ts` — `LoadingTimeoutInMs`, `DebounceThrottleInMs`, BGG API constants
 - `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
 - `helpers/gatherings.ts` — `splitGatherings`, state/response color+icon maps, `formatDatetime`
+- `helpers/calendar.ts` — calendar-export builders: `googleCalendarUrl()` (Google "new event" template URL), `buildIcs()` (single-VEVENT `.ics`, `PUBLISH`, 3-hour default duration since gatherings store no end time, RFC-5545 escaped, no location since the host address is private), `downloadIcs()` (browser blob download), `toCalendarEventInput()`. The Cloud Functions duplicate this logic server-side (their build has its own `rootDir`, same as `formatDatetime`) — keep both in sync
 - `firebase.json` — Firebase Hosting config
 - `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
 
@@ -183,6 +184,14 @@ BoardGameGeek XML API v2 — proxied via Firebase Cloud Functions (`bggSearch`, 
 - **Authorization is required.** Every request must include an `Authorization: Bearer <token>` header. Tokens are created at https://boardgamegeek.com/applications after registering an application (non-commercial license is free). The token is stored in Secret Manager as `BGG_API_KEY` and accessed via `defineSecret('BGG_API_KEY')` in the Cloud Functions. Requests must go to `boardgamegeek.com` (no `www.` prefix) or the token will not work.
 - Subject to rate limits and occasional 202 "try again" responses
 - Client calls via `httpsCallable` from `firebase/functions`; App Check enforced
+
+## Email notifications & calendar export
+
+Transactional emails are sent server-side from `functions/src/index.ts` via Resend (`RESEND_API_KEY` secret; `FROM_EMAIL`; `APP_URL = https://bgc.jasonsuttles.dev` — keep this current with the deployed domain, it backs every email link). Triggers: `onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`.
+
+- **Calendar export in-app**: the calendar page renders an "Add to calendar" menu (Google Calendar / Apple·Outlook `.ics`) on every non-canceled hosting and invited card, via `helpers/calendar.ts`.
+- **Calendar in emails**: invite + confirmation emails include an "Add to Google Calendar" link and attach a `.ics` invite (`sendEmail`'s optional `attachments: [{ filename, content }]`, content base64). Cancellation emails get neither.
+- **RSVP from email**: the invite email has Accept/Decline buttons that deep-link to `/calendar?id={gatheringId}&respond=accepted|declined`. The calendar page applies the RSVP on mount once the gathering loads and confirms the user is an invited guest (writes `gatherings/{id}/guests/{uid}` under the existing rules — login required, no new security surface), then strips the query. This relies on the `?redirect` sign-in flow above.
 
 ## Test Setup
 

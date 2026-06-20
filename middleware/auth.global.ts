@@ -12,6 +12,8 @@ export default defineNuxtRouteMiddleware((to) => {
     to.name &&
     ![names.index, names.signIn].includes(to.name as string)
   ) {
-    return navigateTo(routes.signIn)
+    // Preserve the intended destination (incl. query, e.g. email RSVP
+    // deep-links) so sign-in can return the user there.
+    return navigateTo({ path: routes.signIn, query: { redirect: to.fullPath } })
   }
 })
