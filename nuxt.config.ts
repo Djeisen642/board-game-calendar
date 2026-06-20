@@ -19,11 +19,12 @@ export default defineNuxtConfig({
       title: 'Board Game Calendar',
       htmlAttrs: { lang: 'en' },
       style: [
-        { innerHTML: 'html,body{background-color:#100A04}', type: 'text/css' },
+        { innerHTML: 'html,body{background-color:#0E1A12}', type: 'text/css' },
       ],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'theme-color', content: '#0E1A12' },
         {
           name: 'description',
           content:
@@ -76,8 +77,8 @@ export default defineNuxtConfig({
           dark: {
             dark: true,
             colors: {
-              background: '#100A04',
-              surface: '#1E1205',
+              background: '#0E1A12',
+              surface: '#20140A',
               'surface-variant': '#2A1A0B',
               primary: '#C8860A',
               'primary-darken-1': '#9A640A',

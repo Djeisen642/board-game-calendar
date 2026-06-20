@@ -8,7 +8,12 @@
             <div class="mb-5">
               <BGCLogo />
             </div>
-            <h1 class="hero-title mb-4">Board Game Calendar</h1>
+            <h1 class="hero-title mb-3">Board Game Calendar</h1>
+            <div class="hero-ornament mb-4" aria-hidden="true">
+              <span class="hero-rule" />
+              <span class="hero-pip" />
+              <span class="hero-rule" />
+            </div>
             <p class="hero-subtitle mb-2">
               Schedule board game nights around the games you love — not the
               ones that attract the least common denominator.
@@ -118,6 +123,33 @@ const features = [
     0 0 20px rgba(200, 134, 10, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.5);
   line-height: 1.25;
+}
+
+.hero-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.hero-rule {
+  display: block;
+  width: 56px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 134, 10, 0.6));
+}
+
+.hero-rule:last-child {
+  background: linear-gradient(90deg, rgba(200, 134, 10, 0.6), transparent);
+}
+
+.hero-pip {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: #c8860a;
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px rgba(200, 134, 10, 0.6);
 }
 
 .hero-subtitle {

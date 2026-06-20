@@ -1,9 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="24" height="24">
-  <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="24" height="24" viewBox="0 0 24 24">
-    <path
-      d="M19,22H5V20H19V22M17.16,8.26C18.22,9.63 18.86,11.28 19,13C19,15.76 15.87,18 12,18C8.13,18 5,15.76 5,13C5,10.62 7.33,6.39 10.46,5.27C10.16,4.91 10,4.46 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.46 13.84,4.91 13.54,5.27C14.4,5.6 15.18,6.1 15.84,6.74L11.29,11.29L12.71,12.71L17.16,8.26Z"/>
-  </svg>
-  <style>@media (prefers-color-scheme: light) { :root { filter: none; } }
-    @media (prefers-color-scheme: dark) { :root { filter: invert(100%); } }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="11" fill="#0E1A12"/>
+  <rect x="1.5" y="1.5" width="45" height="45" rx="9.5" fill="none" stroke="#C8860A" stroke-opacity="0.35" stroke-width="1.5"/>
+  <g transform="translate(24 25) scale(0.36) translate(-40 -50)" fill="#C8860A">
+    <circle cx="40" cy="16" r="14"/>
+    <path d="M 40 29
+             L 20 36 L 4 32
+             C 1 32 1 40 4 42
+             L 22 47 L 24 86
+             C 24 91 27 94 31 94
+             L 36 94 L 36 72 L 44 72 L 44 94 L 49 94
+             C 53 94 56 91 56 86
+             L 58 47 L 76 42
+             C 79 40 79 32 76 32
+             L 60 36 Z"/>
+  </g>
 </svg>
