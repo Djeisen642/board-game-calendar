@@ -48,7 +48,7 @@ export function getAuth(_app?: unknown): MockAuth {
 export function onAuthStateChanged(
   _auth: MockAuth,
   callback: (user: MockUser | null) => void,
-  _onError?: (err: Error) => void,
+  _onError?: (err: Error) => void
 ): () => void {
   setTimeout(() => callback(FAKE_USER), 0)
   return () => {}
@@ -59,12 +59,26 @@ export async function signInWithPopup(): Promise<never> {
 }
 
 export async function signInWithEmailAndPassword(): Promise<never> {
-  throw new Error('signInWithEmailAndPassword is unavailable in screenshot mode')
+  throw new Error(
+    'signInWithEmailAndPassword is unavailable in screenshot mode'
+  )
 }
 
 export async function createUserWithEmailAndPassword(): Promise<never> {
-  throw new Error('createUserWithEmailAndPassword is unavailable in screenshot mode')
+  throw new Error(
+    'createUserWithEmailAndPassword is unavailable in screenshot mode'
+  )
 }
+
+export async function fetchSignInMethodsForEmail(): Promise<string[]> {
+  return []
+}
+
+export async function linkWithCredential(): Promise<never> {
+  throw new Error('linkWithCredential is unavailable in screenshot mode')
+}
+
+export async function sendEmailVerification(): Promise<void> {}
 
 export async function sendPasswordResetEmail(): Promise<void> {}
 
@@ -74,11 +88,19 @@ export async function updateProfile(): Promise<void> {}
 
 export class GoogleAuthProvider {
   static PROVIDER_ID = 'google.com'
-  addScope(_scope: string) { return this }
+  static credentialFromError(_error: unknown) {
+    return null
+  }
+  addScope(_scope: string) {
+    return this
+  }
 }
 
 export class FacebookAuthProvider {
   static PROVIDER_ID = 'facebook.com'
+  static credentialFromError(_error: unknown) {
+    return null
+  }
   providerId = 'facebook.com'
 }
 

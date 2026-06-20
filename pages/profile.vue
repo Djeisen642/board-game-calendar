@@ -6,10 +6,22 @@
           <v-icon color="primary" class="mr-3">mdi-account-circle</v-icon>
           <span class="page-title">Profile</span>
           <v-spacer />
-          <v-btn v-if="!editable && !loading" variant="elevated" color="primary" size="small" @click.stop="editable = true">
+          <v-btn
+            v-if="!editable && !loading"
+            variant="elevated"
+            color="primary"
+            size="small"
+            @click.stop="editable = true"
+          >
             <v-icon start>mdi-pencil</v-icon>Edit
           </v-btn>
-          <v-btn v-if="editable" variant="elevated" color="success" size="small" @click.stop="updateProfile">
+          <v-btn
+            v-if="editable"
+            variant="elevated"
+            color="success"
+            size="small"
+            @click.stop="updateProfile"
+          >
             <v-icon start>mdi-content-save</v-icon>Save
           </v-btn>
         </v-card-title>
@@ -19,22 +31,66 @@
         </v-card-text>
         <v-card-text v-else-if="editable" class="pa-6">
           <v-form ref="profileForm">
-            <v-text-field v-model="profile.name" :label="labels.name" :rules="[validation.isRequired]" prepend-inner-icon="mdi-account-outline" class="mb-1" />
-            <v-text-field v-model="profile.phoneNumber" :label="labels.phoneNumber" :rules="[validation.isPhone]" prepend-inner-icon="mdi-phone-outline" class="mb-1" />
-            <v-text-field :model-value="authEmail ?? ''" :label="labels.email" disabled hint="Email comes from your sign-in account" persistent-hint prepend-inner-icon="mdi-email-outline" class="mb-1" />
-            <v-textarea v-model="profile.address" :label="labels.address" prepend-inner-icon="mdi-map-marker-outline" rows="3" />
-            <v-text-field v-model="profile.maxPeople" type="number" :label="labels.maxPeople" :rules="[validation.isMaxPeople]" prepend-inner-icon="mdi-account-multiple-outline" />
+            <v-text-field
+              v-model="profile.name"
+              :label="labels.name"
+              :rules="[validation.isRequired]"
+              prepend-inner-icon="mdi-account-outline"
+              class="mb-1"
+            />
+            <v-text-field
+              v-model="profile.phoneNumber"
+              :label="labels.phoneNumber"
+              :rules="[validation.isPhone]"
+              prepend-inner-icon="mdi-phone-outline"
+              class="mb-1"
+            />
+            <v-text-field
+              :model-value="authEmail ?? ''"
+              :label="labels.email"
+              disabled
+              hint="Email comes from your sign-in account"
+              persistent-hint
+              prepend-inner-icon="mdi-email-outline"
+              class="mb-1"
+            />
+            <v-textarea
+              v-model="profile.address"
+              :label="labels.address"
+              prepend-inner-icon="mdi-map-marker-outline"
+              rows="3"
+            />
+            <v-text-field
+              v-model="profile.maxPeople"
+              type="number"
+              :label="labels.maxPeople"
+              :rules="[validation.isMaxPeople]"
+              prepend-inner-icon="mdi-account-multiple-outline"
+            />
           </v-form>
         </v-card-text>
         <v-card-text v-else class="pa-6">
           <div class="profile-fields">
-            <div v-for="field in profileFields" :key="field.icon" class="profile-field">
-              <v-icon size="20" color="primary" class="profile-field-icon">{{ field.icon }}</v-icon>
+            <div
+              v-for="field in profileFields"
+              :key="field.icon"
+              class="profile-field"
+            >
+              <v-icon size="20" color="primary" class="profile-field-icon">{{
+                field.icon
+              }}</v-icon>
               <div>
                 <div class="profile-field-label">{{ field.label }}</div>
                 <div class="profile-field-value">
                   <template v-if="field.isAddress && profile.address">
-                    <a style="white-space: pre-wrap" target="_blank" rel="noopener noreferrer" :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(removeNewLines(profile.address))}`" class="address-link">{{ profile.address }}</a>
+                    <a
+                      style="white-space: pre-wrap"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(removeNewLines(profile.address))}`"
+                      class="address-link"
+                      >{{ profile.address }}</a
+                    >
                   </template>
                   <template v-else>{{ field.value || 'Not set' }}</template>
                 </div>
@@ -61,9 +117,20 @@ useHead({ title: 'Profile' })
 
 // name lives in the public profiles/{uid} node; the rest under owner-only
 // users/{uid}; email comes from the auth account and isn't stored directly
-type UserProfile = { name: string; phoneNumber: string; address: string; maxPeople: number }
+type UserProfile = {
+  name: string
+  phoneNumber: string
+  address: string
+  maxPeople: number
+}
 
-const labels = { name: 'Name', phoneNumber: 'Phone Number', email: 'Email', address: 'Address', maxPeople: 'Max people at residence' }
+const labels = {
+  name: 'Name',
+  phoneNumber: 'Phone Number',
+  email: 'Email',
+  address: 'Address',
+  maxPeople: 'Max people at residence',
+}
 
 const userStore = useUserStore()
 const nuxtApp = useNuxtApp()
@@ -72,14 +139,28 @@ const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 const profileForm = ref<FormInstance | null>(null)
 const editable = ref(false)
 const loading = ref(true)
-const profile = reactive<UserProfile>({ name: '', phoneNumber: '', address: '', maxPeople: 0 })
+const profile = reactive<UserProfile>({
+  name: '',
+  phoneNumber: '',
+  address: '',
+  maxPeople: 0,
+})
 
 const profileFields = computed(() => [
   { icon: 'mdi-account', label: labels.name, value: profile.name },
   { icon: 'mdi-phone', label: labels.phoneNumber, value: profile.phoneNumber },
   { icon: 'mdi-email', label: labels.email, value: authEmail.value ?? '' },
-  { icon: 'mdi-map-marker', label: labels.address, value: profile.address, isAddress: true },
-  { icon: 'mdi-account-multiple-check', label: labels.maxPeople, value: profile.maxPeople != null ? String(profile.maxPeople) : '' },
+  {
+    icon: 'mdi-map-marker',
+    label: labels.address,
+    value: profile.address,
+    isAddress: true,
+  },
+  {
+    icon: 'mdi-account-multiple-check',
+    label: labels.maxPeople,
+    value: profile.maxPeople != null ? String(profile.maxPeople) : '',
+  },
 ])
 
 // the rules bind email/queryableEmail to the verified auth token, so the
@@ -88,8 +169,15 @@ const authEmail = computed(() => userStore.user?.email ?? null)
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
-  isPhone: (v: string) => !v || parsePhoneNumber(v, { regionCode: 'US' }).valid || 'Invalid phone number',
-  isMaxPeople: (v: number | string) => v == null || v === '' || (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) || 'Must be a whole number between 0 and 1000',
+  isPhone: (v: string) =>
+    !v ||
+    parsePhoneNumber(v, { regionCode: 'US' }).valid ||
+    'Invalid phone number',
+  isMaxPeople: (v: number | string) =>
+    v == null ||
+    v === '' ||
+    (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) ||
+    'Must be a whole number between 0 and 1000',
 }
 
 let unsubscribe: (() => void) | null = null
@@ -102,31 +190,52 @@ onMounted(() => {
   const uid = userStore.user!.uid
   function showLoadError(err: unknown) {
     loading.value = false
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   }
-  unsubscribe = onValue(dbRef(db, `users/${uid}`), (snapshot) => {
-    const val = snapshot.val()
-    if (val) Object.assign(profile, val)
+  unsubscribe = onValue(
+    dbRef(db, `users/${uid}`),
+    (snapshot) => {
+      const val = snapshot.val()
+      if (val) Object.assign(profile, val)
+      loading.value = false
+    },
+    showLoadError
+  )
+  unsubscribePublic = onValue(
+    dbRef(db, `profiles/${uid}`),
+    (snapshot) => {
+      const val = snapshot.val()
+      profile.name = val?.name ?? ''
+      storedQueryableEmail = val?.queryableEmail ?? null
+    },
+    showLoadError
+  )
+  setTimeout(() => {
     loading.value = false
-  }, showLoadError)
-  unsubscribePublic = onValue(dbRef(db, `profiles/${uid}`), (snapshot) => {
-    const val = snapshot.val()
-    profile.name = val?.name ?? ''
-    storedQueryableEmail = val?.queryableEmail ?? null
-  }, showLoadError)
-  setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
+  }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubscribe?.(); unsubscribePublic?.() })
+onUnmounted(() => {
+  unsubscribe?.()
+  unsubscribePublic?.()
+})
 
-function removeNewLines(str: string): string { return str.replace(/\n/g, ' ') }
+function removeNewLines(str: string): string {
+  return str.replace(/\n/g, ' ')
+}
 
 async function updateProfile() {
   try {
     const result = await profileForm.value?.validate()
     if (!result?.valid) return
     const uid = userStore.user!.uid
-    const nationalPhone = profile.phoneNumber ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number?.national ?? null) : null
+    const nationalPhone = profile.phoneNumber
+      ? (parsePhoneNumber(profile.phoneNumber, { regionCode: 'US' }).number
+          ?.national ?? null)
+      : null
     // the public node is replaced wholesale (the form covers all its fields);
     // omitted keys — e.g. a cleared phone — are thereby deleted. The search
     // email is preserved as stored, not recomputed: the rules only accept a
@@ -135,26 +244,66 @@ async function updateProfile() {
       name: profile.name,
       queryableName: profile.name.toLowerCase(),
     }
-    if (storedQueryableEmail) publicProfile.queryableEmail = storedQueryableEmail
-    if (nationalPhone) publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
+    if (storedQueryableEmail)
+      publicProfile.queryableEmail = storedQueryableEmail
+    if (nationalPhone)
+      publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
     await update(dbRef(db), {
       [`profiles/${uid}`]: publicProfile,
       [`users/${uid}/phoneNumber`]: nationalPhone,
       [`users/${uid}/address`]: profile.address,
       // v-text-field type="number" still models a string; rules require a number
-      [`users/${uid}/maxPeople`]: profile.maxPeople != null && `${profile.maxPeople}` !== '' ? Number(profile.maxPeople) : null,
+      [`users/${uid}/maxPeople`]:
+        profile.maxPeople != null && `${profile.maxPeople}` !== ''
+          ? Number(profile.maxPeople)
+          : null,
     })
     editable.value = false
-  } catch (err) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+  } catch (err) {
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
+  }
 }
 </script>
 
 <style scoped>
-.profile-fields { display: flex; flex-direction: column; gap: 20px; }
-.profile-field { display: flex; align-items: flex-start; gap: 14px; }
-.profile-field-icon { margin-top: 2px; opacity: 0.9; }
-.profile-field-label { font-size: 0.875rem; color: rgba(205,214,244,0.7); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 2px; }
-.profile-field-value { font-size: 1rem; color: rgba(205,214,244,0.95); }
-.address-link { color: #00cec9; text-decoration: none; transition: color 0.2s ease; }
-.address-link:hover { color: #55efc4; }
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.profile-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.profile-field-icon {
+  margin-top: 2px;
+  opacity: 0.9;
+}
+.profile-field-label {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.72rem;
+  color: rgba(200, 134, 10, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.profile-field-value {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1rem;
+  color: rgba(240, 223, 196, 0.92);
+}
+.address-link {
+  color: rgba(200, 134, 10, 0.85);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.address-link:hover {
+  color: #c8860a;
+  text-decoration: underline;
+}
 </style>

@@ -4,24 +4,47 @@
       <v-card>
         <v-card-title class="page-card-title">
           <div class="d-flex align-center">
-            <v-icon color="primary" class="mr-3 flex-shrink-0">mdi-rhombus-split</v-icon>
+            <v-icon color="primary" class="mr-3 flex-shrink-0"
+              >mdi-rhombus-split</v-icon
+            >
             <span class="page-title">{{ pageTitle }}</span>
           </div>
           <div class="page-header-actions">
             <template v-if="isFriendView">
-              <v-btn :to="routes.friends" variant="elevated" color="primary" size="small">
+              <v-btn
+                :to="routes.friends"
+                variant="elevated"
+                color="primary"
+                size="small"
+              >
                 <v-icon start>mdi-arrow-left-circle</v-icon>Back
               </v-btn>
             </template>
             <template v-else-if="activeArea === 'collection'">
-              <v-btn variant="elevated" color="primary" size="small" @click.stop="activeArea = 'addGame'">
+              <v-btn
+                variant="elevated"
+                color="primary"
+                size="small"
+                @click.stop="activeArea = 'addGame'"
+              >
                 <v-icon start>mdi-plus-circle</v-icon>Add Game
               </v-btn>
-              <v-btn variant="elevated" color="secondary" size="small" @click.stop="openRateArea">
+              <v-btn
+                variant="elevated"
+                color="warning"
+                size="small"
+                @click.stop="openRateArea"
+              >
                 <v-icon start>mdi-star-outline</v-icon>Rate
               </v-btn>
             </template>
-            <v-btn v-else variant="elevated" color="primary" size="small" @click.stop="activeArea = 'collection'">
+            <v-btn
+              v-else
+              variant="elevated"
+              color="primary"
+              size="small"
+              @click.stop="activeArea = 'collection'"
+            >
               <v-icon start>mdi-arrow-left-circle</v-icon>Back
             </v-btn>
           </div>
@@ -77,8 +100,14 @@
                         color="surface-variant"
                         class="mr-3"
                       >
-                        <v-img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.name" />
-                        <v-icon v-else size="32">mdi-gamepad-variant-outline</v-icon>
+                        <v-img
+                          v-if="item.thumbnail"
+                          :src="item.thumbnail"
+                          :alt="item.name"
+                        />
+                        <v-icon v-else size="32"
+                          >mdi-gamepad-variant-outline</v-icon
+                        >
                       </v-avatar>
                     </template>
                     <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -87,11 +116,9 @@
                       :model-value="opinions[item.id]?.rating ?? 0"
                       hover
                       size="small"
-                      color="secondary"
-                      active-color="secondary"
-                      @update:model-value="
-                        (val) => updateGameRating(item, val)
-                      "
+                      color="warning"
+                      active-color="warning"
+                      @update:model-value="(val) => updateGameRating(item, val)"
                     />
                     <div
                       v-if="formatGameInfo(item)"
@@ -118,9 +145,19 @@
                         icon
                         size="small"
                         variant="text"
-                        :color="expandedItems.has(String(id)) ? 'primary' : 'default'"
-                        :aria-label="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
-                        :title="expandedItems.has(String(id)) ? 'Hide note' : 'Edit note'"
+                        :color="
+                          expandedItems.has(String(id)) ? 'primary' : 'default'
+                        "
+                        :aria-label="
+                          expandedItems.has(String(id))
+                            ? 'Hide note'
+                            : 'Edit note'
+                        "
+                        :title="
+                          expandedItems.has(String(id))
+                            ? 'Hide note'
+                            : 'Edit note'
+                        "
                         @click.stop="toggleExpanded(String(id))"
                       >
                         <v-icon>mdi-note-text-outline</v-icon>
@@ -175,8 +212,8 @@
                       :model-value="entry.rating ?? 0"
                       hover
                       size="small"
-                      color="secondary"
-                      active-color="secondary"
+                      color="warning"
+                      active-color="warning"
                       @update:model-value="
                         (val) =>
                           updateOpinionRating(entry.gameId, entry.name, val)
@@ -187,9 +224,21 @@
                         icon
                         size="small"
                         variant="text"
-                        :color="expandedItems.has(entry.gameId) ? 'primary' : 'default'"
-                        :aria-label="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
-                        :title="expandedItems.has(entry.gameId) ? 'Hide note' : 'Edit note'"
+                        :color="
+                          expandedItems.has(entry.gameId)
+                            ? 'primary'
+                            : 'default'
+                        "
+                        :aria-label="
+                          expandedItems.has(entry.gameId)
+                            ? 'Hide note'
+                            : 'Edit note'
+                        "
+                        :title="
+                          expandedItems.has(entry.gameId)
+                            ? 'Hide note'
+                            : 'Edit note'
+                        "
                         @click.stop="toggleExpanded(entry.gameId)"
                       >
                         <v-icon>mdi-note-text-outline</v-icon>
@@ -544,7 +593,12 @@ type BggGameMeta = {
 
 function formatGameInfo(game: Game): string {
   const parts: string[] = []
-  const { minplayers: minP, maxplayers: maxP, minplaytime: minT, maxplaytime: maxT } = game
+  const {
+    minplayers: minP,
+    maxplayers: maxP,
+    minplaytime: minT,
+    maxplaytime: maxT,
+  } = game
   if (minP && maxP) {
     parts.push(minP === maxP ? `${minP} players` : `${minP}–${maxP} players`)
   } else if (minP ?? maxP) {
@@ -578,10 +632,20 @@ function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
   return game
 }
 
-async function fetchAndCollect(id: string, fallbackName: string): Promise<void> {
-  const fn = httpsCallable<{ id: string }, BggGameMeta>($functions, 'bggThing')
-  const { data } = await fn({ id })
-  await set(push(dbRef(db, `users/${ownUid}/collection`)), buildGame(id, data, fallbackName))
+async function fetchAndCollect(
+  id: string,
+  fallbackName: string
+): Promise<void> {
+  const fn = httpsCallable<{ ids: string[] }, { items: BggGameMeta[] }>(
+    $functions,
+    'bggThing'
+  )
+  const { data } = await fn({ ids: [id] })
+  const item = data.items?.[0] ?? {}
+  await set(
+    push(dbRef(db, `users/${ownUid}/collection`)),
+    buildGame(id, item, fallbackName)
+  )
 }
 
 async function addToCollection(item: DisplayableItemType) {
@@ -592,7 +656,10 @@ async function addToCollection(item: DisplayableItemType) {
     )
     logEvent('game_added_to_collection', { name: item.name })
     activeArea.value = 'collection'
-    snackbar.value?.showSnackbarWithMessage(`${item.name} added to collection`, false)
+    snackbar.value?.showSnackbarWithMessage(
+      `${item.name} added to collection`,
+      false
+    )
   } catch (err) {
     snackbar.value?.showSnackbarWithMessage(
       helpers.handleError(err).message,
@@ -758,11 +825,40 @@ function onGameSearchError(error: Error) {
 
 <style scoped>
 .game-item {
-  border-radius: 12px;
-  transition: background 0.2s ease;
+  border-radius: 6px;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: deal-in 0.3s ease both;
+}
+.game-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.game-item:nth-child(2) {
+  animation-delay: 40ms;
+}
+.game-item:nth-child(3) {
+  animation-delay: 80ms;
+}
+.game-item:nth-child(4) {
+  animation-delay: 120ms;
+}
+.game-item:nth-child(5) {
+  animation-delay: 160ms;
+}
+.game-item:nth-child(6) {
+  animation-delay: 200ms;
+}
+.game-item:nth-child(7) {
+  animation-delay: 240ms;
+}
+.game-item:nth-child(8) {
+  animation-delay: 280ms;
 }
 .game-item:hover {
-  background: rgba(108, 92, 231, 0.06);
+  background: rgba(200, 134, 10, 0.07);
+  transform: translateX(3px);
 }
 /* Allow titles to wrap to a second line rather than clipping with ellipsis */
 .game-item :deep(.v-list-item-title) {
