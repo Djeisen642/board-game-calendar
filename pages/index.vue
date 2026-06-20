@@ -1,13 +1,13 @@
 <template>
   <div class="hero-wrapper">
     <div class="hero-bg" />
-    <v-row justify="center" align="center">
+    <v-row justify="center" align="start">
       <v-col cols="12" sm="11" md="8" lg="6">
-        <div class="text-center mb-8">
-          <BGCLogo />
-        </div>
         <v-card class="hero-card">
-          <v-card-text class="text-center pa-8">
+          <v-card-text class="text-center pa-8 pb-6">
+            <div class="mb-5">
+              <BGCLogo />
+            </div>
             <h1 class="hero-title mb-4">Board Game Calendar</h1>
             <p class="hero-subtitle mb-2">
               Schedule board game nights around the games you love — not the
@@ -28,26 +28,33 @@
               <v-icon end>mdi-arrow-right</v-icon>
             </v-btn>
           </v-card-text>
-        </v-card>
 
-        <div class="feature-grid mt-8">
-          <v-row>
-            <v-col
-              v-for="feature in features"
-              :key="feature.icon"
-              cols="12"
-              sm="4"
-            >
-              <div class="feature-item text-center pa-4">
-                <v-icon size="36" color="accent" class="mb-3">
-                  {{ feature.icon }}
-                </v-icon>
-                <div class="feature-title">{{ feature.title }}</div>
-                <div class="feature-desc">{{ feature.desc }}</div>
-              </div>
-            </v-col>
-          </v-row>
-        </div>
+          <v-divider style="border-color: rgba(200, 134, 10, 0.15)" />
+
+          <v-card-text class="pa-6 pt-5">
+            <v-row>
+              <v-col
+                v-for="feature in features"
+                :key="feature.icon"
+                cols="12"
+                sm="4"
+              >
+                <div class="feature-item text-center pa-3">
+                  <v-icon
+                    size="32"
+                    color="primary"
+                    class="mb-2"
+                    style="opacity: 0.75"
+                  >
+                    {{ feature.icon }}
+                  </v-icon>
+                  <div class="feature-title">{{ feature.title }}</div>
+                  <div class="feature-desc">{{ feature.desc }}</div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </div>
@@ -152,10 +159,10 @@ const features = [
 }
 
 .feature-title {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Lora', Georgia, serif;
   font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.06em;
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
   margin-bottom: 6px;
   color: rgba(240, 223, 196, 0.92);
 }

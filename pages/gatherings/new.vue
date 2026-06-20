@@ -3,8 +3,12 @@
     <v-col cols="12" sm="11" md="9" lg="6">
       <v-card>
         <v-card-title class="d-flex align-center pa-6">
-          <v-icon color="primary" class="mr-3">{{ editId ? 'mdi-calendar-edit' : 'mdi-calendar-plus' }}</v-icon>
-          <span class="page-title">{{ editId ? 'Edit Gathering' : 'New Gathering' }}</span>
+          <v-icon color="primary" class="mr-3">{{
+            editId ? 'mdi-calendar-edit' : 'mdi-calendar-plus'
+          }}</v-icon>
+          <span class="page-title">{{
+            editId ? 'Edit Gathering' : 'New Gathering'
+          }}</span>
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
@@ -15,20 +19,76 @@
             <div class="section-label mb-2">When</div>
             <v-row dense class="mb-2">
               <v-col cols="12" sm="6">
-                <v-text-field v-model="date" type="date" label="Date" :rules="[validation.isRequired]" prepend-inner-icon="mdi-calendar" />
+                <v-text-field
+                  v-model="date"
+                  type="date"
+                  label="Date"
+                  :rules="[validation.isRequired]"
+                  prepend-inner-icon="mdi-calendar"
+                />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field v-model="time" type="time" label="Start time" :rules="[validation.isRequired]" prepend-inner-icon="mdi-clock-outline" />
+                <v-text-field
+                  v-model="time"
+                  type="time"
+                  label="Start time"
+                  :rules="[validation.isRequired]"
+                  prepend-inner-icon="mdi-clock-outline"
+                />
               </v-col>
             </v-row>
             <div class="section-label mb-2">Details</div>
-            <v-text-field v-model="maxGuests" type="number" label="Max guests" :rules="[validation.isMaxGuests]" prepend-inner-icon="mdi-account-multiple-outline" class="mb-2" />
+            <v-text-field
+              v-model="maxGuests"
+              type="number"
+              label="Max guests"
+              :rules="[validation.isMaxGuests]"
+              prepend-inner-icon="mdi-account-multiple-outline"
+              class="mb-2"
+            />
             <div class="section-label mb-2">Guests</div>
-            <v-select v-model="selectedGuests" :items="friendItems" multiple chips closable-chips label="Invite friends" prepend-inner-icon="mdi-account-group" :hint="friendItems.length ? '' : 'Add friends on the Friends page to invite them'" persistent-hint class="mb-4" />
+            <v-select
+              v-model="selectedGuests"
+              :items="friendItems"
+              multiple
+              chips
+              closable-chips
+              label="Invite friends"
+              prepend-inner-icon="mdi-account-group"
+              :hint="
+                friendItems.length
+                  ? ''
+                  : 'Add friends on the Friends page to invite them'
+              "
+              persistent-hint
+              class="mb-4"
+            />
             <div class="section-label mb-2">Games</div>
-            <v-select v-model="selectedGameIds" :items="gameItems" multiple chips closable-chips label="Games to play" prepend-inner-icon="mdi-rhombus-split" :hint="gameItems.length ? '' : 'Add games on the Game Collection page to pick them'" persistent-hint class="mb-6" />
-            <v-btn type="submit" block color="primary" size="large" :loading="saving">
-              <v-icon start>mdi-calendar-check</v-icon>{{ editId ? 'Save Changes' : 'Create Gathering' }}
+            <v-select
+              v-model="selectedGameIds"
+              :items="gameItems"
+              multiple
+              chips
+              closable-chips
+              label="Games to play"
+              prepend-inner-icon="mdi-rhombus-split"
+              :hint="
+                gameItems.length
+                  ? ''
+                  : 'Add games on the Game Collection page to pick them'
+              "
+              persistent-hint
+              class="mb-6"
+            />
+            <v-btn
+              type="submit"
+              block
+              color="primary"
+              size="large"
+              :loading="saving"
+            >
+              <v-icon start>mdi-calendar-check</v-icon
+              >{{ editId ? 'Save Changes' : 'Create Gathering' }}
             </v-btn>
           </v-form>
         </v-card-text>
@@ -44,7 +104,13 @@ import { ref as dbRef, get, push, set, update } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
-import type { FormInstance, Game, Gathering, GatheringState, GuestResponse } from '~/helpers/types'
+import type {
+  FormInstance,
+  Game,
+  Gathering,
+  GatheringState,
+  GuestResponse,
+} from '~/helpers/types'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -78,7 +144,11 @@ useHead({ title: editId ? 'Edit Gathering' : 'New Gathering' })
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',
-  isMaxGuests: (v: number | string) => v == null || v === '' || (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) || 'Must be a whole number between 0 and 1000',
+  isMaxGuests: (v: number | string) =>
+    v == null ||
+    v === '' ||
+    (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000) ||
+    'Must be a whole number between 0 and 1000',
 }
 
 onMounted(async () => {
@@ -92,7 +162,8 @@ onMounted(async () => {
 
     // Hosts usually count themselves in maxPeople, hence the -1 default
     const maxPeople = profileSnap.val()
-    if (typeof maxPeople === 'number' && maxPeople > 0) maxGuests.value = maxPeople - 1
+    if (typeof maxPeople === 'number' && maxPeople > 0)
+      maxGuests.value = maxPeople - 1
 
     const friendIds: Record<string, true> | null = friendsSnap.val()
     if (friendIds) {
@@ -102,12 +173,16 @@ onMounted(async () => {
           return { title: nameSnap.val() ?? 'Unknown player', value: friendId }
         })
       )
-      friendItems.value = friendEntries.sort((a, b) => a.title.localeCompare(b.title))
+      friendItems.value = friendEntries.sort((a, b) =>
+        a.title.localeCompare(b.title)
+      )
     }
 
     const collection: Record<string, Game> | null = collectionSnap.val()
     if (collection) {
-      gamesById = Object.fromEntries(Object.values(collection).map((game) => [game.id, game]))
+      gamesById = Object.fromEntries(
+        Object.values(collection).map((game) => [game.id, game])
+      )
       gameItems.value = Object.values(collection)
         .map((game) => ({ title: game.name, value: game.id }))
         .sort((a, b) => a.title.localeCompare(b.title))
@@ -115,7 +190,9 @@ onMounted(async () => {
 
     if (editId) {
       // non-participants get a permission error rather than a null read
-      const gathering: Gathering | null = await get(dbRef(db, `gatherings/${editId}`))
+      const gathering: Gathering | null = await get(
+        dbRef(db, `gatherings/${editId}`)
+      )
         .then((snap) => snap.val())
         .catch(() => null)
       if (!gathering || gathering.host !== uid) {
@@ -137,7 +214,10 @@ onMounted(async () => {
       for (const guestId of selectedGuests.value) {
         if (!friendItems.value.some((friend) => friend.value === guestId)) {
           const nameSnap = await get(dbRef(db, `profiles/${guestId}/name`))
-          friendItems.value.push({ title: nameSnap.val() ?? 'Unknown player', value: guestId })
+          friendItems.value.push({
+            title: nameSnap.val() ?? 'Unknown player',
+            value: guestId,
+          })
         }
       }
       // Keep selections visible even if a game has since left the collection
@@ -149,7 +229,10 @@ onMounted(async () => {
       }
     }
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     loading.value = false
   }
@@ -160,11 +243,17 @@ async function createGathering() {
   if (!result?.valid) return
   const datetime = new Date(`${date.value}T${time.value}`)
   if (Number.isNaN(datetime.getTime())) {
-    snackbar.value?.showSnackbarWithMessage('Please enter a valid date and time.', true)
+    snackbar.value?.showSnackbarWithMessage(
+      'Please enter a valid date and time.',
+      true
+    )
     return
   }
   if (datetime.getTime() < Date.now()) {
-    snackbar.value?.showSnackbarWithMessage('The gathering must be in the future.', true)
+    snackbar.value?.showSnackbarWithMessage(
+      'The gathering must be in the future.',
+      true
+    )
     return
   }
   saving.value = true
@@ -177,8 +266,16 @@ async function createGathering() {
       host: uid,
       maxGuests: Number(maxGuests.value || 0),
       // existing guests keep their response when editing; new ones start as invited
-      guests: Object.fromEntries(selectedGuests.value.map((guestId) => [guestId, existingGuests[guestId] ?? ('invited' as GuestResponse)])),
-      games: selectedGameIds.value.map((id) => ({ id, name: gamesById[id]?.name ?? 'Unknown game' })),
+      guests: Object.fromEntries(
+        selectedGuests.value.map((guestId) => [
+          guestId,
+          existingGuests[guestId] ?? ('invited' as GuestResponse),
+        ])
+      ),
+      games: selectedGameIds.value.map((id) => ({
+        id,
+        name: gamesById[id]?.name ?? 'Unknown game',
+      })),
     }
     // The userGatherings index drives each participant's calendar. It can't
     // be written in the same atomic update as the gathering — the rules
@@ -204,13 +301,35 @@ async function createGathering() {
       }
     }
     await update(dbRef(db), indexUpdates)
-    logEvent(editId ? 'edit_gathering' : 'create_gathering', { guests: selectedGuests.value.length, games: selectedGameIds.value.length })
+    logEvent(editId ? 'edit_gathering' : 'create_gathering', {
+      guests: selectedGuests.value.length,
+      games: selectedGameIds.value.length,
+    })
     await router.push(routes.calendar)
   } catch (err) {
-    snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true)
+    snackbar.value?.showSnackbarWithMessage(
+      helpers.handleError(err).message,
+      true
+    )
   } finally {
     saving.value = false
   }
 }
 </script>
 
+<style scoped>
+/* Blend browser-native date/time controls with the warm Vuetify styling */
+:deep(input[type='date']),
+:deep(input[type='time']) {
+  color-scheme: dark;
+  color: rgba(240, 223, 196, 0.92);
+}
+
+:deep(input[type='date']::-webkit-calendar-picker-indicator),
+:deep(input[type='time']::-webkit-calendar-picker-indicator) {
+  filter: invert(70%) sepia(60%) saturate(400%) hue-rotate(10deg)
+    brightness(90%);
+  cursor: pointer;
+  opacity: 0.7;
+}
+</style>

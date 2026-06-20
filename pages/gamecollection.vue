@@ -31,7 +31,7 @@
               </v-btn>
               <v-btn
                 variant="elevated"
-                color="secondary"
+                color="warning"
                 size="small"
                 @click.stop="openRateArea"
               >
@@ -116,8 +116,8 @@
                       :model-value="opinions[item.id]?.rating ?? 0"
                       hover
                       size="small"
-                      color="secondary"
-                      active-color="secondary"
+                      color="warning"
+                      active-color="warning"
                       @update:model-value="(val) => updateGameRating(item, val)"
                     />
                     <div
@@ -212,8 +212,8 @@
                       :model-value="entry.rating ?? 0"
                       hover
                       size="small"
-                      color="secondary"
-                      active-color="secondary"
+                      color="warning"
+                      active-color="warning"
                       @update:model-value="
                         (val) =>
                           updateOpinionRating(entry.gameId, entry.name, val)
