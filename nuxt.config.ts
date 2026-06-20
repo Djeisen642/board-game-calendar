@@ -18,6 +18,9 @@ export default defineNuxtConfig({
       titleTemplate: '%s - Board Game Calendar',
       title: 'Board Game Calendar',
       htmlAttrs: { lang: 'en' },
+      style: [
+        { innerHTML: 'html,body{background-color:#100A04}', type: 'text/css' },
+      ],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -38,6 +41,11 @@ export default defineNuxtConfig({
           type: 'image/svg+xml',
           href: `${process.env.BASE_URL ?? '/'}favicon.svg`,
         },
+        { rel: 'preconnect', href: 'https://identitytoolkit.googleapis.com' },
+        {
+          rel: 'preconnect',
+          href: 'https://board-game-calendar-3ae94-default-rtdb.firebaseio.com',
+        },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',
@@ -45,8 +53,10 @@ export default defineNuxtConfig({
           crossorigin: '',
         },
         {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap',
+          rel: 'preload',
+          as: 'style',
+          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap',
+          onload: "this.onload=null;this.rel='stylesheet'",
         },
       ],
     },
