@@ -191,7 +191,7 @@ export const bggThing = onCall(
 )
 
 const APP_URL = 'https://djeisen642.github.io/board-game-calendar'
-const FROM_EMAIL = 'Board Game Calendar <noreply@jasonsuttles.dev>'
+const FROM_EMAIL = 'Board Game Calendar <bgc-notifications@jasonsuttles.dev>'
 
 function escapeHtml(s: string): string {
   return s
