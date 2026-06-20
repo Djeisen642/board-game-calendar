@@ -54,12 +54,14 @@ body::before {
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #f0dfc4;
+  margin: 0;
+  line-height: inherit;
 }
 
 .section-label {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 0.68rem;
-  color: rgba(200, 134, 10, 0.82);
+  font-size: 0.8rem;
+  color: #c8860a;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-weight: 600;
@@ -91,7 +93,7 @@ body::before {
 .empty-desc {
   font-size: 0.95rem;
   font-family: 'Lora', Georgia, serif;
-  color: rgba(240, 223, 196, 0.6);
+  color: rgba(240, 223, 196, 0.80);
   margin-top: 8px;
 }
 
@@ -310,7 +312,7 @@ body::before {
   border-top: 1px solid rgba(200, 134, 10, 0.1);
   font-size: 0.75rem;
   font-family: 'Lora', Georgia, serif;
-  color: rgba(240, 223, 196, 0.3);
+  color: rgba(240, 223, 196, 0.60);
   justify-content: center;
 }
 
@@ -376,4 +378,35 @@ body::before {
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 8px;
+}
+
+// ── Skip to main content link (keyboard / screen reader) ─────────────────────
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #c8860a;
+  color: #100A04;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// ── Respect reduced-motion preference ────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

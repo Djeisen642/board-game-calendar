@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title class="d-flex align-center pa-6">
           <v-icon color="primary" class="mr-3">mdi-account-circle</v-icon>
-          <span class="page-title">Profile</span>
+          <h1 class="page-title">Profile</h1>
           <v-spacer />
           <v-btn
             v-if="!editable && !loading"
@@ -27,7 +27,7 @@
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" />
+          <v-progress-linear indeterminate color="primary" aria-label="Loading profile" />
         </v-card-text>
         <v-card-text v-else-if="editable" class="pa-6">
           <v-form ref="profileForm">
@@ -285,8 +285,8 @@ async function updateProfile() {
 }
 .profile-field-label {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 0.72rem;
-  color: rgba(200, 134, 10, 0.75);
+  font-size: 0.8rem;
+  color: #c8860a;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-weight: 600;
@@ -299,7 +299,7 @@ async function updateProfile() {
 }
 .address-link {
   color: rgba(200, 134, 10, 0.85);
-  text-decoration: none;
+  text-decoration: underline;
   transition: color 0.2s ease;
 }
 .address-link:hover {

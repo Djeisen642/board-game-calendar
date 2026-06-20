@@ -6,13 +6,13 @@
           <v-icon color="primary" class="mr-3">{{
             editId ? 'mdi-calendar-edit' : 'mdi-calendar-plus'
           }}</v-icon>
-          <span class="page-title">{{
+          <h1 class="page-title">{{
             editId ? 'Edit Gathering' : 'New Gathering'
-          }}</span>
+          }}</h1>
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" />
+          <v-progress-linear indeterminate color="primary" aria-label="Loading gathering" />
         </v-card-text>
         <v-card-text v-else class="pa-6">
           <v-form ref="gatheringForm" @submit.prevent="createGathering">

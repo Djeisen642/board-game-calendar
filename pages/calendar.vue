@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title class="d-flex align-center pa-6">
           <v-icon color="primary" class="mr-3">mdi-calendar</v-icon>
-          <span class="page-title">Calendar</span>
+          <h1 class="page-title">Calendar</h1>
           <v-spacer />
           <v-btn
             variant="elevated"
@@ -17,7 +17,7 @@
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" />
+          <v-progress-linear indeterminate color="primary" aria-label="Loading gatherings" />
         </v-card-text>
         <v-card-text
           v-else-if="!hosting.length && !invited.length"
