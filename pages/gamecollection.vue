@@ -130,7 +130,7 @@
                       <v-btn
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="accent"
                         :href="`https://boardgamegeek.com/boardgame/${item.id}`"
                         target="_blank"
@@ -144,9 +144,9 @@
                         v-if="!isFriendView"
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         :color="
-                          expandedItems.has(String(id)) ? 'primary' : 'default'
+                          expandedItems.has(String(id)) ? 'primary' : 'accent'
                         "
                         :aria-label="
                           expandedItems.has(String(id))
@@ -166,7 +166,7 @@
                         v-if="!isFriendView"
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="error"
                         aria-label="Remove from collection"
                         title="Remove from collection"
@@ -223,11 +223,11 @@
                       <v-btn
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         :color="
                           expandedItems.has(entry.gameId)
                             ? 'primary'
-                            : 'default'
+                            : 'accent'
                         "
                         :aria-label="
                           expandedItems.has(entry.gameId)
@@ -246,7 +246,7 @@
                       <v-btn
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="success"
                         aria-label="Add to collection"
                         title="Add to collection"
@@ -257,7 +257,7 @@
                       <v-btn
                         icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="error"
                         aria-label="Delete rating"
                         title="Delete rating"
@@ -868,5 +868,9 @@ function onGameSearchError(error: Error) {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.35;
+}
+/* Make empty rating stars faintly visible on dark background */
+.game-item :deep(.v-rating .v-btn:not(.v-btn--active) .v-icon) {
+  color: rgba(200, 134, 10, 0.3) !important;
 }
 </style>
