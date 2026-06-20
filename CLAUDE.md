@@ -2,6 +2,10 @@
 
 A Nuxt 4 / Vue 3 SPA that helps groups schedule board game nights around specific games. Deployed as a static site to GitHub Pages, backed by Firebase Realtime Database.
 
+## Keeping this file up to date
+
+**When you change a convention documented here — a colour token, a component pattern, a CSS class, an accessibility rule, a Firebase path, a command — update the relevant section of this file in the same commit.** Treat CLAUDE.md as part of the changeset, not an afterthought. If you add a new reusable pattern (composable, layout class, data model field), document it here so future sessions have accurate context.
+
 ## Commands
 
 ```bash
