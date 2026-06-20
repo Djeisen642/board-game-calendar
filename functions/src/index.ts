@@ -219,7 +219,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   }
 }
 
-function formatDatetime(iso: string): string {
+function formatDatetime(iso: string, timezone?: string): string {
   const date = new Date(iso)
   if (isNaN(date.getTime())) return iso
   return date.toLocaleString('en-US', {
@@ -230,6 +230,7 @@ function formatDatetime(iso: string): string {
     hour: 'numeric',
     minute: '2-digit',
     timeZoneName: 'short',
+    ...(timezone ? { timeZone: timezone } : {}),
   })
 }
 
@@ -275,8 +276,9 @@ export const onGatheringInvite = onValueWritten(
     const gathering = gatheringSnap.val() as Record<string, unknown> | null
     if (!gathering) return
     const hostName = await getProfileName(gathering.host as string)
+    const tz = typeof gathering.timezone === 'string' ? gathering.timezone : undefined
     const datetime =
-      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime) : 'TBD'
+      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime, tz) : 'TBD'
     await sendEmail(
       guestUser.email,
       `You're invited to a board game night!`,
@@ -308,8 +310,9 @@ export const onGatheringStateChange = onValueUpdated(
       getProfileName(gathering.host as string),
       Promise.all(notifyUids.map((uid) => getAuth().getUser(uid))),
     ])
+    const tz = typeof gathering.timezone === 'string' ? gathering.timezone : undefined
     const datetime =
-      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime) : 'TBD'
+      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime, tz) : 'TBD'
     const subject =
       newState === 'confirmed'
         ? `Game night confirmed: ${datetime}`
