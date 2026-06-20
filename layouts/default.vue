@@ -25,17 +25,32 @@
         <v-icon class="app-bar-title-icon" color="primary" size="20"
           >mdi-hexagon-multiple</v-icon
         >
-        {{ title }}
+        <span class="d-none d-sm-inline">{{ title }}</span>
+        <span class="d-inline d-sm-none">BGC</span>
       </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="showSignOut"
+        class="d-sm-none"
         variant="elevated"
         color="primary"
+        icon
+        size="small"
+        aria-label="Sign out"
+        title="Sign out"
         @click.stop="onSignoutClicked"
       >
-        <v-icon start>mdi-logout</v-icon>
-        Sign out
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
+      <v-btn
+        v-if="showSignOut"
+        class="d-none d-sm-flex"
+        variant="elevated"
+        color="primary"
+        size="small"
+        @click.stop="onSignoutClicked"
+      >
+        <v-icon start>mdi-logout</v-icon>Sign out
       </v-btn>
     </v-app-bar>
 

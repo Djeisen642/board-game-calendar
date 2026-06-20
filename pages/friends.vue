@@ -19,20 +19,22 @@
           <template v-if="incomingRequests.length">
             <div class="section-label mb-2">Friend Requests</div>
             <v-list class="mb-4">
-              <v-list-item v-for="request in incomingRequests" :key="request.userId" :title="request.name" :subtitle="request.queryableEmail" class="friend-item mb-1">
+              <v-list-item v-for="request in incomingRequests" :key="request.userId" class="friend-item mb-1">
                 <template #prepend>
                   <v-avatar color="accent" size="36" class="mr-3">
                     <span class="avatar-initial">{{ request.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                   </v-avatar>
                 </template>
-                <template #append>
-                  <v-btn density="compact" size="small" variant="elevated" color="success" class="mr-2" @click.stop="handleAccept(request.userId)">
+                <v-list-item-title>{{ request.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ request.queryableEmail }}</v-list-item-subtitle>
+                <div class="event-actions">
+                  <v-btn density="compact" size="small" variant="elevated" color="success" @click.stop="handleAccept(request.userId)">
                     <v-icon start>mdi-check-circle</v-icon>Accept
                   </v-btn>
                   <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleDecline(request.userId)">
                     <v-icon start>mdi-close-circle</v-icon>Decline
                   </v-btn>
-                </template>
+                </div>
               </v-list-item>
             </v-list>
             <v-divider class="mb-4" />
@@ -48,20 +50,21 @@
           <template v-else-if="friends.length">
             <div v-if="incomingRequests.length" class="section-label mb-2">Friends</div>
             <v-list>
-              <v-list-item v-for="(friend, id) in friends" :key="id" :title="friend.name" class="friend-item mb-1">
+              <v-list-item v-for="(friend, id) in friends" :key="id" class="friend-item mb-1">
                 <template #prepend>
                   <v-avatar color="primary" size="36" class="mr-3">
                     <span class="avatar-initial">{{ friend.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                   </v-avatar>
                 </template>
-                <template #append>
-                  <v-btn density="compact" size="small" variant="text" color="primary" class="mr-1" :to="`${routes.gameCollection}?uid=${friend.userId}`">
+                <v-list-item-title>{{ friend.name }}</v-list-item-title>
+                <div class="event-actions">
+                  <v-btn density="compact" size="small" variant="text" color="accent" :to="`${routes.gameCollection}?uid=${friend.userId}`">
                     <v-icon start>mdi-cards-outline</v-icon>Collection
                   </v-btn>
                   <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleRemove(friend.userId)">
                     <v-icon start>mdi-minus-circle</v-icon>Remove
                   </v-btn>
-                </template>
+                </div>
               </v-list-item>
             </v-list>
           </template>
@@ -69,13 +72,15 @@
         <v-card-text v-else class="pa-6">
           <v-text-field v-model="searchQuery" label="Search for friends" placeholder="Search by name, email, or phone number" :hint="`Search by name, email, or phone number (min ${constants.MinSearchLength} chars)`" persistent-hint prepend-inner-icon="mdi-magnify" :loading="isSearching" clearable class="mb-4" />
           <v-list>
-            <v-list-item v-for="(person, id) in searchResults" :key="id" :title="person.name" :subtitle="person.queryableEmail" class="friend-item mb-1">
+            <v-list-item v-for="(person, id) in searchResults" :key="id" class="friend-item mb-1">
               <template #prepend>
                 <v-avatar color="surface-variant" size="36" class="mr-3">
                   <span class="avatar-initial">{{ person.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                 </v-avatar>
               </template>
-              <template #append>
+              <v-list-item-title>{{ person.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ person.queryableEmail }}</v-list-item-subtitle>
+              <div class="event-actions">
                 <v-chip v-if="person.isFriend" size="small" color="success" variant="tonal">
                   <v-icon start>mdi-check-circle</v-icon>Friends
                 </v-chip>
@@ -85,7 +90,7 @@
                 <v-btn v-else size="small" variant="elevated" color="accent" @click.stop="handleSendRequest(id, person)">
                   <v-icon start>mdi-plus-circle</v-icon>Add
                 </v-btn>
-              </template>
+              </div>
             </v-list-item>
           </v-list>
           <div v-if="searchQuery?.length >= constants.MinSearchLength && Object.keys(searchResults).length <= 0" class="empty-desc text-center mt-4">
@@ -183,4 +188,12 @@ async function handleRemove(friendId: string) {
 .friend-item { border-radius: 12px; transition: background 0.2s ease; }
 .friend-item:hover { background: rgba(108,92,231,0.06); }
 .avatar-initial { font-weight: 600; font-size: 1rem; color: rgba(205,214,244,0.95); }
+.friend-item :deep(.v-list-item-title) {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+}
 </style>
