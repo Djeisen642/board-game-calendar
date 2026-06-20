@@ -3,10 +3,6 @@ import {
   type GoogleAuthProvider,
   type FacebookAuthProvider,
   signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
   type User,
 } from 'firebase/auth'
 import { ref as dbRef, update } from 'firebase/database'
@@ -15,8 +11,6 @@ import helpers from '~/helpers/helpers'
 import { authErrorMessage } from '~/helpers/authErrors'
 import routes from '~/helpers/routes'
 
-// The four sign-in flows. Each handler resolves to true on success; on failure
-// it logs the error and exposes a user-facing message via errorMessage.
 export function useAuthSignIn() {
   const userStore = useUserStore()
   const router = useRouter()
@@ -29,7 +23,7 @@ export function useAuthSignIn() {
   const errorMessage = ref<string | null>(null)
 
   function fail(err: unknown): false {
-    helpers.handleError(err) // logs to analytics
+    helpers.handleError(err)
     errorMessage.value = authErrorMessage(err)
     return false
   }
@@ -42,7 +36,6 @@ export function useAuthSignIn() {
   // would delete profile data the user saved (e.g. their phone number) on
   // every sign-in.
   async function writeProfile(user: User, name: string | null) {
-    // public, search-visible node
     const publicProfile: Record<string, string> = {}
     if (name) {
       publicProfile.name = name
@@ -56,7 +49,6 @@ export function useAuthSignIn() {
         parsePhoneNumber(user.phoneNumber, { regionCode: 'US' }).number
           ?.national ?? user.phoneNumber
       publicProfile.queryablePhone = nationalPhone.replace(/\D/g, '')
-      // private, owner-only node
       await update(dbRef(db, `users/${user.uid}`), {
         phoneNumber: nationalPhone,
       })
@@ -84,69 +76,9 @@ export function useAuthSignIn() {
     }
   }
 
-  async function handleEmailSignIn(
-    email: string,
-    password: string
-  ): Promise<boolean> {
-    isLoading.value = true
-    try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password)
-      userStore.setUser(user)
-      logEvent('login', { method: 'email' })
-      await router.push(routes.gameCollection)
-      return true
-    } catch (err) {
-      return fail(err)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function handleEmailSignUp(
-    email: string,
-    password: string
-  ): Promise<boolean> {
-    isLoading.value = true
-    try {
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      )
-      await sendEmailVerification(user)
-      userStore.setUser(user)
-      logEvent('sign_up', { method: 'email' })
-      // no display name at signup; default to the email's local part until
-      // the user edits their profile — never the full address, which is
-      // unverified at this point and would leak into public name search
-      await writeProfile(user, user.email?.split('@')[0] ?? null)
-      await router.push(routes.gameCollection)
-      return true
-    } catch (err) {
-      return fail(err)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function handleForgotPassword(email: string): Promise<boolean> {
-    isLoading.value = true
-    try {
-      await sendPasswordResetEmail(auth, email)
-      return true
-    } catch (err) {
-      return fail(err)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   return {
     isLoading,
     errorMessage,
     handleOAuthSignIn,
-    handleEmailSignIn,
-    handleEmailSignUp,
-    handleForgotPassword,
   }
 }

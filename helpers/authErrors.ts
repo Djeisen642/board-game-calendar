@@ -1,12 +1,6 @@
 const messages: Record<string, string> = {
-  'auth/invalid-credential': 'Incorrect email or password.',
-  'auth/user-not-found': 'Incorrect email or password.',
-  'auth/wrong-password': 'Incorrect email or password.',
-  'auth/invalid-email': 'That email address is not valid.',
+  'auth/invalid-credential': 'Sign-in failed. Please try again.',
   'auth/user-disabled': 'This account has been disabled.',
-  'auth/email-already-in-use':
-    'An account with this email already exists. Try signing in instead.',
-  'auth/weak-password': 'Password must be at least 6 characters.',
   'auth/too-many-requests':
     'Too many attempts. Please wait a few minutes and try again.',
   'auth/popup-closed-by-user': 'Sign-in was canceled.',
