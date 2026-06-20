@@ -192,37 +192,39 @@ The app uses a consistent dark glassmorphism design system. All new UI must foll
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| `background` | `#11111B` | App background |
-| `surface` | `#1E1E2E` | Cards, drawers |
-| `surface-variant` | `#252538` | Nested surfaces, avatars |
-| `primary` | `#6C5CE7` | Brand purple — CTAs, active states, icons on dark surfaces. **Do not use for text/icon buttons on dark card backgrounds** (contrast ~2.3:1, fails WCAG AA). |
-| `secondary` | `#FDCB6E` | Amber/gold — star ratings, the "Rate" action. |
-| `accent` | `#00CEC9` | Teal — external links, edit/navigation actions, icon buttons that need good contrast on dark surfaces (~7:1). |
-| `success` | `#55EFC4` | Confirm, accept, save actions. |
-| `error` | `#FF7675` | Destructive actions (delete, cancel, decline). |
-| `info` | `#74B9FF` | Informational states. |
-| `warning` | `#FFEAA7` | Non-critical warnings. |
-| `on-background` / `on-surface` | `#CDD6F4` | Body text on dark backgrounds (lavender-white). |
-| `on-primary` | `#FFFFFF` | Text on primary-colored backgrounds. |
-| `on-secondary` | `#11111B` | Text on secondary (amber) backgrounds. |
+| `background` | `#100A04` | App background (near-black walnut) |
+| `surface` | `#1E1205` | Cards, drawers |
+| `surface-variant` | `#2A1A0B` | Nested surfaces, avatars |
+| `primary` | `#C8860A` | Amber gold — CTAs, active states, icons. ~6.3:1 on surface. |
+| `on-primary` | `#100A04` | Text/icons on primary-coloured backgrounds. |
+| `secondary` | `#4A7A44` | Muted green — secondary actions. |
+| `accent` | `#C0A870` | Sand/tan — external links, edit/navigation actions on dark surfaces (~7.9:1). |
+| `success` | `#55B855` | Confirm, accept, save actions. ~7.6:1 on surface. |
+| `error` | `#E05252` | Destructive actions (delete, cancel, decline). ~4.8:1 on surface. |
+| `warning` | `#D4A820` | Pending / invited states (chips). |
+| `info` | `#5B8FAB` | Informational states. |
+| `on-surface` / `on-background` | `#E8D4A8` | Body text on dark backgrounds (warm parchment). ~12.6:1 on surface. |
+
+> **Why success and error are brighter than typical dark-theme palettes:** `variant="text"` and `variant="tonal"` buttons use these colours directly as foreground text on the near-black card background. The values above are the minimum needed to reach WCAG AA 4.5:1. Do not darken them.
 
 **Semantic color rules:**
 - Destructive action → `color="error"`
 - Confirm / accept / save → `color="success"`
 - Primary CTA → `color="primary"` on buttons with filled/elevated variant
 - External links, secondary navigation → `color="accent"` on text/icon buttons
-- Ratings and amber emphasis → `color="secondary"`
-- **Never** use `color="primary"` for icon-only or text-variant buttons on cards — use `color="accent"` instead for legibility
+- Pending / invited state chips → `color="warning"`
+- **Never** substitute a darker custom colour for `success` or `error` — contrast will fail
 
 ### Typography
 
-- Font: **Inter** (body and headings) via `$body-font-family` / `$heading-font-family` in `variables.scss`
-- Body text color: `#CDD6F4` (Vuetify `on-surface`)
-- Page title: `.page-title` → `1.5rem / 600`
-- Section label: `.section-label` → `0.875rem / 500`, uppercase, `rgba(CDD6F4, 0.7)`
-- Empty state title: `.empty-title` → `1.35rem / 600`
-- Empty state description: `.empty-desc` → `1rem`, `rgba(CDD6F4, 0.75)`
-- All buttons: `text-transform: none`, `letter-spacing: 0.02em` (global override in `global.scss`)
+- Headings: **Cinzel** (serif) via `$heading-font-family` in `variables.scss`
+- Body: **Lora** (serif) via `$body-font-family`
+- Body text color: `#E8D4A8` (Vuetify `on-surface`)
+- Page title: `.page-title` → `1.35rem / 700`, Cinzel, rendered as `<h1>` (not `<span>`)
+- Section label: `.section-label` → `0.8rem / 600`, uppercase, `#c8860a` (full opacity)
+- Empty state title: `.empty-title` → `1.2rem / 600`, Cinzel
+- Empty state description: `.empty-desc` → `0.95rem`, Lora, `rgba(240,223,196,0.80)`
+- All buttons: `text-transform: none`, `font-family: Cinzel`, `letter-spacing: 0.06em` (global override in `global.scss`)
 
 ### Spacing & shape
 
@@ -359,6 +361,55 @@ All pages target mobile-first. Breakpoints:
 }
 ```
 
+
+### Accessibility
+
+The app targets WCAG 2.1 AA. Every new UI component must satisfy the rules below.
+
+#### Heading hierarchy
+Every page title must be an `<h1>`, not a `<span>`. Use the `.page-title` class on it — the CSS resets browser heading defaults so it renders identically:
+```html
+<h1 class="page-title">Calendar</h1>
+```
+
+#### Skip-to-main link
+`layouts/default.vue` has a `.skip-link` as the very first focusable element, targeting `#main-content` on the `<v-container>` inside `<v-main>`. Do not remove it.
+
+#### Loading states
+Every `<v-progress-linear indeterminate>` must have an `aria-label` describing what is loading:
+```html
+<v-progress-linear indeterminate color="primary" aria-label="Loading gatherings" />
+```
+
+#### Notifications
+`<Snackbar>` has `role="alert"` on its `<v-snackbar>` so screen readers announce messages. Do not remove it.
+
+#### Decorative avatars
+Avatar initials (the single letter in `v-avatar`) are decorative — the person's name is already in the adjacent `v-list-item-title`. Add `aria-hidden="true"` to the `v-avatar`:
+```html
+<v-avatar color="primary" size="36" aria-hidden="true">
+  <span class="avatar-initial">{{ name.charAt(0) }}</span>
+</v-avatar>
+```
+
+#### Links identifiable without colour
+Links must not rely on colour alone. Use `text-decoration: underline` in the default (non-hover) state.
+
+#### Motion
+`global.scss` includes a `@media (prefers-reduced-motion: reduce)` block that collapses all animation/transition durations to 0.01 ms. Do not add inline `animation` or `transition` styles that bypass this.
+
+#### Contrast quick-reference
+
+| Use case | Colour | CR on surface |
+|---|---|---|
+| Primary buttons, icons | `#C8860A` | ~6.3:1 ✓ |
+| Success text/tonal | `#55B855` | ~7.6:1 ✓ |
+| Error text/tonal | `#E05252` | ~4.8:1 ✓ |
+| Accent text/tonal | `#C0A870` | ~7.9:1 ✓ |
+| Body text | `#E8D4A8` | ~12.6:1 ✓ |
+| Section labels | `#c8860a` at `0.8rem` | ~6.3:1 ✓ |
+
+Inactive rating stars use `rgba(200,134,10,0.55)` — meets the 3:1 WCAG 1.4.11 threshold for UI components.
 
 ## Pull Requests
 
