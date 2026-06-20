@@ -22,7 +22,9 @@
     <v-app-bar class="bgc-app-bar" flat>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title class="app-bar-title">
-        <span class="app-bar-title-icon">♟</span>
+        <v-icon class="app-bar-title-icon" color="primary" size="20"
+          >mdi-hexagon-multiple</v-icon
+        >
         {{ title }}
       </v-toolbar-title>
       <v-spacer />
@@ -67,31 +69,31 @@ const drawer = ref(false)
 
 const items = [
   {
-    icon: 'mdi-apps',
+    icon: 'mdi-castle',
     title: 'Welcome',
     to: routes.index,
     type: PageType.AlwaysShow,
   },
   {
-    icon: 'mdi-login',
+    icon: 'mdi-account-key',
     title: 'Sign In',
     to: routes.signIn,
     type: PageType.BeforeAuth,
   },
   {
-    icon: 'mdi-calendar',
+    icon: 'mdi-calendar-month',
     title: 'Calendar',
     to: routes.calendar,
     type: PageType.NeedsAuth,
   },
   {
-    icon: 'mdi-calendar-plus',
+    icon: 'mdi-dice-multiple',
     title: 'New Gathering',
     to: routes.newGathering,
     type: PageType.NeedsAuth,
   },
   {
-    icon: 'mdi-rhombus-split',
+    icon: 'mdi-cards-outline',
     title: 'Game Collection',
     to: routes.gameCollection,
     type: PageType.NeedsAuth,
@@ -134,36 +136,44 @@ async function onSignoutClicked() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 16px 12px;
+  padding: 20px 16px 14px;
+  border-bottom: 1px solid rgba(200, 134, 10, 0.14);
 }
 
 .drawer-brand {
-  font-size: 1.25rem;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  background: linear-gradient(135deg, #6c5ce7, #00cec9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.12em;
+  color: #c8860a;
+  text-shadow: 0 0 14px rgba(200, 134, 10, 0.4);
 }
 
 .app-bar-title {
+  font-family: 'Cinzel', Georgia, serif;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
+  color: #f0dfc4;
 }
 
 .app-bar-title-icon {
-  margin-right: 6px;
-  font-size: 1.1em;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .nav-list :deep(.v-list-item-title) {
-  font-size: 1.05rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .nav-list :deep(.v-icon) {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
+  color: rgba(200, 134, 10, 0.7);
+}
+
+.nav-list :deep(.v-list-item--active .v-icon) {
+  color: #c8860a;
 }
 </style>

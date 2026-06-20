@@ -32,7 +32,12 @@
 
         <div class="feature-grid mt-8">
           <v-row>
-            <v-col v-for="feature in features" :key="feature.icon" cols="12" sm="4">
+            <v-col
+              v-for="feature in features"
+              :key="feature.icon"
+              cols="12"
+              sm="4"
+            >
               <div class="feature-item text-center pa-4">
                 <v-icon size="36" color="accent" class="mb-3">
                   {{ feature.icon }}
@@ -53,7 +58,7 @@ useHead({ title: 'Welcome' })
 
 const features = [
   {
-    icon: 'mdi-rhombus-split',
+    icon: 'mdi-cards-outline',
     title: 'Your Collection',
     desc: 'Catalog your board games with ratings and notes.',
   },
@@ -63,7 +68,7 @@ const features = [
     desc: 'Connect with fellow board game enthusiasts.',
   },
   {
-    icon: 'mdi-calendar-check',
+    icon: 'mdi-dice-multiple',
     title: 'Schedule Nights',
     desc: 'Plan gatherings around the games you love.',
   },
@@ -86,7 +91,7 @@ const features = [
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(108, 92, 231, 0.08) 0%,
+    rgba(200, 134, 10, 0.06) 0%,
     transparent 70%
   );
   pointer-events: none;
@@ -97,58 +102,68 @@ const features = [
 }
 
 .hero-title {
-  font-size: 2rem;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.9rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #cdd6f4 0%, #6c5ce7 50%, #00cec9 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  line-height: 1.2;
+  letter-spacing: 0.04em;
+  color: #c8860a;
+  text-shadow:
+    0 0 20px rgba(200, 134, 10, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.25;
 }
 
 .hero-subtitle {
+  font-family: 'Lora', Georgia, serif;
   font-size: 1.05rem;
-  color: rgba(205, 214, 244, 0.85);
-  line-height: 1.6;
+  color: rgba(240, 223, 196, 0.85);
+  line-height: 1.7;
 }
 
 .hero-body {
-  font-size: 1rem;
-  color: rgba(205, 214, 244, 0.8);
-  line-height: 1.6;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.98rem;
+  color: rgba(240, 223, 196, 0.7);
+  line-height: 1.7;
 }
 
 .hero-cta {
-  font-weight: 600;
+  font-family: 'Cinzel', Georgia, serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
   padding: 0 32px;
-  background: linear-gradient(135deg, #6c5ce7, #5a4bd1) !important;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .hero-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.4) !important;
+  box-shadow: 0 8px 24px rgba(200, 134, 10, 0.35) !important;
 }
 
 .feature-item {
-  border-radius: 16px;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
 }
 
 .feature-item:hover {
-  background: rgba(108, 92, 231, 0.06);
+  background: rgba(200, 134, 10, 0.06);
+  border-color: rgba(200, 134, 10, 0.15);
 }
 
 .feature-title {
+  font-family: 'Cinzel', Georgia, serif;
   font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 4px;
-  color: rgba(205, 214, 244, 0.95);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  color: rgba(240, 223, 196, 0.92);
 }
 
 .feature-desc {
-  font-size: 0.9rem;
-  color: rgba(205, 214, 244, 0.75);
-  line-height: 1.5;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.88rem;
+  color: rgba(240, 223, 196, 0.65);
+  line-height: 1.6;
 }
 </style>

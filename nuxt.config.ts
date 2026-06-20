@@ -46,7 +46,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap',
         },
       ],
     },
@@ -75,22 +75,22 @@ export default defineNuxtConfig({
           dark: {
             dark: true,
             colors: {
-              background: '#11111B',
-              surface: '#1E1E2E',
-              'surface-variant': '#252538',
-              primary: '#6C5CE7',
-              'primary-darken-1': '#5A4BD1',
-              secondary: '#FDCB6E',
-              'secondary-darken-1': '#E0B44F',
-              accent: '#00CEC9',
-              info: '#74B9FF',
-              warning: '#FFEAA7',
-              error: '#FF7675',
-              success: '#55EFC4',
-              'on-background': '#CDD6F4',
-              'on-surface': '#CDD6F4',
-              'on-primary': '#FFFFFF',
-              'on-secondary': '#11111B',
+              background: '#100A04',
+              surface: '#1E1205',
+              'surface-variant': '#2A1A0B',
+              primary: '#C8860A',
+              'primary-darken-1': '#9A640A',
+              secondary: '#4A7A44',
+              'secondary-darken-1': '#356030',
+              accent: '#C0A870',
+              info: '#5B8FAB',
+              warning: '#D4A820',
+              error: '#B84040',
+              success: '#4A8C40',
+              'on-background': '#F0DFC4',
+              'on-surface': '#E8D4A8',
+              'on-primary': '#100A04',
+              'on-secondary': '#F0DFC4',
             },
           },
         },
@@ -139,13 +139,15 @@ export default defineNuxtConfig({
       cssMinify: 'lightningcss',
     },
     resolve: {
-      alias: SCREENSHOT_MODE ? {
-        'firebase/analytics': mockAlias('firebase-analytics.ts'),
-        'firebase/app-check': mockAlias('firebase-app-check.ts'),
-        'firebase/auth': mockAlias('firebase-auth.ts'),
-        'firebase/database': mockAlias('firebase-database.ts'),
-        'firebase/functions': mockAlias('firebase-functions.ts'),
-      } : {},
+      alias: SCREENSHOT_MODE
+        ? {
+            'firebase/analytics': mockAlias('firebase-analytics.ts'),
+            'firebase/app-check': mockAlias('firebase-app-check.ts'),
+            'firebase/auth': mockAlias('firebase-auth.ts'),
+            'firebase/database': mockAlias('firebase-database.ts'),
+            'firebase/functions': mockAlias('firebase-functions.ts'),
+          }
+        : {},
     },
     optimizeDeps: {
       include: [
@@ -153,19 +155,23 @@ export default defineNuxtConfig({
         '@vue/devtools-kit',
         'awesome-phonenumber',
         // Omit firebase/* in screenshot mode — they are aliased to local mocks
-        ...(SCREENSHOT_MODE ? [] : [
-          'firebase/analytics',
-          'firebase/app',
-          'firebase/auth',
-          'firebase/database',
-        ]),
+        ...(SCREENSHOT_MODE
+          ? []
+          : [
+              'firebase/analytics',
+              'firebase/app',
+              'firebase/auth',
+              'firebase/database',
+            ]),
         'validator/lib/isEmail', // CJS
       ],
     },
     define: {
       'process.env.G_API_KEY': JSON.stringify(process.env.G_API_KEY ?? ''),
       'process.env.G_APP_ID': JSON.stringify(process.env.G_APP_ID ?? ''),
-      'process.env.RECAPTCHA_SITE_KEY': JSON.stringify(process.env.RECAPTCHA_SITE_KEY ?? ''),
+      'process.env.RECAPTCHA_SITE_KEY': JSON.stringify(
+        process.env.RECAPTCHA_SITE_KEY ?? ''
+      ),
     },
   },
 })

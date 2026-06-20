@@ -33,11 +33,14 @@ const VIEWPORTS = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function isPortListening(port) {
-  return new Promise((resolve) => {
-    const socket = createConnection({ port, host: '127.0.0.1' })
-    socket.once('connect', () => { socket.destroy(); resolve(true) })
-    socket.once('error', () => resolve(false))
-  })
+  const tryHost = (host) =>
+    new Promise((resolve, reject) => {
+      const socket = createConnection({ port, host })
+      socket.once('connect', () => { socket.destroy(); resolve(true) })
+      socket.once('error', (err) => reject(err))
+    })
+  // Promise.any resolves as soon as any host connects; rejects (→ false) if all fail
+  return Promise.any([tryHost('127.0.0.1'), tryHost('::1')]).catch(() => false)
 }
 
 async function waitForPort(port, timeoutMs = 60_000) {
@@ -132,13 +135,22 @@ async function takeScreenshots(route, viewportNames, fullPage, fixture, executab
 
       await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
 
-      // Wait for loading spinners to clear (mock onValue fires after 50 ms,
-      // Vue needs another tick to re-render; 2 s is comfortably enough)
+      // Wait for Vue to mount (SPA entry is a <script type="module">; domcontentloaded
+      // fires before the module executes)
+      await page.waitForFunction(
+        () => {
+          const nuxt = document.getElementById('__nuxt')
+          return nuxt != null && nuxt.children.length > 0
+        },
+        { timeout: 15_000 },
+      ).catch(() => {})
+
+      // Wait for loading spinners to clear (mock onValue fires after 50 ms)
       await page.waitForFunction(
         () => document.querySelectorAll('.v-progress-linear--indeterminate').length === 0,
-        { timeout: 5_000 },
+        { timeout: 8_000 },
       ).catch(() => {})
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(500)
 
       mkdirSync(SCREENSHOTS_DIR, { recursive: true })
       const slug = route.replace(/^\//, '').replace(/\//g, '-') || 'index'

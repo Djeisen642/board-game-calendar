@@ -2,12 +2,12 @@
 //
 // Vuetify SCSS variable overrides
 
-// Typography
-$body-font-family: 'Inter', sans-serif;
-$heading-font-family: 'Inter', sans-serif;
+// Typography — board game serif stack
+$body-font-family: 'Lora', Georgia, serif;
+$heading-font-family: 'Cinzel', Georgia, serif;
 
-// Border radius — softer, modern feel
-$border-radius-root: 12px;
+// Border radius — moderate for game card feel
+$border-radius-root: 6px;
 
-// Card elevation tweaks
+// Card elevation
 $card-elevation: 0;
