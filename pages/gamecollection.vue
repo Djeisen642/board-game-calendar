@@ -7,7 +7,7 @@
             <v-icon color="primary" class="mr-3 flex-shrink-0"
               >mdi-rhombus-split</v-icon
             >
-            <span class="page-title">{{ pageTitle }}</span>
+            <h1 class="page-title">{{ pageTitle }}</h1>
           </div>
           <div class="page-header-actions">
             <template v-if="isFriendView">
@@ -52,7 +52,7 @@
         <v-divider />
         <v-card-text class="pa-6">
           <div v-if="loading">
-            <v-progress-linear indeterminate color="primary" />
+            <v-progress-linear indeterminate color="primary" aria-label="Loading collection" />
           </div>
 
           <!-- Collection list (owner or friend) -->
@@ -871,6 +871,6 @@ function onGameSearchError(error: Error) {
 }
 /* Make empty rating stars faintly visible on dark background */
 .game-item :deep(.v-rating .v-btn:not(.v-btn--active) .v-icon) {
-  color: rgba(200, 134, 10, 0.3) !important;
+  color: rgba(200, 134, 10, 0.55) !important;
 }
 </style>

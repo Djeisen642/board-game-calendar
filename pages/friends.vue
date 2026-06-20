@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title class="d-flex align-center pa-6">
           <v-icon color="primary" class="mr-3">mdi-account-group</v-icon>
-          <span class="page-title">Friends</span>
+          <h1 class="page-title">Friends</h1>
           <v-spacer />
           <v-btn variant="elevated" color="primary" size="small" @click.stop="toggleAddArea">
             <v-icon start>{{ friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}</v-icon>
@@ -13,7 +13,7 @@
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" />
+          <v-progress-linear indeterminate color="primary" aria-label="Loading friends" />
         </v-card-text>
         <v-card-text v-else-if="friendsAreaOpen" class="pa-6">
           <template v-if="incomingRequests.length">
@@ -21,7 +21,7 @@
             <v-list class="mb-4">
               <v-list-item v-for="request in incomingRequests" :key="request.userId" class="friend-item mb-1">
                 <template #prepend>
-                  <v-avatar color="accent" size="36" class="mr-3">
+                  <v-avatar color="accent" size="36" class="mr-3" aria-hidden="true">
                     <span class="avatar-initial">{{ request.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                   </v-avatar>
                 </template>
@@ -52,7 +52,7 @@
             <v-list>
               <v-list-item v-for="(friend, id) in friends" :key="id" class="friend-item mb-1">
                 <template #prepend>
-                  <v-avatar color="primary" size="36" class="mr-3">
+                  <v-avatar color="primary" size="36" class="mr-3" aria-hidden="true">
                     <span class="avatar-initial">{{ friend.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                   </v-avatar>
                 </template>
@@ -74,7 +74,7 @@
           <v-list>
             <v-list-item v-for="(person, id) in searchResults" :key="id" class="friend-item mb-1">
               <template #prepend>
-                <v-avatar color="surface-variant" size="36" class="mr-3">
+                <v-avatar color="surface-variant" size="36" class="mr-3" aria-hidden="true">
                   <span class="avatar-initial">{{ person.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                 </v-avatar>
               </template>

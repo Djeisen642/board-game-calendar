@@ -4,6 +4,7 @@
     :color="isError ? 'error' : 'success'"
     rounded="lg"
     location="bottom end"
+    role="alert"
   >
     <div class="d-flex align-center gap-2">
       <v-icon>{{ isError ? 'mdi-alert-circle' : 'mdi-check-circle' }}</v-icon>

@@ -1,6 +1,7 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <v-navigation-drawer v-model="drawer" aria-label="Main navigation">
       <div class="drawer-header">
         <BGCLogo />
         <div class="drawer-brand">BGC</div>
@@ -20,7 +21,7 @@
     </v-navigation-drawer>
 
     <v-app-bar class="bgc-app-bar" flat>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-app-bar-nav-icon aria-label="Open navigation menu" @click.stop="drawer = !drawer" />
       <v-toolbar-title class="app-bar-title">
         <v-icon class="app-bar-title-icon" color="primary" size="20"
           >mdi-hexagon-multiple</v-icon
@@ -55,7 +56,7 @@
     </v-app-bar>
 
     <v-main>
-      <v-container>
+      <v-container id="main-content">
         <slot />
       </v-container>
     </v-main>
