@@ -17,7 +17,11 @@
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" aria-label="Loading gatherings" />
+          <v-progress-linear
+            indeterminate
+            color="primary"
+            aria-label="Loading gatherings"
+          />
         </v-card-text>
         <v-card-text
           v-else-if="!hosting.length && !invited.length"
@@ -73,7 +77,10 @@
                   >{{ game.name }}</v-chip
                 >
               </div>
-              <div v-if="guestEntries(gathering).length" class="event-line mb-2">
+              <div
+                v-if="guestEntries(gathering).length"
+                class="event-line mb-2"
+              >
                 <v-icon size="16" class="mr-1">mdi-account-group</v-icon>
                 <v-chip
                   v-for="guest in guestEntries(gathering)"
@@ -373,9 +380,10 @@ function editGathering(gathering: GatheringWithId) {
 
 <style scoped>
 .event-item {
-  border-radius: 6px;
+  border-radius: 10px;
   background: rgba(200, 134, 10, 0.04);
   border: 1px solid rgba(200, 134, 10, 0.12);
+  box-shadow: inset 0 1px 0 rgba(240, 223, 196, 0.04);
   transition: all 0.2s ease;
   animation: deal-in 0.35s ease both;
 }

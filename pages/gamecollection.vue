@@ -52,7 +52,11 @@
         <v-divider />
         <v-card-text class="pa-6">
           <div v-if="loading">
-            <v-progress-linear indeterminate color="primary" aria-label="Loading collection" />
+            <v-progress-linear
+              indeterminate
+              color="primary"
+              aria-label="Loading collection"
+            />
           </div>
 
           <!-- Collection list (owner or friend) -->
@@ -225,9 +229,7 @@
                         size="small"
                         variant="tonal"
                         :color="
-                          expandedItems.has(entry.gameId)
-                            ? 'primary'
-                            : 'accent'
+                          expandedItems.has(entry.gameId) ? 'primary' : 'accent'
                         "
                         :aria-label="
                           expandedItems.has(entry.gameId)
@@ -869,8 +871,8 @@ function onGameSearchError(error: Error) {
   overflow: hidden;
   line-height: 1.35;
 }
-/* Make empty rating stars faintly visible on dark background */
+/* Empty rating stars: ≥3:1 against the card for WCAG 1.4.11 (UI components) */
 .game-item :deep(.v-rating .v-btn:not(.v-btn--active) .v-icon) {
-  color: rgba(200, 134, 10, 0.55) !important;
+  color: rgba(200, 134, 10, 0.7) !important;
 }
 </style>

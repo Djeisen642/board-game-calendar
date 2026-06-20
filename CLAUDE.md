@@ -80,7 +80,7 @@ Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB
 
 ### Components
 
-- `BGCLogo.vue` — animated chess bishop SVG logo
+- `BGCLogo.vue` — animated brass **meeple** SVG logo (bob + glow). The meeple is also the favicon (`public/favicon.svg` + `.png`: brass meeple on a felt-green tile).
 - `GameSearch.vue` — BGG API search + add-to-collection; hits `https://boardgamegeek.com/xmlapi2/`
 - `Snackbar.vue` — toast notification wrapper; uses `defineExpose` for parent `ref` access
 
@@ -190,24 +190,24 @@ Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.sp
 
 ## Design Conventions
 
-The app uses a consistent dark glassmorphism design system. All new UI must follow these conventions.
+The app uses a consistent **"Evening Game Table"** design system: a deep green felt play surface lit by a warm overhead lamp, framed in walnut wood, with brass-gold accents and wooden-token chips. The aesthetic is modern post-morphism — soft realistic shadows and honest warm light, restrained texture, no HUD/skeuomorphic chrome. All new UI must follow these conventions.
 
 ### Color palette (defined in `nuxt.config.ts` → `vuetifyOptions.theme.themes.dark.colors`)
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| `background` | `#100A04` | App background (near-black walnut) |
-| `surface` | `#1E1205` | Cards, drawers |
+| `background` | `#0E1A12` | App background (deep felt green — the table surface). Also the `theme-color` meta + the initial paint colour (the "default load colour"). |
+| `surface` | `#20140A` | Cards (walnut cardstock), drawers. Distinct from the green felt by hue, not just luminance. |
 | `surface-variant` | `#2A1A0B` | Nested surfaces, avatars |
-| `primary` | `#C8860A` | Amber gold — CTAs, active states, icons. ~6.3:1 on surface. |
+| `primary` | `#C8860A` | Amber gold — CTAs, active states, icons. ~5.9:1 on card. |
 | `on-primary` | `#100A04` | Text/icons on primary-coloured backgrounds. |
 | `secondary` | `#4A7A44` | Muted green — secondary actions. |
-| `accent` | `#C0A870` | Sand/tan — external links, edit/navigation actions on dark surfaces (~7.9:1). |
-| `success` | `#55B855` | Confirm, accept, save actions. ~7.6:1 on surface. |
-| `error` | `#E05252` | Destructive actions (delete, cancel, decline). ~4.8:1 on surface. |
+| `accent` | `#C0A870` | Sand/tan — external links, edit/navigation actions on dark surfaces (~7.8:1). |
+| `success` | `#55B855` | Confirm, accept, save actions. ~7.2:1 on card. |
+| `error` | `#E05252` | Destructive actions (delete, cancel, decline). ~4.7:1 on card. |
 | `warning` | `#D4A820` | Pending / invited states (chips). |
 | `info` | `#5B8FAB` | Informational states. |
-| `on-surface` / `on-background` | `#E8D4A8` | Body text on dark backgrounds (warm parchment). ~12.6:1 on surface. |
+| `on-surface` / `on-background` | `#E8D4A8` | Body text on dark backgrounds (warm parchment). ~12.4:1 on card. |
 
 > **Why success and error are brighter than typical dark-theme palettes:** `variant="text"` and `variant="tonal"` buttons use these colours directly as foreground text on the near-black card background. The values above are the minimum needed to reach WCAG AA 4.5:1. Do not darken them.
 
@@ -225,26 +225,28 @@ The app uses a consistent dark glassmorphism design system. All new UI must foll
 - Body: **Lora** (serif) via `$body-font-family`
 - Body text color: `#E8D4A8` (Vuetify `on-surface`)
 - Page title: `.page-title` → `1.35rem / 700`, Cinzel, rendered as `<h1>` (not `<span>`)
-- Section label: `.section-label` → `0.8rem / 600`, uppercase, `#c8860a` (full opacity)
+- Section label: `.section-label` → `0.8rem / 600`, uppercase, `#c8860a` (full opacity); auto-prefixed with a small amber diamond "scoring marker" via `::before` (flex row)
 - Empty state title: `.empty-title` → `1.2rem / 600`, Cinzel
 - Empty state description: `.empty-desc` → `0.95rem`, Lora, `rgba(240,223,196,0.80)`
 - All buttons: `text-transform: none`, `font-family: Cinzel`, `letter-spacing: 0.06em` (global override in `global.scss`)
 
 ### Spacing & shape
 
-- **Border radius root**: `12px` (set in `variables.scss`); buttons `10px`; cards `xl` (Vuetify default `24px`)
+- **Border radius root**: `10px` (set in `variables.scss`); buttons & fields `10px` (global override in `global.scss`); cards `xl` (Vuetify default `24px`)
 - **Card padding**: `pa-6` (24 px) for `v-card-text` content; `16px 20px` for `page-card-title` headers
 - **List item gap**: `mb-2` between items
 - **Section gap**: `mb-3` after section labels, `my-4` for dividers between sections
 
-### Glassmorphism card style (automatic via `global.scss`)
+### Cardstock card style (automatic via `global.scss`)
 
-All `v-card` elements get:
-- Background: `rgba(30, 30, 46, 0.7)` + `backdrop-filter: blur(16px)`
-- Border: `1px solid rgba(108, 92, 231, 0.12)`
-- Hover: border brightens to `rgba(108,92,231,0.25)`, shadow deepens
+All `v-card` elements are styled as walnut cardstock resting on the felt table:
+- Background: solid walnut `#241808` with a barely-there linen weave (two faint 1px cross-hatch `repeating-linear-gradient`s at ~1.4% parchment)
+- Border: `1px solid rgba(200, 134, 10, 0.22)` (hairline brass edge)
+- Shadow: a soft cast shadow onto the felt (`0 20px 44px -16px rgba(0,0,0,0.65)`) + a contact shadow + a top-edge bevel highlight (`inset 0 1px 0 rgba(240,223,196,0.05)`)
+- Hover: border brightens to `rgba(200,134,10,0.4)`, shadow deepens
+- No `backdrop-filter`, no corner-bracket ornaments (both removed — they read as 90s-RTS HUD chrome)
 
-Do not override card backgrounds inline — the global style handles it.
+The table surface itself (felt + lamp glow + fabric grain) is painted on `body::before` / `body::after`; the walnut frame is the app bar and navigation drawer. Do not override card backgrounds inline — the global style handles it.
 
 ### Vuetify component defaults (set in `nuxt.config.ts`)
 
@@ -266,7 +268,7 @@ Override these per-instance only when there's a clear reason (e.g., `variant="te
 | `page-header-actions` | `div` inside `page-card-title` | Right-aligns actions via `margin-left: auto`; wraps naturally on `xs` |
 | `event-actions` | `div` at bottom of event card | `flex-wrap` row for action buttons, separated from metadata |
 | `page-title` | `span` inside card header | Page-level heading size |
-| `section-label` | `div` before a list section | Uppercase subdued section heading |
+| `section-label` | `div` before a list section | Uppercase subdued section heading with a leading amber diamond marker |
 | `empty-state` / `empty-title` / `empty-desc` | Empty state container | Centered empty state layout |
 
 ### Page structure pattern
@@ -404,16 +406,23 @@ Links must not rely on colour alone. Use `text-decoration: underline` in the def
 
 #### Contrast quick-reference
 
-| Use case | Colour | CR on surface |
-|---|---|---|
-| Primary buttons, icons | `#C8860A` | ~6.3:1 ✓ |
-| Success text/tonal | `#55B855` | ~7.6:1 ✓ |
-| Error text/tonal | `#E05252` | ~4.8:1 ✓ |
-| Accent text/tonal | `#C0A870` | ~7.9:1 ✓ |
-| Body text | `#E8D4A8` | ~12.6:1 ✓ |
-| Section labels | `#c8860a` at `0.8rem` | ~6.3:1 ✓ |
+Ratios below are measured against the walnut card surface `#20140A` (where body text sits), verified with a WCAG script.
 
-Inactive rating stars use `rgba(200,134,10,0.55)` — meets the 3:1 WCAG 1.4.11 threshold for UI components.
+| Use case | Colour | CR on card |
+|---|---|---|
+| Primary buttons, icons | `#C8860A` | ~5.9:1 ✓ |
+| Success text/tonal | `#55B855` | ~7.2:1 ✓ |
+| Error text/tonal | `#E05252` | ~4.7:1 ✓ |
+| Accent text/tonal | `#C0A870` | ~7.8:1 ✓ |
+| Warning text/tonal | `#D4A820` | ~8.1:1 ✓ |
+| Info text/tonal | `#5B8FAB` | ~5.1:1 ✓ |
+| Body text | `#E8D4A8` | ~12.4:1 ✓ |
+| Button label on primary | `#100A04` on `#C8860A` | ~6.4:1 ✓ |
+| Section labels | `#c8860a` at `0.8rem` | ~5.9:1 ✓ |
+
+Inactive rating stars use `rgba(200,134,10,0.7)` (~3.5:1) — clears the 3:1 WCAG 1.4.11 threshold for UI components against the card. **Do not drop below 0.7**; `0.55` fails on the lighter walnut surface.
+
+Friend/request avatar initials are dark (`#231708`) on the brass/sand (`primary`/`accent`) token avatars (~5.8:1); on a `surface-variant` avatar use the `.avatar-initial--on-dark` modifier (parchment text) instead.
 
 ## Pull Requests
 

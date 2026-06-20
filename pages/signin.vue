@@ -69,32 +69,32 @@ const signInWithFacebook = () => handleOAuthSignIn(new FacebookAuthProvider())
 
 <style scoped>
 .signin-title {
+  font-family: 'Cinzel', Georgia, serif;
   font-size: 1.75rem;
   font-weight: 700;
-  color: rgba(205, 214, 244, 0.95);
+  letter-spacing: 0.04em;
+  color: #f0dfc4;
 }
 
 .signin-subtitle {
+  font-family: 'Lora', Georgia, serif;
   font-size: 1rem;
-  color: rgba(205, 214, 244, 0.8);
+  color: rgba(240, 223, 196, 0.8);
 }
 
 .social-btn {
   font-weight: 500;
-  border: 1px solid rgba(108, 92, 231, 0.15);
+  border: 1px solid rgba(200, 134, 10, 0.22);
   transition: all 0.25s ease;
 }
 
 .social-btn:hover {
-  border-color: rgba(108, 92, 231, 0.3);
-  background: rgba(108, 92, 231, 0.06) !important;
+  border-color: rgba(200, 134, 10, 0.4);
+  background: rgba(200, 134, 10, 0.07) !important;
 }
 
-.google-btn {
-  color: #cdd6f4;
-}
-
+.google-btn,
 .facebook-btn {
-  color: #cdd6f4;
+  color: #e8d4a8;
 }
 </style>

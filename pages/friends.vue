@@ -6,32 +6,68 @@
           <v-icon color="primary" class="mr-3">mdi-account-group</v-icon>
           <h1 class="page-title">Friends</h1>
           <v-spacer />
-          <v-btn variant="elevated" color="primary" size="small" @click.stop="toggleAddArea">
-            <v-icon start>{{ friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle' }}</v-icon>
+          <v-btn
+            variant="elevated"
+            color="primary"
+            size="small"
+            @click.stop="toggleAddArea"
+          >
+            <v-icon start>{{
+              friendsAreaOpen ? 'mdi-plus-circle' : 'mdi-arrow-left-circle'
+            }}</v-icon>
             {{ friendsAreaOpen ? 'Add' : 'Back' }}
           </v-btn>
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" aria-label="Loading friends" />
+          <v-progress-linear
+            indeterminate
+            color="primary"
+            aria-label="Loading friends"
+          />
         </v-card-text>
         <v-card-text v-else-if="friendsAreaOpen" class="pa-6">
           <template v-if="incomingRequests.length">
             <div class="section-label mb-2">Friend Requests</div>
             <v-list class="mb-4">
-              <v-list-item v-for="request in incomingRequests" :key="request.userId" class="friend-item mb-1">
+              <v-list-item
+                v-for="request in incomingRequests"
+                :key="request.userId"
+                class="friend-item mb-1"
+              >
                 <template #prepend>
-                  <v-avatar color="accent" size="36" class="mr-3" aria-hidden="true">
-                    <span class="avatar-initial">{{ request.name?.charAt(0)?.toUpperCase() || '?' }}</span>
+                  <v-avatar
+                    color="accent"
+                    size="36"
+                    class="mr-3"
+                    aria-hidden="true"
+                  >
+                    <span class="avatar-initial">{{
+                      request.name?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
                   </v-avatar>
                 </template>
                 <v-list-item-title>{{ request.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ request.queryableEmail }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{
+                  request.queryableEmail
+                }}</v-list-item-subtitle>
                 <div class="event-actions">
-                  <v-btn density="compact" size="small" variant="text" color="success" @click.stop="handleAccept(request.userId)">
+                  <v-btn
+                    density="compact"
+                    size="small"
+                    variant="text"
+                    color="success"
+                    @click.stop="handleAccept(request.userId)"
+                  >
                     <v-icon start>mdi-check-circle</v-icon>Accept
                   </v-btn>
-                  <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleDecline(request.userId)">
+                  <v-btn
+                    density="compact"
+                    size="small"
+                    variant="text"
+                    color="error"
+                    @click.stop="handleDecline(request.userId)"
+                  >
                     <v-icon start>mdi-close-circle</v-icon>Decline
                   </v-btn>
                 </div>
@@ -39,29 +75,66 @@
             </v-list>
             <v-divider class="mb-4" />
           </template>
-          <div v-if="!friends.length && !incomingRequests.length" class="empty-state">
-            <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-account-multiple-plus-outline</v-icon>
+          <div
+            v-if="!friends.length && !incomingRequests.length"
+            class="empty-state"
+          >
+            <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3"
+              >mdi-account-multiple-plus-outline</v-icon
+            >
             <div class="empty-title">No friends yet</div>
-            <div class="empty-desc">Search for other players and add them to your list.</div>
-            <v-btn variant="elevated" color="primary" class="mt-4" @click.stop="toggleAddArea">
+            <div class="empty-desc">
+              Search for other players and add them to your list.
+            </div>
+            <v-btn
+              variant="elevated"
+              color="primary"
+              class="mt-4"
+              @click.stop="toggleAddArea"
+            >
               <v-icon start>mdi-plus-circle</v-icon>Find Friends
             </v-btn>
           </div>
           <template v-else-if="friends.length">
-            <div v-if="incomingRequests.length" class="section-label mb-2">Friends</div>
+            <div v-if="incomingRequests.length" class="section-label mb-2">
+              Friends
+            </div>
             <v-list>
-              <v-list-item v-for="(friend, id) in friends" :key="id" class="friend-item mb-1">
+              <v-list-item
+                v-for="(friend, id) in friends"
+                :key="id"
+                class="friend-item mb-1"
+              >
                 <template #prepend>
-                  <v-avatar color="primary" size="36" class="mr-3" aria-hidden="true">
-                    <span class="avatar-initial">{{ friend.name?.charAt(0)?.toUpperCase() || '?' }}</span>
+                  <v-avatar
+                    color="primary"
+                    size="36"
+                    class="mr-3"
+                    aria-hidden="true"
+                  >
+                    <span class="avatar-initial">{{
+                      friend.name?.charAt(0)?.toUpperCase() || '?'
+                    }}</span>
                   </v-avatar>
                 </template>
                 <v-list-item-title>{{ friend.name }}</v-list-item-title>
                 <div class="event-actions">
-                  <v-btn density="compact" size="small" variant="text" color="accent" :to="`${routes.gameCollection}?uid=${friend.userId}`">
+                  <v-btn
+                    density="compact"
+                    size="small"
+                    variant="text"
+                    color="accent"
+                    :to="`${routes.gameCollection}?uid=${friend.userId}`"
+                  >
                     <v-icon start>mdi-cards-outline</v-icon>Collection
                   </v-btn>
-                  <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleRemove(friend.userId)">
+                  <v-btn
+                    density="compact"
+                    size="small"
+                    variant="text"
+                    color="error"
+                    @click.stop="handleRemove(friend.userId)"
+                  >
                     <v-icon start>mdi-minus-circle</v-icon>Remove
                   </v-btn>
                 </div>
@@ -70,30 +143,75 @@
           </template>
         </v-card-text>
         <v-card-text v-else class="pa-6">
-          <v-text-field v-model="searchQuery" label="Search for friends" placeholder="Search by name, email, or phone number" :hint="`Search by name, email, or phone number (min ${constants.MinSearchLength} chars)`" persistent-hint prepend-inner-icon="mdi-magnify" :loading="isSearching" clearable class="mb-4" />
+          <v-text-field
+            v-model="searchQuery"
+            label="Search for friends"
+            placeholder="Search by name, email, or phone number"
+            :hint="`Search by name, email, or phone number (min ${constants.MinSearchLength} chars)`"
+            persistent-hint
+            prepend-inner-icon="mdi-magnify"
+            :loading="isSearching"
+            clearable
+            class="mb-4"
+          />
           <v-list>
-            <v-list-item v-for="(person, id) in searchResults" :key="id" class="friend-item mb-1">
+            <v-list-item
+              v-for="(person, id) in searchResults"
+              :key="id"
+              class="friend-item mb-1"
+            >
               <template #prepend>
-                <v-avatar color="surface-variant" size="36" class="mr-3" aria-hidden="true">
-                  <span class="avatar-initial">{{ person.name?.charAt(0)?.toUpperCase() || '?' }}</span>
+                <v-avatar
+                  color="surface-variant"
+                  size="36"
+                  class="mr-3"
+                  aria-hidden="true"
+                >
+                  <span class="avatar-initial avatar-initial--on-dark">{{
+                    person.name?.charAt(0)?.toUpperCase() || '?'
+                  }}</span>
                 </v-avatar>
               </template>
               <v-list-item-title>{{ person.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ person.queryableEmail }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{
+                person.queryableEmail
+              }}</v-list-item-subtitle>
               <div class="event-actions">
-                <v-chip v-if="person.isFriend" size="small" color="success" variant="tonal">
+                <v-chip
+                  v-if="person.isFriend"
+                  size="small"
+                  color="success"
+                  variant="tonal"
+                >
                   <v-icon start>mdi-check-circle</v-icon>Friends
                 </v-chip>
-                <v-chip v-else-if="person.requestSent" size="small" color="primary" variant="tonal">
+                <v-chip
+                  v-else-if="person.requestSent"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                >
                   <v-icon start>mdi-clock-outline</v-icon>Request Sent
                 </v-chip>
-                <v-btn v-else size="small" variant="elevated" color="accent" @click.stop="handleSendRequest(id, person)">
+                <v-btn
+                  v-else
+                  size="small"
+                  variant="elevated"
+                  color="accent"
+                  @click.stop="handleSendRequest(id, person)"
+                >
                   <v-icon start>mdi-plus-circle</v-icon>Add
                 </v-btn>
               </div>
             </v-list-item>
           </v-list>
-          <div v-if="searchQuery?.length >= constants.MinSearchLength && Object.keys(searchResults).length <= 0" class="empty-desc text-center mt-4">
+          <div
+            v-if="
+              searchQuery?.length >= constants.MinSearchLength &&
+              Object.keys(searchResults).length <= 0
+            "
+            class="empty-desc text-center mt-4"
+          >
             No matching person found
           </div>
         </v-card-text>
@@ -125,36 +243,66 @@ const loading = ref(true)
 let unsubscribe: (() => void) | null = null
 let unsubscribeRequests: (() => void) | null = null
 
-function showError(err: unknown) { snackbar.value?.showSnackbarWithMessage(helpers.handleError(err).message, true) }
+function showError(err: unknown) {
+  snackbar.value?.showSnackbarWithMessage(
+    helpers.handleError(err).message,
+    true
+  )
+}
 
-const { searchQuery, searchResults, isSearching } = useFriendSearch(friends, showError)
-const { sendFriendRequest, acceptRequest, declineRequest, removeFriend } = useFriendActions()
+const { searchQuery, searchResults, isSearching } = useFriendSearch(
+  friends,
+  showError
+)
+const { sendFriendRequest, acceptRequest, declineRequest, removeFriend } =
+  useFriendActions()
 
 function fetchProfiles(ids: Record<string, unknown>): Promise<Friend[]> {
-  const userPromises = Object.keys(ids).map((userId) => get(dbRef(db, `profiles/${userId}`)).then((snap) => ({ userId, ...snap.val() })))
+  const userPromises = Object.keys(ids).map((userId) =>
+    get(dbRef(db, `profiles/${userId}`)).then((snap) => ({
+      userId,
+      ...snap.val(),
+    }))
+  )
   return Promise.all(userPromises)
 }
 
 onMounted(() => {
   const ownUid = userStore.user!.uid
   const friendsRef = dbRef(db, `users/${ownUid}/friends`)
-  unsubscribe = onValue(friendsRef, async (snapshot) => {
-    const ids = snapshot.val(); loading.value = false
-    friends.value = ids ? await fetchProfiles(ids) : []
-  }, (err) => {
-    loading.value = false
-    showError(err)
-  })
+  unsubscribe = onValue(
+    friendsRef,
+    async (snapshot) => {
+      const ids = snapshot.val()
+      loading.value = false
+      friends.value = ids ? await fetchProfiles(ids) : []
+    },
+    (err) => {
+      loading.value = false
+      showError(err)
+    }
+  )
   const requestsRef = dbRef(db, `friendRequests/${ownUid}`)
-  unsubscribeRequests = onValue(requestsRef, async (snapshot) => {
-    const ids = snapshot.val()
-    incomingRequests.value = ids ? await fetchProfiles(ids) : []
-  }, showError)
-  setTimeout(() => { loading.value = false }, constants.LoadingTimeoutInMs)
+  unsubscribeRequests = onValue(
+    requestsRef,
+    async (snapshot) => {
+      const ids = snapshot.val()
+      incomingRequests.value = ids ? await fetchProfiles(ids) : []
+    },
+    showError
+  )
+  setTimeout(() => {
+    loading.value = false
+  }, constants.LoadingTimeoutInMs)
 })
 
-onUnmounted(() => { unsubscribe?.(); unsubscribeRequests?.() })
-function toggleAddArea() { friendsAreaOpen.value = !friendsAreaOpen.value }
+onUnmounted(() => {
+  unsubscribe?.()
+  unsubscribeRequests?.()
+})
+function toggleAddArea() {
+  friendsAreaOpen.value = !friendsAreaOpen.value
+}
 
 async function handleSendRequest(id: string, person: Person) {
   try {
@@ -164,7 +312,10 @@ async function handleSendRequest(id: string, person: Person) {
   } catch (err) {
     // blocked lists are private, so a block surfaces as a permission error
     if (String(err).includes('PERMISSION_DENIED')) {
-      snackbar.value?.showSnackbarWithMessage('This user has declined your request', true)
+      snackbar.value?.showSnackbarWithMessage(
+        'This user has declined your request',
+        true
+      )
       return
     }
     showError(err)
@@ -172,22 +323,48 @@ async function handleSendRequest(id: string, person: Person) {
 }
 
 async function handleAccept(fromUid: string) {
-  try { await acceptRequest(fromUid) } catch (err) { showError(err) }
+  try {
+    await acceptRequest(fromUid)
+  } catch (err) {
+    showError(err)
+  }
 }
 
 async function handleDecline(fromUid: string) {
-  try { await declineRequest(fromUid) } catch (err) { showError(err) }
+  try {
+    await declineRequest(fromUid)
+  } catch (err) {
+    showError(err)
+  }
 }
 
 async function handleRemove(friendId: string) {
-  try { await removeFriend(friendId) } catch (err) { showError(err) }
+  try {
+    await removeFriend(friendId)
+  } catch (err) {
+    showError(err)
+  }
 }
 </script>
 
 <style scoped>
-.friend-item { border-radius: 12px; transition: background 0.2s ease; }
-.friend-item:hover { background: rgba(108,92,231,0.06); }
-.avatar-initial { font-weight: 600; font-size: 1rem; color: rgba(205,214,244,0.95); }
+.friend-item {
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+.friend-item:hover {
+  background: rgba(200, 134, 10, 0.07);
+}
+/* Dark initial on the brass/sand token avatars (primary/accent bg) — ~5.8:1 */
+.avatar-initial {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #231708;
+}
+/* Light initial when the avatar sits on a dark surface-variant bg */
+.avatar-initial--on-dark {
+  color: #e8d4a8;
+}
 .friend-item :deep(.v-list-item-title) {
   white-space: normal;
   display: -webkit-box;

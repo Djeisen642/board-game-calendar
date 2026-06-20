@@ -4,11 +4,19 @@
       <v-row justify="center" align="center">
         <v-col cols="12" sm="8" md="6" class="text-center">
           <v-icon size="80" color="primary" class="mb-4" style="opacity: 0.4">
-            {{ error.statusCode === 404 ? 'mdi-map-marker-question' : 'mdi-alert-circle-outline' }}
+            {{
+              error.statusCode === 404
+                ? 'mdi-map-marker-question'
+                : 'mdi-alert-circle-outline'
+            }}
           </v-icon>
           <h1 class="error-code mb-2">{{ error.statusCode || 'Error' }}</h1>
           <p class="error-message mb-6">
-            {{ error.statusCode === 404 ? 'This page doesn\'t exist.' : 'Something went wrong.' }}
+            {{
+              error.statusCode === 404
+                ? "This page doesn't exist."
+                : 'Something went wrong.'
+            }}
           </p>
           <v-btn color="primary" variant="elevated" to="/">
             <v-icon start>mdi-home</v-icon>Go Home
@@ -25,15 +33,18 @@ defineProps<{ error: { statusCode?: number; message?: string } }>()
 
 <style scoped>
 .error-code {
-  font-size: 3rem;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 3.25rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6c5ce7, #00cec9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.04em;
+  color: #c8860a;
+  text-shadow:
+    0 0 20px rgba(200, 134, 10, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.5);
 }
 .error-message {
-  font-size: 1rem;
-  color: rgba(205, 214, 244, 0.5);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.05rem;
+  color: rgba(240, 223, 196, 0.8);
 }
 </style>
