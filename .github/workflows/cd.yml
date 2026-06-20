@@ -33,7 +33,7 @@ jobs:
       - name: Generate
         run: yarn run generate
         env:
-          BASE_URL: /board-game-calendar/
+          BASE_URL: /
           NODE_ENV: production
           G_API_KEY: ${{ secrets.G_API_KEY }}
           G_APP_ID: ${{ secrets.G_APP_ID }}
@@ -44,6 +44,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          cname: bgc.jasonsuttles.dev
 
       - name: Deploy database rules to Firebase
         run: |
