@@ -41,6 +41,11 @@ export default defineNuxtConfig({
           type: 'image/svg+xml',
           href: `${process.env.BASE_URL ?? '/'}favicon.svg`,
         },
+        { rel: 'preconnect', href: 'https://identitytoolkit.googleapis.com' },
+        {
+          rel: 'preconnect',
+          href: 'https://board-game-calendar-3ae94-default-rtdb.firebaseio.com',
+        },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',
