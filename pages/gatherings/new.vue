@@ -262,6 +262,7 @@ async function createGathering() {
     const gathering: Gathering = {
       state: editId ? existingState : 'pending',
       datetime: datetime.toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       initiator: editId ? existingInitiator : uid,
       host: uid,
       maxGuests: Number(maxGuests.value || 0),
