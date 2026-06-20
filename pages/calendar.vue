@@ -49,7 +49,7 @@
               :key="gathering.id"
               class="event-item pa-4 mb-3"
             >
-              <div class="d-flex align-center flex-wrap gap-2 mb-2">
+              <div class="d-flex align-center flex-wrap gap-2 mb-3">
                 <v-chip
                   :color="stateColor(gathering.state)"
                   size="small"
@@ -61,6 +61,37 @@
                   ><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon
                   >{{ formatDatetime(gathering.datetime) }}</span
                 >
+              </div>
+              <div v-if="gathering.games?.length" class="event-line mb-2">
+                <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
+                <v-chip
+                  v-for="game in gathering.games"
+                  :key="game.id"
+                  size="x-small"
+                  variant="outlined"
+                  class="mr-1"
+                  >{{ game.name }}</v-chip
+                >
+              </div>
+              <div v-if="guestEntries(gathering).length" class="event-line mb-2">
+                <v-icon size="16" class="mr-1">mdi-account-group</v-icon>
+                <v-chip
+                  v-for="guest in guestEntries(gathering)"
+                  :key="guest.uid"
+                  size="x-small"
+                  :color="responseColor(guest.response)"
+                  variant="tonal"
+                  class="mr-1"
+                >
+                  <v-icon start size="12">{{
+                    responseIcon(guest.response)
+                  }}</v-icon
+                  >{{ names[guest.uid] ?? '…' }}
+                </v-chip>
+              </div>
+              <div v-else class="event-line mb-2">
+                <v-icon size="16" class="mr-1">mdi-account-group</v-icon>No
+                guests invited yet
               </div>
               <div class="event-actions">
                 <v-btn
@@ -104,37 +135,6 @@
                   <v-icon start>mdi-delete</v-icon>Delete
                 </v-btn>
               </div>
-              <div v-if="gathering.games?.length" class="event-line mb-2">
-                <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
-                <v-chip
-                  v-for="game in gathering.games"
-                  :key="game.id"
-                  size="x-small"
-                  variant="outlined"
-                  class="mr-1"
-                  >{{ game.name }}</v-chip
-                >
-              </div>
-              <div v-if="guestEntries(gathering).length" class="event-line">
-                <v-icon size="16" class="mr-1">mdi-account-group</v-icon>
-                <v-chip
-                  v-for="guest in guestEntries(gathering)"
-                  :key="guest.uid"
-                  size="x-small"
-                  :color="responseColor(guest.response)"
-                  variant="tonal"
-                  class="mr-1"
-                >
-                  <v-icon start size="12">{{
-                    responseIcon(guest.response)
-                  }}</v-icon
-                  >{{ names[guest.uid] ?? '…' }}
-                </v-chip>
-              </div>
-              <div v-else class="event-line">
-                <v-icon size="16" class="mr-1">mdi-account-group</v-icon>No
-                guests invited yet
-              </div>
             </div>
           </template>
 
@@ -147,7 +147,7 @@
               :key="gathering.id"
               class="event-item pa-4 mb-3"
             >
-              <div class="d-flex align-center flex-wrap gap-2 mb-2">
+              <div class="d-flex align-center flex-wrap gap-2 mb-3">
                 <v-chip
                   :color="stateColor(gathering.state)"
                   size="small"
@@ -388,10 +388,11 @@ function editGathering(gathering: GatheringWithId) {
     0 1px 4px rgba(200, 134, 10, 0.1);
 }
 .event-line {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: rgba(240, 223, 196, 0.85);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 4px;
 }
 </style>
