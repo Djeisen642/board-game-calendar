@@ -18,6 +18,9 @@ export default defineNuxtConfig({
       titleTemplate: '%s - Board Game Calendar',
       title: 'Board Game Calendar',
       htmlAttrs: { lang: 'en' },
+      style: [
+        { innerHTML: 'html,body{background-color:#100A04}', type: 'text/css' },
+      ],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
