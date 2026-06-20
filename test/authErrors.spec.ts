@@ -4,14 +4,14 @@ import { authErrorMessage } from '~/helpers/authErrors'
 describe('authErrorMessage', () => {
   it('maps known auth error codes to friendly messages', () => {
     expect(authErrorMessage({ code: 'auth/invalid-credential' })).toBe(
-      'Incorrect email or password.'
+      'Sign-in failed. Please try again.'
     )
-    expect(authErrorMessage({ code: 'auth/email-already-in-use' })).toContain(
-      'already exists'
-    )
-    expect(authErrorMessage({ code: 'auth/weak-password' })).toContain(
-      'at least 6 characters'
-    )
+    expect(
+      authErrorMessage({ code: 'auth/popup-blocked' })
+    ).toContain('popup')
+    expect(
+      authErrorMessage({ code: 'auth/account-exists-with-different-credential' })
+    ).toContain('different sign-in method')
   })
 
   it('falls back to a generic message for unknown codes', () => {
