@@ -57,7 +57,7 @@ export type GatheringGame = Pick<Game, 'id' | 'name'>
 export type Gathering = {
   state: GatheringState
   datetime: string // ISO date (UTC)
-  timezone?: string // IANA timezone of the host at creation time; used by
+  timezone: string // IANA timezone of the host at creation time; used by
   // server-side code (email notifications) to display local time
   initiator: string // uid
   host: string // uid

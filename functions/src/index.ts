@@ -276,9 +276,7 @@ export const onGatheringInvite = onValueWritten(
     const gathering = gatheringSnap.val() as Record<string, unknown> | null
     if (!gathering) return
     const hostName = await getProfileName(gathering.host as string)
-    const tz = typeof gathering.timezone === 'string' ? gathering.timezone : undefined
-    const datetime =
-      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime, tz) : 'TBD'
+    const datetime = formatDatetime(gathering.datetime as string, gathering.timezone as string)
     await sendEmail(
       guestUser.email,
       `You're invited to a board game night!`,
@@ -310,9 +308,7 @@ export const onGatheringStateChange = onValueUpdated(
       getProfileName(gathering.host as string),
       Promise.all(notifyUids.map((uid) => getAuth().getUser(uid))),
     ])
-    const tz = typeof gathering.timezone === 'string' ? gathering.timezone : undefined
-    const datetime =
-      typeof gathering.datetime === 'string' ? formatDatetime(gathering.datetime, tz) : 'TBD'
+    const datetime = formatDatetime(gathering.datetime as string, gathering.timezone as string)
     const subject =
       newState === 'confirmed'
         ? `Game night confirmed: ${datetime}`
