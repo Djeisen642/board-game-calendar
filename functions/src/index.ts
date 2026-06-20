@@ -193,6 +193,17 @@ export const bggThing = onCall(
 const APP_URL = 'https://djeisen642.github.io/board-game-calendar'
 const FROM_EMAIL = 'Board Game Calendar <noreply@jasonsuttles.dev>'
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// Sends a single email and logs on failure without rethrowing, so one bad
+// address doesn't cause a function retry that re-sends to everyone else.
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -204,30 +215,28 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   })
   if (!res.ok) {
     const body = await res.text()
-    console.error(`Resend error ${res.status}: ${body}`)
-    throw new Error(`Failed to send email: ${res.status}`)
+    console.error(`Resend error ${res.status} for ${to}: ${body}`)
   }
 }
 
 function formatDatetime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short',
-    })
-  } catch {
-    return iso
-  }
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return iso
+  return date.toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  })
 }
 
 async function getProfileName(uid: string): Promise<string> {
   const snap = await getDatabase().ref(`profiles/${uid}/name`).get()
-  return (snap.val() as string | null) ?? 'Someone'
+  const val = snap.val()
+  return typeof val === 'string' ? val : 'Someone'
 }
 
 export const onFriendRequest = onValueCreated(
@@ -239,11 +248,12 @@ export const onFriendRequest = onValueCreated(
       getProfileName(fromUid),
     ])
     if (!toUser.email) return
+    const safeName = escapeHtml(fromName)
     await sendEmail(
       toUser.email,
       `${fromName} sent you a friend request`,
       `<p>Hi there,</p>
-<p><strong>${fromName}</strong> has sent you a friend request on Board Game Calendar.</p>
+<p><strong>${safeName}</strong> has sent you a friend request on Board Game Calendar.</p>
 <p><a href="${APP_URL}/friends">View your friend requests</a></p>`
     )
   }
@@ -271,7 +281,7 @@ export const onGatheringInvite = onValueWritten(
       guestUser.email,
       `You're invited to a board game night!`,
       `<p>Hi there,</p>
-<p><strong>${hostName}</strong> has invited you to a board game night on <strong>${datetime}</strong>.</p>
+<p><strong>${escapeHtml(hostName)}</strong> has invited you to a board game night on <strong>${escapeHtml(datetime)}</strong>.</p>
 <p><a href="${APP_URL}/calendar">View on your calendar</a></p>`
     )
   }
@@ -304,11 +314,13 @@ export const onGatheringStateChange = onValueUpdated(
       newState === 'confirmed'
         ? `Game night confirmed: ${datetime}`
         : `Game night canceled: ${datetime}`
+    const safeHost = escapeHtml(hostName)
+    const safeDatetime = escapeHtml(datetime)
     const html =
       newState === 'confirmed'
-        ? `<p>Great news! <strong>${hostName}</strong> has confirmed the board game night on <strong>${datetime}</strong>.</p>
+        ? `<p>Great news! <strong>${safeHost}</strong> has confirmed the board game night on <strong>${safeDatetime}</strong>.</p>
 <p><a href="${APP_URL}/calendar">View on your calendar</a></p>`
-        : `<p><strong>${hostName}</strong> has unfortunately canceled the board game night on <strong>${datetime}</strong>.</p>
+        : `<p><strong>${safeHost}</strong> has unfortunately canceled the board game night on <strong>${safeDatetime}</strong>.</p>
 <p><a href="${APP_URL}/calendar">View your calendar</a></p>`
     const emails = guestUsers.map((u) => u.email).filter((e): e is string => !!e)
     await Promise.all(emails.map((email) => sendEmail(email, subject, html)))
