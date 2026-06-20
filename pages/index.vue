@@ -149,13 +149,6 @@ const features = [
 
 .feature-item {
   border-radius: 8px;
-  transition: all 0.25s ease;
-  border: 1px solid transparent;
-}
-
-.feature-item:hover {
-  background: rgba(200, 134, 10, 0.06);
-  border-color: rgba(200, 134, 10, 0.15);
 }
 
 .feature-title {
