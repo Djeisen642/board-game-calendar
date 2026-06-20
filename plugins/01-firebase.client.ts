@@ -4,12 +4,7 @@ import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
 import { getFunctions } from 'firebase/functions'
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
-import {
-  getAnalytics,
-  logEvent as firebaseLogEvent,
-  setUserId as firebaseSetUserId,
-  isSupported,
-} from 'firebase/analytics'
+import type { Analytics } from 'firebase/analytics'
 import firebaseConf from '~/firebase.config'
 
 export enum LogLevel {
@@ -26,8 +21,6 @@ export default defineNuxtPlugin(() => {
   const app = getApp()
   const config = useRuntimeConfig()
 
-  console.log('[AppCheck] recaptchaSiteKey present:', !!config.public.recaptchaSiteKey)
-
   if (config.public.recaptchaSiteKey) {
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(config.public.recaptchaSiteKey as string),
@@ -39,26 +32,39 @@ export default defineNuxtPlugin(() => {
   const auth = getAuth(app)
   const functions = getFunctions(app)
 
-  let _analytics: ReturnType<typeof getAnalytics> | null = null
+  let _analytics: Analytics | null = null
   let _pendingUserId: string | null | undefined = undefined
 
   if (typeof window !== 'undefined') {
-    isSupported().then((yes) => {
-      if (yes) {
-        _analytics = getAnalytics(app)
-        if (_pendingUserId !== undefined) {
-          firebaseSetUserId(_analytics, _pendingUserId)
-        }
+    import('firebase/analytics').then(
+      ({ isSupported, getAnalytics, logEvent: fbLogEvent, setUserId: fbSetUserId }) => {
+        isSupported().then((yes) => {
+          if (yes) {
+            _analytics = getAnalytics(app)
+            if (_pendingUserId !== undefined) {
+              fbSetUserId(_analytics, _pendingUserId)
+            }
+          }
+        })
+        _firebaseLogEvent = fbLogEvent
+        _firebaseSetUserId = fbSetUserId
       }
-    })
+    )
   }
+
+  let _firebaseLogEvent:
+    | ((analytics: Analytics, name: string, params?: Record<string, string>) => void)
+    | null = null
+  let _firebaseSetUserId:
+    | ((analytics: Analytics, id: string | null) => void)
+    | null = null
 
   const logEvent = (
     eventName: string,
     params?: Record<string, unknown>
   ): void => {
-    if (_analytics) {
-      firebaseLogEvent(_analytics, eventName, params as Record<string, string>)
+    if (_analytics && _firebaseLogEvent) {
+      _firebaseLogEvent(_analytics, eventName, params as Record<string, string>)
     }
   }
 
@@ -71,8 +77,8 @@ export default defineNuxtPlugin(() => {
   }
 
   const setAnalyticsUserId = (uid: string | null): void => {
-    if (_analytics) {
-      firebaseSetUserId(_analytics, uid)
+    if (_analytics && _firebaseSetUserId) {
+      _firebaseSetUserId(_analytics, uid)
     } else {
       _pendingUserId = uid
     }
