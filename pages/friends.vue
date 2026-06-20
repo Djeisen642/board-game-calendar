@@ -28,7 +28,7 @@
                 <v-list-item-title>{{ request.name }}</v-list-item-title>
                 <v-list-item-subtitle>{{ request.queryableEmail }}</v-list-item-subtitle>
                 <div class="event-actions">
-                  <v-btn density="compact" size="small" variant="elevated" color="success" @click.stop="handleAccept(request.userId)">
+                  <v-btn density="compact" size="small" variant="text" color="success" @click.stop="handleAccept(request.userId)">
                     <v-icon start>mdi-check-circle</v-icon>Accept
                   </v-btn>
                   <v-btn density="compact" size="small" variant="text" color="error" @click.stop="handleDecline(request.userId)">
