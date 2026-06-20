@@ -15,10 +15,7 @@
       ],
       "predeploy": [
         "yarn --cwd \"$RESOURCE_DIR\" run build"
-      ],
-      "experimental": {
-        "packageManager": "yarn"
-      }
+      ]
     }
   ],
   "hosting": {

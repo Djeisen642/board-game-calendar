@@ -9024,7 +9024,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-admin@npm:^13":
+"firebase-admin@npm:^13.10.0":
   version: 13.10.0
   resolution: "firebase-admin@npm:13.10.0"
   dependencies:
@@ -9047,7 +9047,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-functions-test@npm:^3.4.1":
+"firebase-functions-test@npm:^3.5.0":
   version: 3.5.0
   resolution: "firebase-functions-test@npm:3.5.0"
   dependencies:
@@ -9062,7 +9062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-functions@npm:^7.0.0":
+"firebase-functions@npm:^7.2.5":
   version: 7.2.5
   resolution: "firebase-functions@npm:7.2.5"
   dependencies:
@@ -9371,10 +9371,10 @@ __metadata:
   resolution: "functions@workspace:functions"
   dependencies:
     "@types/xml2js": "npm:^0.4.14"
-    firebase-admin: "npm:^13"
-    firebase-functions: "npm:^7.0.0"
-    firebase-functions-test: "npm:^3.4.1"
-    typescript: "npm:^6.0.0"
+    firebase-admin: "npm:^13.10.0"
+    firebase-functions: "npm:^7.2.5"
+    firebase-functions-test: "npm:^3.5.0"
+    typescript: "npm:^6.0.3"
     xml2js: "npm:^0.6.2"
   languageName: unknown
   linkType: soft
@@ -16007,7 +16007,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^6.0.0, typescript@npm:^6.0.3":
+"typescript@npm:^6.0.3":
   version: 6.0.3
   resolution: "typescript@npm:6.0.3"
   bin:
@@ -16017,7 +16017,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^6.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^6.0.3#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^6.0.3#optional!builtin<compat/typescript>":
   version: 6.0.3
   resolution: "typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>::version=6.0.3&hash=5786d5"
   bin:
