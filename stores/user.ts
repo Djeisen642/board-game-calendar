@@ -5,16 +5,8 @@ import {
   FacebookAuthProvider,
   signInWithPopup,
   linkWithCredential,
-  fetchSignInMethodsForEmail,
   signOut as firebaseSignOut,
 } from 'firebase/auth'
-
-function getProviderForMethod(method: string): AuthProvider {
-  if (method === GoogleAuthProvider.PROVIDER_ID) return new GoogleAuthProvider()
-  if (method === FacebookAuthProvider.PROVIDER_ID)
-    return new FacebookAuthProvider()
-  throw new Error(`Unsupported provider: ${method}`)
-}
 
 function getCredentialFromError(
   provider: AuthProvider,
@@ -37,16 +29,15 @@ async function signInWithProvider(
     const code = (error as { code?: string }).code
     if (code !== 'auth/account-exists-with-different-credential') throw error
 
-    const email = (error as { customData?: { email?: string } }).customData
-      ?.email
-    if (!email) throw error
-
+    // An account already exists with this email under the other provider.
+    // Sign in with that provider then link the pending credential.
     const pendingCred = getCredentialFromError(provider, error)
-    const methods = await fetchSignInMethodsForEmail(auth, email)
-    const existingProvider = getProviderForMethod(methods[0])
+    const otherProvider =
+      provider instanceof GoogleAuthProvider
+        ? new FacebookAuthProvider()
+        : new GoogleAuthProvider()
 
-    // Sign in with the existing provider, then link the pending credential
-    const result = await signInWithPopup(auth, existingProvider)
+    const result = await signInWithPopup(auth, otherProvider)
     if (pendingCred) await linkWithCredential(result.user, pendingCred)
     return result
   }

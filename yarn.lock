@@ -2707,7 +2707,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@npm:^3.16.0, @nuxt/kit@npm:^3.19.3, @nuxt/kit@npm:^3.21.2":
+"@nuxt/kit@npm:^3.19.3, @nuxt/kit@npm:^3.21.2":
   version: 3.21.8
   resolution: "@nuxt/kit@npm:3.21.8"
   dependencies:
@@ -2987,20 +2987,6 @@ __metadata:
     rollup-plugin-visualizer:
       optional: true
   checksum: 10c0/30da3e677efb4c43f250693dba3c2203bd183ba344cb367149c33b3449f9ac54b7ca8be68f57338b852f430fed954b3f351a3e242d580bb1a3ec651cc85e7b3a
-  languageName: node
-  linkType: hard
-
-"@nuxtjs/turnstile@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "@nuxtjs/turnstile@npm:1.1.3"
-  dependencies:
-    "@nuxt/kit": "npm:^3.16.0"
-    "@types/cloudflare-turnstile": "npm:0.2.2"
-    defu: "npm:^6.1.4"
-    pathe: "npm:^2.0.3"
-  peerDependencies:
-    "@nuxt/scripts": ^0.11.0 || ^0.12.0 || ^0.13.0 || ^1.0.0
-  checksum: 10c0/af233efe7b5cfc44d24ef86e584aa99c549e39d6f1f83979d0495a7b414a7063e7b3b658b841b2cb558a8831a3e636e328d13f17f383bc5d3c9b71dbff63f9fb
   languageName: node
   linkType: hard
 
@@ -4665,13 +4651,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cloudflare-turnstile@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@types/cloudflare-turnstile@npm:0.2.2"
-  checksum: 10c0/17dcd6b22cd8c03fc3699b88b1b30d0fac3997557a4189e922aec7f632b8c287b394170cbf09a63598617b3e9a37e65ea6dce3af392e5df02f870e6d6858c0cc
-  languageName: node
-  linkType: hard
-
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -4870,13 +4849,6 @@ __metadata:
   version: 1.3.5
   resolution: "@types/triple-beam@npm:1.3.5"
   checksum: 10c0/d5d7f25da612f6d79266f4f1bb9c1ef8f1684e9f60abab251e1261170631062b656ba26ff22631f2760caeafd372abc41e64867cde27fba54fafb73a35b9056a
-  languageName: node
-  linkType: hard
-
-"@types/validator@npm:^13.15.10":
-  version: 13.15.10
-  resolution: "@types/validator@npm:13.15.10"
-  checksum: 10c0/3e2e65fcd37dd6961ca3fd0535293d0c42f5911dc3ca44b96f458835e6db2392b678ccbb0c9815d8c0a14e653439e6c62c7b8758a6cd1d6e390551c9e56618ac
   languageName: node
   linkType: hard
 
@@ -6254,9 +6226,7 @@ __metadata:
     "@nuxt/eslint": "npm:^1.16.0"
     "@nuxt/scripts": "npm:^1.2.1"
     "@nuxt/test-utils": "npm:^4.0.3"
-    "@nuxtjs/turnstile": "npm:^1.1.3"
     "@pinia/nuxt": "npm:^0.11.3"
-    "@types/validator": "npm:^13.15.10"
     "@vitejs/plugin-vue": "npm:^6.0.7"
     "@vue/compiler-dom": "npm:^3.5.38"
     "@vue/test-utils": "npm:^2.4.11"
@@ -6276,7 +6246,6 @@ __metadata:
     prettier: "npm:^3.8.4"
     sass-embedded: "npm:^1.100.0"
     typescript: "npm:^6.0.3"
-    validator: "npm:^13.15.35"
     vite: "npm:^8.0.16"
     vite-plugin-vuetify: "npm:^2.1.3"
     vitest: "npm:^4.1.9"
@@ -16532,13 +16501,6 @@ __metadata:
   version: 1.0.9
   resolution: "valid-url@npm:1.0.9"
   checksum: 10c0/3995e65f9942dbcb1621754c0f9790335cec61e9e9310c0a809e9ae0e2ae91bb7fc6a471fba788e979db0418d9806639f681ecebacc869bc8c3de88efa562ee6
-  languageName: node
-  linkType: hard
-
-"validator@npm:^13.15.35":
-  version: 13.15.35
-  resolution: "validator@npm:13.15.35"
-  checksum: 10c0/1958ebcad578128d154853a2b9bf5b95e7738dcc7d1d065e50a969812272312ec379dcaf375b9d7545e04a71de6755f60f5a4b49c1405737a9c80e11da297eef
   languageName: node
   linkType: hard
 
