@@ -112,6 +112,7 @@
                   multiple
                   column
                   selected-class="text-primary"
+                  class="genre-chip-group"
                 >
                   <v-chip
                     v-for="genre in visibleGenres"
@@ -762,7 +763,6 @@ async function addToCollection(item: DisplayableItemType) {
       buildGame(item.id, item, item.name)
     )
     logEvent('game_added_to_collection', { name: item.name })
-    activeArea.value = 'collection'
     snackbar.value?.showSnackbarWithMessage(
       `${item.name} added to collection`,
       false
@@ -956,5 +956,9 @@ function onGameSearchError(error: Error) {
 /* Empty rating stars: ≥3:1 against the card for WCAG 1.4.11 (UI components) */
 .game-item :deep(.v-rating .v-btn:not(.v-btn--active) .v-icon) {
   color: rgba(200, 134, 10, 0.7) !important;
+}
+/* Add row gap between wrapped chip rows in the genre filter */
+.genre-chip-group :deep(.v-slide-group__content) {
+  row-gap: 6px;
 }
 </style>
