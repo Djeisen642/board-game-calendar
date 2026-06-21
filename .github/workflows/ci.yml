@@ -40,3 +40,58 @@ jobs:
 
       - name: Build functions
         run: yarn workspace functions run build
+
+  # Detect whether anything affecting the RTDB security-rules tests changed, so
+  # the slow, emulator-backed `rules` job below only runs when relevant.
+  # (GitHub's native `paths:` filter only works at the workflow level, not
+  # per-job, hence dorny/paths-filter — pinned to a SHA for supply-chain safety.)
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      rules: ${{ steps.filter.outputs.rules }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect rules changes
+        id: filter
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        with:
+          filters: |
+            rules:
+              - 'database.rules.json'
+              - 'test/rules/**'
+              - 'vitest.rules.config.ts'
+              - 'firebase.json'
+
+  # Security-rules tests against the RTDB emulator (needs Java). Only runs when
+  # the rules, their tests, or the emulator config changed.
+  rules:
+    needs: changes
+    if: needs.changes.outputs.rules == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run security-rules tests
+        run: yarn test:rules

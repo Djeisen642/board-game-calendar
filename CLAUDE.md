@@ -467,7 +467,7 @@ When writing PR descriptions (e.g. via `mcp__github__create_pull_request`), pass
 
 ## Deployment
 
-GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`, then deploys the database rules and Cloud Functions (`firebase deploy --only database` / `--only functions`) authenticated with the `FIREBASE_SERVICE_ACCOUNT_3AE94` key (the `github-action-…` SA). Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint` and `yarn test` on push to `main`.
+GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`, then deploys the database rules and Cloud Functions (`firebase deploy --only database` / `--only functions`) authenticated with the `FIREBASE_SERVICE_ACCOUNT_3AE94` key (the `github-action-…` SA). Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint`, `yarn test`, and `yarn workspace functions run build` on push to `main` and on PRs. It also has a `rules` job that runs `yarn test:rules` (RTDB emulator + `actions/setup-java`, Temurin 21) — these tests need Java and an emulator, so the job is gated behind a `changes` job (`dorny/paths-filter`, pinned to a commit SHA) and only runs when `database.rules.json`, `test/rules/**`, `vitest.rules.config.ts`, or `firebase.json` changed. The path filter lives in a job rather than a workflow-level `paths:` trigger because GitHub's native `paths:` filter can't gate an individual job; keep the SHA pin when bumping the action.
 
 ### Cloud Functions service accounts (important)
 
