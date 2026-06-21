@@ -29,17 +29,23 @@ const ALLOWED_BGG_TYPES = new Set([
 
 const BGG_BASE_URL = 'https://boardgamegeek.com/xmlapi2'
 
-// Do NOT pin a custom `serviceAccount` here. The 2nd-gen RTDB→Eventarc triggers
-// below run as this SA, which must hold roles/eventarc.eventReceiver to receive
-// events. The project's default compute SA already has it; a custom SA
-// (firebase-adminsdk-fbsvc) did not, which made `firebase deploy --only
-// functions` fail trigger validation with "Permission 'eventarc.events.
-// receiveEvent' denied". Leaving it unset lets the functions run as the default
-// compute SA. Secret access (BGG_API_KEY, RESEND_API_KEY) is auto-granted to the
-// runtime SA at deploy time, by both local owner deploys and the CD deployer
-// (the github-action SA has secretmanager.admin + project iam.serviceAccountUser).
+// The 2nd-gen RTDB→Eventarc triggers below run as this service account. We pin
+// the scoped firebase-adminsdk SA for least privilege — the project's default
+// compute SA carries the broad roles/editor, which we don't want functions
+// running as. firebase-adminsdk-fbsvc already has the RTDB read + Firebase Auth
+// access these functions need, and secret access (BGG_API_KEY, RESEND_API_KEY)
+// is auto-granted at deploy time.
+//
+// ONE-TIME SETUP: this SA must hold roles/eventarc.eventReceiver or deploys fail
+// trigger validation with "Permission 'eventarc.events.receiveEvent' denied".
+// It's a persistent grant (CD never touches IAM), so run it once:
+//   gcloud projects add-iam-policy-binding board-game-calendar-3ae94 \
+//     --member="serviceAccount:firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com" \
+//     --role="roles/eventarc.eventReceiver"
 setGlobalOptions({
   maxInstances: 5,
+  serviceAccount:
+    'firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com',
 })
 
 // xml2js wraps repeated XML elements as arrays but single occurrences as plain

@@ -443,9 +443,17 @@ GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `di
 
 ### Cloud Functions service accounts (important)
 
-The functions **must not** pin a custom `serviceAccount` in `setGlobalOptions`. The 2nd-gen RTDB→Eventarc triggers (`onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`) run as their service account, which must hold `roles/eventarc.eventReceiver` to receive events. The project's **default compute SA** (`<projectNumber>-compute@developer.gserviceaccount.com`) already has it; the previously-pinned `firebase-adminsdk-fbsvc@…` SA did **not**, so deploys failed trigger validation with `Permission 'eventarc.events.receiveEvent' denied`. Leaving `serviceAccount` unset is the fix — don't re-add it.
+The functions pin a scoped runtime SA in `setGlobalOptions`: `serviceAccount: 'firebase-adminsdk-fbsvc@…'`. This is deliberate, for **least privilege** — if `serviceAccount` is unset, functions run as the project's default compute SA (`<projectNumber>-compute@…`), which carries the broad `roles/editor`. The scoped SA already has the RTDB read + Firebase Auth access the functions need.
 
-Secret access (`BGG_API_KEY`, `RESEND_API_KEY`) is auto-granted to the runtime SA at deploy time; this works in CD because the `github-action-…` deployer SA has `secretmanager.admin` and project-level `iam.serviceAccountUser` (so it can grant secrets and `actAs` the compute SA). Each trigger also pins `instance: 'board-game-calendar-3ae94-default-rtdb'` so the RTDB instance is unambiguous.
+The 2nd-gen RTDB→Eventarc triggers (`onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`) run as that SA, which **must hold `roles/eventarc.eventReceiver`** or deploys fail trigger validation with `Permission 'eventarc.events.receiveEvent' denied`. This is a one-time, persistent grant (CD never touches IAM):
+
+```bash
+gcloud projects add-iam-policy-binding board-game-calendar-3ae94 \
+  --member="serviceAccount:firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com" \
+  --role="roles/eventarc.eventReceiver"
+```
+
+Secret access (`BGG_API_KEY`, `RESEND_API_KEY`) is auto-granted to the runtime SA at deploy time; this works in CD because the `github-action-…` deployer SA has `secretmanager.admin` and project-level `iam.serviceAccountUser` (so it can grant secrets and `actAs` the runtime SA). Each trigger also pins `instance: 'board-game-calendar-3ae94-default-rtdb'` so the RTDB instance is unambiguous.
 
 ### Cloud Functions dependencies — no lockfile, pin exact (important)
 
