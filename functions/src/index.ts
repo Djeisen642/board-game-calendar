@@ -29,10 +29,17 @@ const ALLOWED_BGG_TYPES = new Set([
 
 const BGG_BASE_URL = 'https://boardgamegeek.com/xmlapi2'
 
+// Do NOT pin a custom `serviceAccount` here. The 2nd-gen RTDB→Eventarc triggers
+// below run as this SA, which must hold roles/eventarc.eventReceiver to receive
+// events. The project's default compute SA already has it; a custom SA
+// (firebase-adminsdk-fbsvc) did not, which made `firebase deploy --only
+// functions` fail trigger validation with "Permission 'eventarc.events.
+// receiveEvent' denied". Leaving it unset lets the functions run as the default
+// compute SA. Secret access (BGG_API_KEY, RESEND_API_KEY) is auto-granted to the
+// runtime SA at deploy time, by both local owner deploys and the CD deployer
+// (the github-action SA has secretmanager.admin + project iam.serviceAccountUser).
 setGlobalOptions({
   maxInstances: 5,
-  serviceAccount:
-    'firebase-adminsdk-fbsvc@board-game-calendar-3ae94.iam.gserviceaccount.com',
 })
 
 // xml2js wraps repeated XML elements as arrays but single occurrences as plain
@@ -409,7 +416,11 @@ async function getProfileName(uid: string): Promise<string> {
 }
 
 export const onFriendRequest = onValueCreated(
-  { ref: 'friendRequests/{toUid}/{fromUid}', secrets: [RESEND_API_KEY] },
+  {
+    ref: 'friendRequests/{toUid}/{fromUid}',
+    secrets: [RESEND_API_KEY],
+    instance: 'board-game-calendar-3ae94-default-rtdb',
+  },
   async (event) => {
     const { toUid, fromUid } = event.params
     const [toUser, fromName] = await Promise.all([
@@ -432,6 +443,7 @@ export const onGatheringInvite = onValueWritten(
   {
     ref: 'gatherings/{gatheringId}/guests/{guestUid}',
     secrets: [RESEND_API_KEY],
+    instance: 'board-game-calendar-3ae94-default-rtdb',
   },
   async (event) => {
     const after = event.data.after.val() as string | null
@@ -472,7 +484,11 @@ ${calendarLinkHtml(calEvent)}`,
 )
 
 export const onGatheringStateChange = onValueUpdated(
-  { ref: 'gatherings/{gatheringId}/state', secrets: [RESEND_API_KEY] },
+  {
+    ref: 'gatherings/{gatheringId}/state',
+    secrets: [RESEND_API_KEY],
+    instance: 'board-game-calendar-3ae94-default-rtdb',
+  },
   async (event) => {
     const newState = event.data.after.val() as string
     const oldState = event.data.before.val() as string
