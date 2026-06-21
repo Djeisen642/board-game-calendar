@@ -439,4 +439,14 @@ When writing PR descriptions (e.g. via `mcp__github__create_pull_request`), pass
 
 ## Deployment
 
-GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`. Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint` and `yarn test` on push to `main`.
+GitHub Actions (`.github/workflows/cd.yml`) runs `yarn generate` and deploys `dist/` to GitHub Pages on push to `main`, then deploys the database rules and Cloud Functions (`firebase deploy --only database` / `--only functions`) authenticated with the `FIREBASE_SERVICE_ACCOUNT_3AE94` key (the `github-action-…` SA). Firebase credentials are injected as GitHub secrets. The `ci.yml` workflow runs `yarn lint` and `yarn test` on push to `main`.
+
+### Cloud Functions service accounts (important)
+
+The functions **must not** pin a custom `serviceAccount` in `setGlobalOptions`. The 2nd-gen RTDB→Eventarc triggers (`onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`) run as their service account, which must hold `roles/eventarc.eventReceiver` to receive events. The project's **default compute SA** (`<projectNumber>-compute@developer.gserviceaccount.com`) already has it; the previously-pinned `firebase-adminsdk-fbsvc@…` SA did **not**, so deploys failed trigger validation with `Permission 'eventarc.events.receiveEvent' denied`. Leaving `serviceAccount` unset is the fix — don't re-add it.
+
+Secret access (`BGG_API_KEY`, `RESEND_API_KEY`) is auto-granted to the runtime SA at deploy time; this works in CD because the `github-action-…` deployer SA has `secretmanager.admin` and project-level `iam.serviceAccountUser` (so it can grant secrets and `actAs` the compute SA). Each trigger also pins `instance: 'board-game-calendar-3ae94-default-rtdb'` so the RTDB instance is unambiguous.
+
+### Cloud Functions dependencies — no lockfile, pin exact (important)
+
+`functions/` is a Yarn Berry workspace member, so `yarn.lock` at the repo root manages it for local/CI installs (Berry doesn't emit a standalone per-workspace lockfile). On deploy, Firebase uploads **only** the `functions/` dir, and Google's buildpack installs runtime deps from `functions/package.json`. The buildpack chooses the package manager by lockfile: a `package-lock.json` triggers strict `npm ci` (fails if it drifts from `package.json`), while **no lockfile** falls back to a forgiving `npm install`. A committed npm `package-lock.json` inside this yarn repo was the source of recurring deploy failures — **do not add one back** (nor a `functions/yarn.lock`). Instead, **pin runtime deps to exact versions** (no `^`/`~`) in `functions/package.json` for reproducible cloud installs; Dependabot bumps them. Don't add a `yarn` field under `functions.engines` — the cloud build uses npm there, not yarn.
