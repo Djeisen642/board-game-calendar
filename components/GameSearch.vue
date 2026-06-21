@@ -20,13 +20,13 @@
     <v-list>
       <v-list-item v-for="(item, i) in entriesToShow" :key="i" class="search-result-item mb-2">
         <template #prepend>
-          <v-avatar rounded="0" size="48" color="surface-variant" class="mr-3 flex-shrink-0">
+          <v-avatar rounded="0" size="56" color="surface-variant" class="mr-3 flex-shrink-0">
             <v-img
               v-if="item.thumbnail"
               :src="item.thumbnail"
               :alt="item.name"
             />
-            <v-icon v-else size="28">mdi-gamepad-variant-outline</v-icon>
+            <v-icon v-else size="32">mdi-gamepad-variant-outline</v-icon>
           </v-avatar>
         </template>
 
