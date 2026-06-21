@@ -1,0 +1,55 @@
+name: rules
+
+# Security-rules tests run against the RTDB emulator (needs Java), so they are
+# kept out of the main `ci` workflow and only run when the rules, their tests,
+# or the emulator config change.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'database.rules.json'
+      - 'test/rules/**'
+      - 'vitest.rules.config.ts'
+      - 'firebase.json'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'database.rules.json'
+      - 'test/rules/**'
+      - 'vitest.rules.config.ts'
+      - 'firebase.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run security-rules tests
+        run: yarn test:rules
