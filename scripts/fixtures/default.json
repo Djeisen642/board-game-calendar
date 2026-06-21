@@ -33,7 +33,8 @@
           "maxplayers": "4",
           "minplaytime": "60",
           "maxplaytime": "120",
-          "yearpublished": "2017"
+          "yearpublished": "2017",
+          "categories": ["Adventure", "Exploration", "Fantasy", "Fighting", "Miniatures"]
         },
         "game-002": {
           "id": "167791",
@@ -43,7 +44,8 @@
           "maxplayers": "5",
           "minplaytime": "120",
           "maxplaytime": "120",
-          "yearpublished": "2016"
+          "yearpublished": "2016",
+          "categories": ["Economic", "Environmental", "Science Fiction", "Territory Building"]
         },
         "game-003": {
           "id": "169786",
@@ -53,7 +55,8 @@
           "maxplayers": "5",
           "minplaytime": "90",
           "maxplaytime": "115",
-          "yearpublished": "2016"
+          "yearpublished": "2016",
+          "categories": ["Economic", "Fighting", "Science Fiction", "Territory Building"]
         },
         "game-004": {
           "id": "220308",
@@ -63,7 +66,8 @@
           "maxplayers": "4",
           "minplaytime": "60",
           "maxplaytime": "150",
-          "yearpublished": "2017"
+          "yearpublished": "2017",
+          "categories": ["Economic", "Science Fiction", "Territory Building"]
         },
         "game-005": {
           "id": "316554",
@@ -73,7 +77,8 @@
           "maxplayers": "4",
           "minplaytime": "90",
           "maxplaytime": "150",
-          "yearpublished": "2021"
+          "yearpublished": "2021",
+          "categories": ["Animals", "Economic", "Environmental"]
         }
       },
       "friends": {
