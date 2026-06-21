@@ -20,7 +20,7 @@
     <v-list>
       <v-list-item v-for="(item, i) in entriesToShow" :key="i" class="search-result-item mb-2">
         <template #prepend>
-          <v-avatar rounded="0" size="56" color="surface-variant" class="mr-3 flex-shrink-0">
+          <v-avatar rounded="0" size="56" color="surface-variant" class="mr-3">
             <v-img
               v-if="item.thumbnail"
               :src="item.thumbnail"
@@ -36,24 +36,29 @@
         <v-list-item-subtitle v-if="item.description">{{ item.description }}</v-list-item-subtitle>
         <div class="event-actions mt-1">
           <v-btn
+            icon
             :disabled="item.incollection"
-            color="primary"
             size="small"
+            variant="tonal"
+            color="primary"
+            :aria-label="item.incollection ? 'Already in collection' : 'Add to collection'"
+            :title="item.incollection ? 'Already in collection' : 'Add to collection'"
             @click.stop="addToCollection(item)"
           >
-            <v-icon start>mdi-plus-circle</v-icon>Add
+            <v-icon>mdi-plus-circle</v-icon>
           </v-btn>
           <v-btn
+            icon
             :href="item.url"
             target="_blank"
             rel="noopener noreferrer"
-            color="accent"
             size="small"
-            variant="text"
+            variant="tonal"
+            color="accent"
             aria-label="View on BGG"
             title="View on BGG"
           >
-            <v-icon start>mdi-open-in-new</v-icon>BGG
+            <v-icon>mdi-open-in-new</v-icon>
           </v-btn>
         </div>
       </v-list-item>
