@@ -39,11 +39,10 @@ Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB
 After editing any `.vue` file, take a mobile screenshot of the affected route and inspect it before committing:
 
 ```bash
-yarn screenshot /gamecollection --mobile
-yarn screenshot /calendar --mobile
+yarn screenshot /<affected-route> --mobile
 ```
 
-Check for: chip/text overlap, truncation, contrast issues, wrapping that looks unintentional. If a problem is visible, fix it in the same commit. Mobile is the critical viewport — most layout bugs hide on desktop. Fixture data must be realistic enough to trigger the UI path being changed; if the relevant data is missing from `scripts/fixtures/default.json`, add it.
+Check for: chip/text overlap, truncation, contrast issues, unintentional wrapping. Fix any visible problem in the same commit. Mobile is the critical viewport — most layout bugs hide on desktop. Fixture data must exercise the changed UI path; if the relevant data is missing from `scripts/fixtures/default.json`, add it first.
 
 ## Stack
 
@@ -87,7 +86,7 @@ Check for: chip/text overlap, truncation, contrast issues, wrapping that looks u
 - `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
 - `helpers/gatherings.ts` — `splitGatherings`, state/response color+icon maps, `formatDatetime`
 - `helpers/collection.ts` — `filterAndSortCollection` (text + genre filter, name/rating/recent sort → ordered `CollectionEntry[]`) and `collectionGenres`; pure + unit-tested (`test/collection.spec.ts`), drives the collection browse UI
-- `helpers/calendar.ts` — calendar-export builders: `googleCalendarUrl()` (Google "new event" template URL), `buildIcs()` (single-VEVENT `.ics`, `PUBLISH`, 3-hour default duration since gatherings store no end time, RFC-5545 escaped, no location since the host address is private), `downloadIcs()` (browser blob download), `toCalendarEventInput()`. The Cloud Functions duplicate this logic server-side (their build has its own `rootDir`, same as `formatDatetime`) — keep both in sync
+- `helpers/calendar.ts` — calendar-export builders: `googleCalendarUrl()`, `buildIcs()` (single-VEVENT `.ics`, `PUBLISH`, 3-hour default duration, RFC-5545 escaped, no location — host address is private), `downloadIcs()`, `toCalendarEventInput()`. Cloud Functions duplicate this logic server-side — keep both in sync.
 - `firebase.json` — Firebase Hosting config
 - `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
 
@@ -143,9 +142,7 @@ type Game = {
   id: string // BoardGameGeek game ID
   name: string
   rating?: number
-  categories?: string[] // BGG `boardgamecategory` values (genres); used for the
-  // collection genre-filter chips. Stored as an RTDB array (numeric-keyed);
-  // rules validate each entry as a string ≤60 chars. Absent when BGG lists none.
+  categories?: string[] // BGG `boardgamecategory` values (genres); drives the collection genre-filter chips. RTDB array (numeric-keyed); each entry validated as string ≤60 chars. Absent when BGG lists none.
 }
 
 // users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
@@ -255,7 +252,7 @@ The app uses a consistent **"Evening Game Table"** design system: a deep green f
 - All buttons: `text-transform: none`, `font-family: Fraunces`, `letter-spacing: 0.01em` (global override in `global.scss`)
 - Chips: `font-family: Lora`, `0.78rem / 600`, `letter-spacing: 0.01em` (global override in `global.scss`) — deliberately the body serif, not the display face. **Keep tracking minimal**; the old wide letter-spacing existed only to space out Cinzel's caps.
 
-> **Why Fraunces, not Cinzel:** Cinzel has no real lowercase, so it force-capped everything; on small chips/buttons/labels that read as illegible. Fraunces has true lowercase, a full weight range, and an optical-size axis, so it keeps the warm antique tabletop character while reading cleanly at every size. When adding new display text, prefer Fraunces with minimal letter-spacing; reserve uppercase for short single-word labels only.
+> **Why Fraunces, not Cinzel:** Cinzel has no real lowercase — it force-capped everything illegibly at small sizes. Fraunces has true lowercase, full weight range, and an optical-size axis. Prefer Fraunces with minimal letter-spacing; reserve uppercase for short single-word labels only.
 
 ### UI copy (capitalization)
 
@@ -407,7 +404,6 @@ All pages target mobile-first. Breakpoints:
   line-height: 1.35;
 }
 ```
-
 
 ### Accessibility
 
