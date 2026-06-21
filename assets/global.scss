@@ -75,10 +75,10 @@ body::after {
 
 // ── Page utility classes ──────────────────────────────────────────────────────
 .page-title {
-  font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.35rem;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.4rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   color: #f0dfc4;
   margin: 0;
   line-height: inherit;
@@ -88,11 +88,11 @@ body::after {
   display: flex;
   align-items: center;
   gap: 9px;
-  font-family: 'Cinzel', Georgia, serif;
-  font-size: 0.8rem;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 0.82rem;
   color: #c8860a;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.1em;
   font-weight: 600;
   animation: slide-in 0.4s ease both;
 
@@ -123,8 +123,8 @@ body::after {
 }
 
 .empty-title {
-  font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.2rem;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.25rem;
   font-weight: 600;
   color: rgba(240, 223, 196, 0.9);
   letter-spacing: 0.04em;
@@ -256,9 +256,9 @@ body::after {
 // ── Buttons — Game piece style ────────────────────────────────────────────────
 .v-btn {
   text-transform: none !important;
-  font-family: 'Cinzel', Georgia, serif !important;
+  font-family: 'Fraunces', Georgia, serif !important;
   font-weight: 600 !important;
-  letter-spacing: 0.06em !important;
+  letter-spacing: 0.01em !important;
   border-radius: 10px !important;
   transition: all 0.2s ease !important;
 
@@ -349,9 +349,9 @@ body::after {
 // Status chips read like little wooden disc tokens placed on the card: a soft
 // raised highlight on top, a contact shadow below.
 .v-chip {
-  font-family: 'Cinzel', Georgia, serif !important;
-  font-size: 0.72rem !important;
-  letter-spacing: 0.07em !important;
+  font-family: 'Lora', Georgia, serif !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.01em !important;
   font-weight: 600 !important;
   box-shadow:
     inset 0 1px 0 rgba(240, 223, 196, 0.12),
@@ -404,7 +404,7 @@ body::after {
   color: #100A04;
   padding: 8px 16px;
   z-index: 9999;
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;

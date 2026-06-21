@@ -29,7 +29,7 @@
               class="hero-cta"
               elevation="8"
             >
-              Get Started
+              Get started
               <v-icon end>mdi-arrow-right</v-icon>
             </v-btn>
           </v-card-text>
@@ -71,17 +71,17 @@ useHead({ title: 'Welcome' })
 const features = [
   {
     icon: 'mdi-cards-outline',
-    title: 'Your Collection',
+    title: 'Your collection',
     desc: 'Catalog your board games with ratings and notes.',
   },
   {
     icon: 'mdi-account-group',
-    title: 'Find Friends',
+    title: 'Find friends',
     desc: 'Connect with fellow board game enthusiasts.',
   },
   {
     icon: 'mdi-dice-multiple',
-    title: 'Schedule Nights',
+    title: 'Schedule nights',
     desc: 'Plan gatherings around the games you love.',
   },
 ]
@@ -114,7 +114,7 @@ const features = [
 }
 
 .hero-title {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -167,7 +167,7 @@ const features = [
 }
 
 .hero-cta {
-  font-family: 'Cinzel', Georgia, serif !important;
+  font-family: 'Fraunces', Georgia, serif !important;
   font-weight: 700 !important;
   letter-spacing: 0.1em !important;
   padding: 0 32px;

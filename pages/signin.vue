@@ -41,7 +41,7 @@ import { GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth'
 import Snackbar from '~/components/Snackbar.vue'
 import routes from '~/helpers/routes'
 
-useHead({ title: 'Sign In' })
+useHead({ title: 'Sign in' })
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -69,7 +69,7 @@ const signInWithFacebook = () => handleOAuthSignIn(new FacebookAuthProvider())
 
 <style scoped>
 .signin-title {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;

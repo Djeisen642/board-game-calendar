@@ -6,13 +6,17 @@
           <v-icon color="primary" class="mr-3">{{
             editId ? 'mdi-calendar-edit' : 'mdi-calendar-plus'
           }}</v-icon>
-          <h1 class="page-title">{{
-            editId ? 'Edit Gathering' : 'New Gathering'
-          }}</h1>
+          <h1 class="page-title">
+            {{ editId ? 'Edit gathering' : 'New gathering' }}
+          </h1>
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" aria-label="Loading gathering" />
+          <v-progress-linear
+            indeterminate
+            color="primary"
+            aria-label="Loading gathering"
+          />
         </v-card-text>
         <v-card-text v-else class="pa-6">
           <v-form ref="gatheringForm" @submit.prevent="createGathering">
@@ -75,7 +79,7 @@
               :hint="
                 gameItems.length
                   ? ''
-                  : 'Add games on the Game Collection page to pick them'
+                  : 'Add games on the Game collection page to pick them'
               "
               persistent-hint
               class="mb-6"
@@ -88,7 +92,7 @@
               :loading="saving"
             >
               <v-icon start>mdi-calendar-check</v-icon
-              >{{ editId ? 'Save Changes' : 'Create Gathering' }}
+              >{{ editId ? 'Save changes' : 'Create gathering' }}
             </v-btn>
           </v-form>
         </v-card-text>
@@ -140,7 +144,7 @@ let existingGuests: Record<string, GuestResponse> = {}
 // initiator is pinned by the security rules: auth.uid at creation, immutable after
 let existingInitiator = ''
 
-useHead({ title: editId ? 'Edit Gathering' : 'New Gathering' })
+useHead({ title: editId ? 'Edit gathering' : 'New gathering' })
 
 const validation = {
   isRequired: (v: string) => !!v || 'Required',

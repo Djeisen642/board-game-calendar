@@ -28,7 +28,7 @@
         </v-card-text>
         <v-card-text v-else-if="friendsAreaOpen" class="pa-6">
           <template v-if="incomingRequests.length">
-            <div class="section-label mb-2">Friend Requests</div>
+            <div class="section-label mb-2">Friend requests</div>
             <v-list class="mb-4">
               <v-list-item
                 v-for="request in incomingRequests"
@@ -92,7 +92,7 @@
               class="mt-4"
               @click.stop="toggleAddArea"
             >
-              <v-icon start>mdi-plus-circle</v-icon>Find Friends
+              <v-icon start>mdi-plus-circle</v-icon>Find friends
             </v-btn>
           </div>
           <template v-else-if="friends.length">
@@ -191,7 +191,7 @@
                   color="primary"
                   variant="tonal"
                 >
-                  <v-icon start>mdi-clock-outline</v-icon>Request Sent
+                  <v-icon start>mdi-clock-outline</v-icon>Request sent
                 </v-chip>
                 <v-btn
                   v-else

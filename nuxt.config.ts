@@ -56,7 +56,7 @@ export default defineNuxtConfig({
         {
           rel: 'preload',
           as: 'style',
-          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap',
           onload: "this.onload=null;this.rel='stylesheet'",
         },
       ],
