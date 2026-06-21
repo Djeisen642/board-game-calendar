@@ -87,15 +87,73 @@
               </v-btn>
             </div>
             <div v-else>
-              <v-text-field
-                v-model="filterGames"
-                label="Filter games"
-                prepend-inner-icon="mdi-magnify"
-                clearable
-                class="mb-4"
-              />
-              <v-list>
-                <template v-for="(item, id) in gamesMatchingFilter" :key="id">
+              <div class="d-flex gap-3 mb-3 flex-wrap align-center">
+                <v-text-field
+                  v-model="filterGames"
+                  label="Filter games"
+                  prepend-inner-icon="mdi-magnify"
+                  clearable
+                  hide-details
+                  class="flex-grow-1"
+                  style="min-width: 180px"
+                />
+                <v-select
+                  v-model="sortBy"
+                  :items="sortOptions"
+                  label="Sort"
+                  hide-details
+                  style="max-width: 190px"
+                />
+              </div>
+
+              <div v-if="availableGenres.length" class="mb-3">
+                <v-chip-group
+                  v-model="selectedGenres"
+                  multiple
+                  column
+                  selected-class="text-primary"
+                >
+                  <v-chip
+                    v-for="genre in visibleGenres"
+                    :key="genre"
+                    :value="genre"
+                    size="small"
+                    filter
+                    variant="outlined"
+                    color="info"
+                  >
+                    {{ genre }}
+                  </v-chip>
+                </v-chip-group>
+                <v-btn
+                  v-if="availableGenres.length > GENRE_CHIP_LIMIT"
+                  variant="text"
+                  size="small"
+                  color="accent"
+                  @click="showAllGenres = !showAllGenres"
+                >
+                  {{
+                    showAllGenres
+                      ? 'Show fewer'
+                      : `+${availableGenres.length - GENRE_CHIP_LIMIT} more`
+                  }}
+                </v-btn>
+              </div>
+
+              <div class="text-caption text-medium-emphasis mb-3">
+                Showing {{ visibleGames.length }} of {{ totalGames }}
+              </div>
+
+              <div v-if="!visibleGames.length" class="empty-desc py-4">
+                No games match your filters.
+              </div>
+              <v-virtual-scroll
+                v-else
+                :items="visibleGames"
+                item-height="104"
+                max-height="72vh"
+              >
+                <template #default="{ item: entry }">
                   <v-list-item class="game-item mb-2">
                     <template #prepend>
                       <v-avatar
@@ -105,30 +163,50 @@
                         class="mr-3"
                       >
                         <v-img
-                          v-if="item.thumbnail"
-                          :src="item.thumbnail"
-                          :alt="item.name"
+                          v-if="entry.game.thumbnail"
+                          :src="entry.game.thumbnail"
+                          :alt="entry.game.name"
                         />
                         <v-icon v-else size="32"
                           >mdi-gamepad-variant-outline</v-icon
                         >
                       </v-avatar>
                     </template>
-                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-list-item-title>{{ entry.game.name }}</v-list-item-title>
+                    <div
+                      v-if="entry.game.categories?.length"
+                      class="d-flex flex-wrap align-center gap-1 mt-1 mb-1"
+                    >
+                      <v-chip
+                        v-for="cat in entry.game.categories.slice(0, 4)"
+                        :key="cat"
+                        size="x-small"
+                        variant="tonal"
+                        color="info"
+                        >{{ cat }}</v-chip
+                      >
+                      <span
+                        v-if="entry.game.categories.length > 4"
+                        class="text-caption text-medium-emphasis"
+                        >+{{ entry.game.categories.length - 4 }}</span
+                      >
+                    </div>
                     <v-rating
                       v-if="!isFriendView"
-                      :model-value="opinions[item.id]?.rating ?? 0"
+                      :model-value="opinions[entry.game.id]?.rating ?? 0"
                       hover
                       size="small"
                       color="warning"
                       active-color="warning"
-                      @update:model-value="(val) => updateGameRating(item, val)"
+                      @update:model-value="
+                        (val) => updateGameRating(entry.game, val)
+                      "
                     />
                     <div
-                      v-if="formatGameInfo(item)"
+                      v-if="formatGameInfo(entry.game)"
                       class="text-caption text-medium-emphasis"
                     >
-                      {{ formatGameInfo(item) }}
+                      {{ formatGameInfo(entry.game) }}
                     </div>
                     <div class="event-actions">
                       <v-btn
@@ -136,7 +214,7 @@
                         size="small"
                         variant="tonal"
                         color="accent"
-                        :href="`https://boardgamegeek.com/boardgame/${item.id}`"
+                        :href="`https://boardgamegeek.com/boardgame/${entry.game.id}`"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Open on BGG"
@@ -150,19 +228,19 @@
                         size="small"
                         variant="tonal"
                         :color="
-                          expandedItems.has(String(id)) ? 'primary' : 'accent'
+                          expandedItems.has(entry.id) ? 'primary' : 'accent'
                         "
                         :aria-label="
-                          expandedItems.has(String(id))
+                          expandedItems.has(entry.id)
                             ? 'Hide note'
                             : 'Edit note'
                         "
                         :title="
-                          expandedItems.has(String(id))
+                          expandedItems.has(entry.id)
                             ? 'Hide note'
                             : 'Edit note'
                         "
-                        @click.stop="toggleExpanded(String(id))"
+                        @click.stop="toggleExpanded(entry.id)"
                       >
                         <v-icon>mdi-note-text-outline</v-icon>
                       </v-btn>
@@ -174,34 +252,31 @@
                         color="error"
                         aria-label="Remove from collection"
                         title="Remove from collection"
-                        @click.stop="removeGameFromCollection(String(id))"
+                        @click.stop="removeGameFromCollection(entry.id)"
                       >
                         <v-icon>mdi-delete-outline</v-icon>
                       </v-btn>
                     </div>
-                  </v-list-item>
-                  <v-list-item
-                    v-if="!isFriendView && expandedItems.has(String(id))"
-                    class="px-4 pb-2"
-                  >
                     <v-textarea
-                      :model-value="opinions[item.id]?.privateNote ?? ''"
+                      v-if="!isFriendView && expandedItems.has(entry.id)"
+                      :model-value="opinions[entry.game.id]?.privateNote ?? ''"
                       label="Private note"
                       variant="outlined"
                       density="compact"
                       rows="2"
                       hide-details
+                      class="mt-2"
                       @blur="
                         (e: FocusEvent) =>
                           updateGameNote(
-                            item,
+                            entry.game,
                             (e.target as HTMLTextAreaElement).value
                           )
                       "
                     />
                   </v-list-item>
                 </template>
-              </v-list>
+              </v-virtual-scroll>
             </div>
 
             <!-- Also rated: games with opinions but not in collection (owner only) -->
@@ -408,6 +483,11 @@ import type {
   BoardGameSearchResult,
 } from '~/helpers/types'
 import constants from '~/helpers/constants'
+import {
+  collectionGenres,
+  filterAndSortCollection,
+  type CollectionSort,
+} from '~/helpers/collection'
 
 useHead({ title: 'Game collection' })
 
@@ -432,6 +512,16 @@ const collection = ref<Record<string, Game> | null>(null)
 const opinions = ref<Record<string, GameOpinion>>({})
 const loading = ref(true)
 const filterGames = ref<string | null>('')
+const selectedGenres = ref<string[]>([])
+const sortBy = ref<CollectionSort>('name')
+const showAllGenres = ref(false)
+// "My rating" sort only makes sense for your own collection.
+const sortOptions = computed(() => [
+  { title: 'Name', value: 'name' },
+  ...(isFriendView.value ? [] : [{ title: 'My rating', value: 'rating' }]),
+  { title: 'Recently added', value: 'recent' },
+])
+const GENRE_CHIP_LIMIT = 12
 const activeArea = ref<ActiveArea>('collection')
 const expandedItems = ref(new Set<string>())
 
@@ -446,15 +536,28 @@ const pageTitle = computed(() => {
   return 'Game collection'
 })
 
-const gamesMatchingFilter = computed<Record<string, Game>>(() => {
-  if (!collection.value) return {}
-  const filter = (filterGames.value ?? '').toLowerCase()
-  const result: Record<string, Game> = {}
-  for (const [key, game] of Object.entries(collection.value)) {
-    if (game.name.toLowerCase().includes(filter)) result[key] = game
-  }
-  return result
-})
+// Distinct genres present in the collection, alphabetized — drives the chips.
+const availableGenres = computed(() => collectionGenres(collection.value))
+const visibleGenres = computed(() =>
+  showAllGenres.value
+    ? availableGenres.value
+    : availableGenres.value.slice(0, GENRE_CHIP_LIMIT)
+)
+
+const totalGames = computed(() =>
+  collection.value ? Object.keys(collection.value).length : 0
+)
+
+// Text filter + genre facets + sort, as an honest ordered array. Logic lives in
+// helpers/collection.ts (unit-tested); this just wires in the reactive inputs.
+const visibleGames = computed(() =>
+  filterAndSortCollection(collection.value, {
+    text: filterGames.value ?? '',
+    genres: new Set(selectedGenres.value),
+    sortBy: sortBy.value,
+    ratingFor: (id) => opinions.value[id]?.rating ?? 0,
+  })
+)
 
 const idsInCollection = computed(() =>
   collection.value ? Object.values(collection.value).map((g) => g.id) : []
@@ -591,6 +694,7 @@ type BggGameMeta = {
   minplaytime?: string | null
   maxplaytime?: string | null
   yearpublished?: string | null
+  categories?: string[] | null
 }
 
 function formatGameInfo(game: Game): string {
@@ -631,6 +735,7 @@ function buildGame(id: string, data: BggGameMeta, fallbackName: string): Game {
   if (data.maxplaytime) game.maxplaytime = data.maxplaytime
   if (data.yearpublished && data.yearpublished !== '0')
     game.yearpublished = data.yearpublished
+  if (data.categories?.length) game.categories = data.categories
   return game
 }
 
@@ -826,37 +931,14 @@ function onGameSearchError(error: Error) {
 </script>
 
 <style scoped>
+/* No deal-in stagger here: rows are virtualized and recycled on scroll, so a
+   per-row entry animation would replay continuously as you scroll. */
 .game-item {
   border-radius: 6px;
   transition:
     background 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  animation: deal-in 0.3s ease both;
-}
-.game-item:nth-child(1) {
-  animation-delay: 0ms;
-}
-.game-item:nth-child(2) {
-  animation-delay: 40ms;
-}
-.game-item:nth-child(3) {
-  animation-delay: 80ms;
-}
-.game-item:nth-child(4) {
-  animation-delay: 120ms;
-}
-.game-item:nth-child(5) {
-  animation-delay: 160ms;
-}
-.game-item:nth-child(6) {
-  animation-delay: 200ms;
-}
-.game-item:nth-child(7) {
-  animation-delay: 240ms;
-}
-.game-item:nth-child(8) {
-  animation-delay: 280ms;
 }
 .game-item:hover {
   background: rgba(200, 134, 10, 0.07);

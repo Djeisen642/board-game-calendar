@@ -26,12 +26,13 @@ export type Friend = Person & {
 export type Game = {
   id: string
   name: string
-  thumbnail: string   // always present in BGG
+  thumbnail: string // always present in BGG
   minplayers?: string // nullable in BGG
   maxplayers?: string // nullable in BGG
   minplaytime?: string // nullable in BGG
   maxplaytime?: string // nullable in BGG
   yearpublished?: string // nullable in BGG
+  categories?: string[] // BGG boardgamecategory values (genres); absent if none
   publicNote?: string
 }
 
@@ -79,6 +80,7 @@ export type DisplayableItemType = {
   minplayers: string
   minplaytime: string
   yearpublished: string
+  categories: string[]
   incollection: boolean
 }
 

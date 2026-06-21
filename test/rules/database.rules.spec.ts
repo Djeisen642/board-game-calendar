@@ -21,7 +21,10 @@ import {
 
 let testEnv: RulesTestEnvironment
 
-const db = (uid?: string, claims?: { email?: string; email_verified?: boolean }) =>
+const db = (
+  uid?: string,
+  claims?: { email?: string; email_verified?: boolean }
+) =>
   uid
     ? testEnv.authenticatedContext(uid, claims).database()
     : testEnv.unauthenticatedContext().database()
@@ -95,7 +98,9 @@ describe('public profile (profiles/) rules', () => {
   })
 
   it('only lets a user write their own public profile', async () => {
-    await assertSucceeds(set(ref(alice(), 'profiles/alice'), alicePublicProfile))
+    await assertSucceeds(
+      set(ref(alice(), 'profiles/alice'), alicePublicProfile)
+    )
     await assertFails(set(ref(db('bob'), 'profiles/alice'), alicePublicProfile))
   })
 
@@ -132,7 +137,9 @@ describe('public profile (profiles/) rules', () => {
   })
 
   it('binds queryableEmail to the verified auth token email', async () => {
-    await assertSucceeds(set(ref(alice(), 'profiles/alice'), alicePublicProfile))
+    await assertSucceeds(
+      set(ref(alice(), 'profiles/alice'), alicePublicProfile)
+    )
     // bob claiming alice's email to show up in her search results
     await assertFails(
       set(
@@ -242,7 +249,9 @@ describe('private profile (users/) rules', () => {
   })
 
   it('only lets a user write their own private profile', async () => {
-    await assertSucceeds(set(ref(db('alice'), 'users/alice'), alicePrivateProfile))
+    await assertSucceeds(
+      set(ref(db('alice'), 'users/alice'), alicePrivateProfile)
+    )
     await assertFails(set(ref(db('bob'), 'users/alice'), alicePrivateProfile))
   })
 
@@ -298,6 +307,30 @@ describe('private profile (users/) rules', () => {
         id: '13',
         name: 'Catan',
         junk: 'x',
+      })
+    )
+  })
+
+  it('accepts a categories array of short strings, rejects oversized/non-string', async () => {
+    await assertSucceeds(
+      set(ref(db('alice'), 'users/alice/collection/g1'), {
+        id: '13',
+        name: 'Catan',
+        categories: ['Economic', 'Negotiation'],
+      })
+    )
+    await assertFails(
+      set(ref(db('alice'), 'users/alice/collection/g2'), {
+        id: '14',
+        name: 'Brass',
+        categories: ['x'.repeat(61)],
+      })
+    )
+    await assertFails(
+      set(ref(db('alice'), 'users/alice/collection/g3'), {
+        id: '15',
+        name: 'Azul',
+        categories: [42],
       })
     )
   })
@@ -389,7 +422,9 @@ describe('friend request rules', () => {
       set(ref(db('mallory'), 'friendRequests/mallory/bob'), 'pending')
     )
     // and without a real request from bob, she cannot add herself to his list
-    await assertFails(set(ref(db('mallory'), 'users/bob/friends/mallory'), true))
+    await assertFails(
+      set(ref(db('mallory'), 'users/bob/friends/mallory'), true)
+    )
   })
 
   it('keeps friends lists private to their owner', async () => {
@@ -438,7 +473,6 @@ describe('blocked list rules', () => {
     await assertFails(get(ref(db('bob'), 'blocked/alice/bob')))
   })
 })
-
 
 // the invite gate: a host may only invite users whose own friends list
 // contains the host (i.e. mutual friendship, which the host cannot forge)
@@ -630,12 +664,16 @@ describe('userGatherings index rules', () => {
 
   it('blocks indexing users who are not participants of the gathering', async () => {
     await seed('gatherings/g1', baseGathering)
-    await assertFails(set(ref(db('host1'), 'userGatherings/stranger1/g1'), true))
+    await assertFails(
+      set(ref(db('host1'), 'userGatherings/stranger1/g1'), true)
+    )
   })
 
   it('blocks non-hosts from writing index entries', async () => {
     await seed('gatherings/g1', baseGathering)
-    await assertFails(set(ref(db('mallory'), 'userGatherings/mallory/g1'), true))
+    await assertFails(
+      set(ref(db('mallory'), 'userGatherings/mallory/g1'), true)
+    )
     await assertFails(set(ref(db('guest1'), 'userGatherings/guest1/g1'), true))
   })
 
@@ -651,7 +689,9 @@ describe('userGatherings index rules', () => {
   it('lets a user always remove their own entry (dangling-pointer cleanup)', async () => {
     await seed('userGatherings/guest1/ghost', true)
     await assertFails(remove(ref(db('mallory'), 'userGatherings/guest1/ghost')))
-    await assertSucceeds(remove(ref(db('guest1'), 'userGatherings/guest1/ghost')))
+    await assertSucceeds(
+      remove(ref(db('guest1'), 'userGatherings/guest1/ghost'))
+    )
   })
 
   it('lets the host remove a guest entry while uninviting', async () => {
