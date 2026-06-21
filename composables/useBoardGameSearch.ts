@@ -3,7 +3,10 @@ import type { Ref } from 'vue'
 import { httpsCallable } from 'firebase/functions'
 import { useNuxtApp } from 'nuxt/app'
 import helpers from '~/helpers/helpers'
-import type { BoardGameSearchResult, DisplayableItemType } from '~/helpers/types'
+import type {
+  BoardGameSearchResult,
+  DisplayableItemType,
+} from '~/helpers/types'
 import constants from '~/helpers/constants'
 
 interface BggSearchResult {
@@ -25,6 +28,7 @@ interface BggThingResult {
   minplaytime: string | null
   maxplaytime: string | null
   minage: string | null
+  categories: string[] | null
 }
 
 // Score a result by how closely its name matches the search query.
@@ -32,11 +36,11 @@ interface BggThingResult {
 function relevanceScore(name: string, query: string): number {
   const n = name.toLowerCase()
   const q = query.toLowerCase()
-  if (n === q) return 0               // exact match
-  if (n.startsWith(q + ' ') || n.startsWith(q + ':')) return 1  // query is the full first word
-  if (n.startsWith(q)) return 2       // prefix match
-  if (n.includes(q)) return 3         // substring match
-  return 4                            // BGG matched it some other way (alternate name, etc.)
+  if (n === q) return 0 // exact match
+  if (n.startsWith(q + ' ') || n.startsWith(q + ':')) return 1 // query is the full first word
+  if (n.startsWith(q)) return 2 // prefix match
+  if (n.includes(q)) return 3 // substring match
+  return 4 // BGG matched it some other way (alternate name, etc.)
 }
 
 export function useBoardGameSearch(
@@ -74,10 +78,10 @@ export function useBoardGameSearch(
   async function displayEntries() {
     try {
       const entries = _getEntriesToShow()
-      const bggThingFn = httpsCallable<{ ids: string[] }, { items: BggThingResult[] }>(
-        $functions,
-        'bggThing'
-      )
+      const bggThingFn = httpsCallable<
+        { ids: string[] },
+        { items: BggThingResult[] }
+      >($functions, 'bggThing')
       const result = await bggThingFn({ ids: entries.map((e) => e.id) })
       queriedEntries.value = (result.data.items ?? [])
         .filter((item): item is BggThingResult => !!item)
@@ -97,6 +101,7 @@ export function useBoardGameSearch(
             minplayers: item.minplayers ?? '',
             minplaytime: item.minplaytime ?? '',
             yearpublished: item.yearpublished ?? '',
+            categories: item.categories ?? [],
             incollection: false,
           }
         })
@@ -106,7 +111,8 @@ export function useBoardGameSearch(
   }
 
   async function fetchResults(input: string) {
-    if (isLoading.value || !input || input.length < constants.MinSearchLength) return
+    if (isLoading.value || !input || input.length < constants.MinSearchLength)
+      return
     isLoading.value = true
     try {
       const bggSearchFn = httpsCallable<
@@ -129,7 +135,8 @@ export function useBoardGameSearch(
           yearpublished: item.yearpublished ?? '0',
         }))
         .sort((a, b) => {
-          const scoreDiff = relevanceScore(a.name, query) - relevanceScore(b.name, query)
+          const scoreDiff =
+            relevanceScore(a.name, query) - relevanceScore(b.name, query)
           if (scoreDiff !== 0) return scoreDiff
           // Within the same relevance tier: shorter name first (less noise),
           // then more recent year as tiebreaker

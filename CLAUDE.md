@@ -75,6 +75,7 @@ Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB
 - `helpers/constants.ts` — `LoadingTimeoutInMs`, `DebounceThrottleInMs`, BGG API constants
 - `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
 - `helpers/gatherings.ts` — `splitGatherings`, state/response color+icon maps, `formatDatetime`
+- `helpers/collection.ts` — `filterAndSortCollection` (text + genre filter, name/rating/recent sort → ordered `CollectionEntry[]`) and `collectionGenres`; pure + unit-tested (`test/collection.spec.ts`), drives the collection browse UI
 - `helpers/calendar.ts` — calendar-export builders: `googleCalendarUrl()` (Google "new event" template URL), `buildIcs()` (single-VEVENT `.ics`, `PUBLISH`, 3-hour default duration since gatherings store no end time, RFC-5545 escaped, no location since the host address is private), `downloadIcs()` (browser blob download), `toCalendarEventInput()`. The Cloud Functions duplicate this logic server-side (their build has its own `rootDir`, same as `formatDatetime`) — keep both in sync
 - `firebase.json` — Firebase Hosting config
 - `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
@@ -131,6 +132,9 @@ type Game = {
   id: string // BoardGameGeek game ID
   name: string
   rating?: number
+  categories?: string[] // BGG `boardgamecategory` values (genres); used for the
+  // collection genre-filter chips. Stored as an RTDB array (numeric-keyed);
+  // rules validate each entry as a string ≤60 chars. Absent when BGG lists none.
 }
 
 // users/{uid}/friends/{friendId}: true — mutual; written to both sides on accept
@@ -180,7 +184,7 @@ BoardGameGeek XML API v2 — proxied via Firebase Cloud Functions (`bggSearch`, 
 
 - Search: `https://boardgamegeek.com/xmlapi2/search?query=<term>&type=boardgame`
 - Detail: `https://boardgamegeek.com/xmlapi2/thing?id=<id>`
-- XML is parsed server-side in the functions using `xml2js`; the client receives JSON
+- XML is parsed server-side in the functions using `xml2js`; the client receives JSON. `bggThing` also extracts `boardgamecategory` `<link>` values as `categories: string[]` (BGG's genre concept) via the `linkValues()` helper — these feed the collection genre-filter chips
 - **Authorization is required.** Every request must include an `Authorization: Bearer <token>` header. Tokens are created at https://boardgamegeek.com/applications after registering an application (non-commercial license is free). The token is stored in Secret Manager as `BGG_API_KEY` and accessed via `defineSecret('BGG_API_KEY')` in the Cloud Functions. Requests must go to `boardgamegeek.com` (no `www.` prefix) or the token will not work.
 - Subject to rate limits and occasional 202 "try again" responses
 - Client calls via `httpsCallable` from `firebase/functions`; App Check enforced
@@ -195,7 +199,7 @@ Transactional emails are sent server-side from `functions/src/index.ts` via Rese
 
 ## Test Setup
 
-Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.spec.ts`); security-rules tests in `test/rules/` run via `yarn test:rules` against the RTDB emulator (`vitest.rules.config.ts`). Vitest requires `environment: 'jsdom'` (set in `vitest.config.ts`). Vuetify must be inlined via `server.deps.inline: ['vuetify']` to avoid CSS import errors. Import `createVuetify` and pass it as a global plugin to `mount`.
+Unit tests live in `test/` (`Logo.spec.ts`, `authErrors.spec.ts`, `gatherings.spec.ts`, `collection.spec.ts`); security-rules tests in `test/rules/` run via `yarn test:rules` against the RTDB emulator (`vitest.rules.config.ts`). Vitest requires `environment: 'jsdom'` (set in `vitest.config.ts`). Vuetify must be inlined via `server.deps.inline: ['vuetify']` to avoid CSS import errors. Import `createVuetify` and pass it as a global plugin to `mount`.
 
 ## Design Conventions
 
@@ -265,7 +269,14 @@ All `v-card` elements are styled as walnut cardstock resting on the felt table:
 - Hover: border brightens to `rgba(200,134,10,0.4)`, shadow deepens
 - No `backdrop-filter`, no corner-bracket ornaments (both removed — they read as 90s-RTS HUD chrome)
 
-The table surface itself (felt + lamp glow + fabric grain) is painted on `body::before` / `body::after`; the walnut frame is the app bar and navigation drawer. Do not override card backgrounds inline — the global style handles it.
+The table surface itself (felt + lamp glow + fabric grain) is painted on `body::before` / `body::after`; the walnut frame is the app bar, navigation drawer, **and footer** — all three are opaque walnut so page content scrolls cleanly behind them (the footer must not be transparent, or long content shows through it). Do not override card backgrounds inline — the global style handles it.
+
+### Collection browse (genre filter)
+
+`gamecollection.vue` is the reference pattern for browsing a large list: a toolbar row (text filter + sort `v-select`), a `v-chip-group multiple` of genre facets (`filter` chips, `color="info"`; the group's `v-model` is the selected-genre `string[]` — use the group, not hand-rolled click + `aria-pressed`, so selection state and keyboard nav are correct), a "Showing N of M" count, then the list. Genres beyond `GENRE_CHIP_LIMIT` (12) collapse behind a "+N more" toggle. Genres come from BGG `categories`; each card shows up to 4 genre chips (`size="x-small"` `variant="tonal"` `color="info"`) with a `+N` overflow count. Sort options: name, my rating (own collection only — hidden in friend view), recently added (Firebase push-ID order, newest first).
+
+- **The list is virtualized** (`v-virtual-scroll`, `max-height="72vh"`) because collections can be large — never render the whole list with a plain `v-list`. The per-row note `v-textarea` is folded into the same row item (not a sibling list row) so the virtual scroller measures each row's height correctly when expanded. Do not add per-row entry animations (e.g. a `deal-in` stagger) to virtualized rows — they replay on every scroll recycle.
+- Filter/sort logic is a pure, unit-tested helper: `helpers/collection.ts` (`filterAndSortCollection`, `collectionGenres`). Keep it returning an **ordered array** (`CollectionEntry[] = { id, game }[]`); do not smuggle display order through an object's key-iteration order.
 
 ### Vuetify component defaults (set in `nuxt.config.ts`)
 

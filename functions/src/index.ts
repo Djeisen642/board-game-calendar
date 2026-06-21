@@ -75,6 +75,19 @@ function itemAttr(item: unknown, prop: string): string | null {
   return typeof v === 'string' ? v : null
 }
 
+// BGG `thing` items carry repeated <link type="..." value="..."> elements
+// (categories, mechanics, families). Collect the values of a given link type.
+// `boardgamecategory` is BGG's genre concept (Economic, Fantasy, Card Game…).
+function linkValues(itemObj: Record<string, unknown>, type: string): string[] {
+  const node = itemObj.link
+  if (node == null) return []
+  const arr: unknown[] = Array.isArray(node) ? node : [node]
+  return arr
+    .filter((l) => itemAttr(l, 'type') === type)
+    .map((l) => itemAttr(l, 'value'))
+    .filter((v): v is string => typeof v === 'string' && v.length > 0)
+}
+
 export const bggSearch = onCall(
   { enforceAppCheck: true, secrets: [BGG_API_KEY] },
   async (request) => {
@@ -184,6 +197,7 @@ function parseBggThingItem(item: unknown) {
     minplaytime: attrValue(itemObj.minplaytime),
     maxplaytime: attrValue(itemObj.maxplaytime),
     minage: attrValue(itemObj.minage),
+    categories: linkValues(itemObj, 'boardgamecategory'),
   }
 }
 

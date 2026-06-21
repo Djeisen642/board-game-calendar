@@ -62,6 +62,11 @@
             "yearpublished": {
               ".validate": "newData.isString() && newData.val().length <= 10"
             },
+            "categories": {
+              "$index": {
+                ".validate": "newData.isString() && newData.val().length <= 60"
+              }
+            },
             "publicNote": {
               ".validate": "newData.isString() && newData.val().length <= 2000"
             },
