@@ -34,6 +34,17 @@ Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). No 
 
 Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB path structure (`profiles/`, `users/`, `gatherings/`, etc.). To use custom data, copy it, edit, and pass `--fixture scripts/fixtures/my-fixture.json`. The `/screenshot` slash command in Claude Code wraps `yarn screenshot`.
 
+### Visual verification after UI changes
+
+After editing any `.vue` file, take a mobile screenshot of the affected route and inspect it before committing:
+
+```bash
+yarn screenshot /gamecollection --mobile
+yarn screenshot /calendar --mobile
+```
+
+Check for: chip/text overlap, truncation, contrast issues, wrapping that looks unintentional. If a problem is visible, fix it in the same commit. Mobile is the critical viewport — most layout bugs hide on desktop. Fixture data must be realistic enough to trigger the UI path being changed; if the relevant data is missing from `scripts/fixtures/default.json`, add it.
+
 ## Stack
 
 | Layer     | Choice                                              | Notes                                                                                                     |
