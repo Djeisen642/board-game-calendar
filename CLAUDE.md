@@ -230,14 +230,24 @@ The app uses a consistent **"Evening Game Table"** design system: a deep green f
 
 ### Typography
 
-- Headings: **Cinzel** (serif) via `$heading-font-family` in `variables.scss`
-- Body: **Lora** (serif) via `$body-font-family`
+- Headings / display: **Fraunces** (serif) via `$heading-font-family` in `variables.scss`. A warm "old-style" serif loaded as a **variable font with its optical-size axis** (`opsz` `9..144`, weights 400/600/700) — the browser auto-renders small text with the legible *text* cut and large titles with the expressive *display* cut. Replaced Cinzel (a caps-only inscriptional face that was illegible on small all-caps chrome).
+- Body: **Lora** (serif) via `$body-font-family`. Also used on **chips/status tokens** (not the display face) so small tokens stay readable.
 - Body text color: `#E8D4A8` (Vuetify `on-surface`)
-- Page title: `.page-title` → `1.35rem / 700`, Cinzel, rendered as `<h1>` (not `<span>`)
-- Section label: `.section-label` → `0.8rem / 600`, uppercase, `#c8860a` (full opacity); auto-prefixed with a small amber diamond "scoring marker" via `::before` (flex row)
-- Empty state title: `.empty-title` → `1.2rem / 600`, Cinzel
+- Page title: `.page-title` → `1.4rem / 700`, Fraunces, `letter-spacing: 0.01em`, rendered as `<h1>` (not `<span>`)
+- Section label: `.section-label` → `0.82rem / 600`, Fraunces, uppercase, `letter-spacing: 0.1em`, `#c8860a` (full opacity); auto-prefixed with a small amber diamond "scoring marker" via `::before` (flex row)
+- Empty state title: `.empty-title` → `1.25rem / 600`, Fraunces
 - Empty state description: `.empty-desc` → `0.95rem`, Lora, `rgba(240,223,196,0.80)`
-- All buttons: `text-transform: none`, `font-family: Cinzel`, `letter-spacing: 0.06em` (global override in `global.scss`)
+- All buttons: `text-transform: none`, `font-family: Fraunces`, `letter-spacing: 0.01em` (global override in `global.scss`)
+- Chips: `font-family: Lora`, `0.78rem / 600`, `letter-spacing: 0.01em` (global override in `global.scss`) — deliberately the body serif, not the display face. **Keep tracking minimal**; the old wide letter-spacing existed only to space out Cinzel's caps.
+
+> **Why Fraunces, not Cinzel:** Cinzel has no real lowercase, so it force-capped everything; on small chips/buttons/labels that read as illegible. Fraunces has true lowercase, a full weight range, and an optical-size axis, so it keeps the warm antique tabletop character while reading cleanly at every size. When adding new display text, prefer Fraunces with minimal letter-spacing; reserve uppercase for short single-word labels only.
+
+### UI copy (capitalization)
+
+All UI labels use **sentence case** — capitalize only the first word: buttons ("Add game", "Create gathering", "Sign in"), nav items, menu items, page titles (`.page-title` h1 and `useHead({ title })`), section labels, field labels/placeholders, and status text. This is the Material Design / Vuetify default.
+
+- **Exceptions — keep their own casing:** proper nouns (the "Board Game Calendar" brand and "BGC", product names like "Google Calendar" and "Apple / Outlook", "BoardGameGeek"/"BGG"), game names, and people's names.
+- This convention only became visible once the display font changed to Fraunces (Cinzel rendered everything as caps, hiding casing). When adding any new label, default to sentence case.
 
 ### Spacing & shape
 

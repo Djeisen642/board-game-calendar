@@ -21,7 +21,10 @@
     </v-navigation-drawer>
 
     <v-app-bar class="bgc-app-bar" flat>
-      <v-app-bar-nav-icon aria-label="Open navigation menu" @click.stop="drawer = !drawer" />
+      <v-app-bar-nav-icon
+        aria-label="Open navigation menu"
+        @click.stop="drawer = !drawer"
+      />
       <v-toolbar-title class="app-bar-title">
         <v-icon class="app-bar-title-icon" color="primary" size="20"
           >mdi-hexagon-multiple</v-icon
@@ -92,7 +95,7 @@ const items = [
   },
   {
     icon: 'mdi-account-key',
-    title: 'Sign In',
+    title: 'Sign in',
     to: routes.signIn,
     type: PageType.BeforeAuth,
   },
@@ -104,13 +107,13 @@ const items = [
   },
   {
     icon: 'mdi-dice-multiple',
-    title: 'New Gathering',
+    title: 'New gathering',
     to: routes.newGathering,
     type: PageType.NeedsAuth,
   },
   {
     icon: 'mdi-cards-outline',
-    title: 'Game Collection',
+    title: 'Game collection',
     to: routes.gameCollection,
     type: PageType.NeedsAuth,
   },
@@ -157,7 +160,7 @@ async function onSignoutClicked() {
 }
 
 .drawer-brand {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -166,7 +169,7 @@ async function onSignoutClicked() {
 }
 
 .app-bar-title {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-weight: 600;
   letter-spacing: 0.06em;
   color: #f0dfc4;

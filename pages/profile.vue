@@ -27,7 +27,11 @@
         </v-card-title>
         <v-divider />
         <v-card-text v-if="loading" class="pa-8">
-          <v-progress-linear indeterminate color="primary" aria-label="Loading profile" />
+          <v-progress-linear
+            indeterminate
+            color="primary"
+            aria-label="Loading profile"
+          />
         </v-card-text>
         <v-card-text v-else-if="editable" class="pa-6">
           <v-form ref="profileForm">
@@ -126,7 +130,7 @@ type UserProfile = {
 
 const labels = {
   name: 'Name',
-  phoneNumber: 'Phone Number',
+  phoneNumber: 'Phone number',
   email: 'Email',
   address: 'Address',
   maxPeople: 'Max people at residence',
@@ -284,11 +288,11 @@ async function updateProfile() {
   opacity: 0.9;
 }
 .profile-field-label {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 0.8rem;
   color: #c8860a;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   font-weight: 600;
   margin-bottom: 4px;
 }

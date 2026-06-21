@@ -41,7 +41,7 @@
               class="mt-4"
               :to="routes.newGathering"
             >
-              <v-icon start>mdi-calendar-plus</v-icon>New Gathering
+              <v-icon start>mdi-calendar-plus</v-icon>New gathering
             </v-btn>
           </div>
         </v-card-text>
@@ -51,9 +51,9 @@
             <div
               v-for="gathering in hosting"
               :key="gathering.id"
-              class="event-item pa-4 mb-3"
+              class="event-item pa-5 mb-4"
             >
-              <div class="d-flex align-center flex-wrap gap-2 mb-3">
+              <div class="d-flex align-center flex-wrap gap-3 mb-3">
                 <v-chip
                   :color="stateColor(gathering.state)"
                   size="small"
@@ -66,7 +66,7 @@
                   >{{ formatDatetime(gathering.datetime) }}</span
                 >
               </div>
-              <div v-if="gathering.games?.length" class="event-line mb-2">
+              <div v-if="gathering.games?.length" class="event-line mb-3">
                 <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
                 <v-chip
                   v-for="game in gathering.games"
@@ -79,7 +79,7 @@
               </div>
               <div
                 v-if="guestEntries(gathering).length"
-                class="event-line mb-2"
+                class="event-line mb-3"
               >
                 <v-icon size="16" class="mr-1">mdi-account-group</v-icon>
                 <v-chip
@@ -96,7 +96,7 @@
                   >{{ names[guest.uid] ?? '…' }}
                 </v-chip>
               </div>
-              <div v-else class="event-line mb-2">
+              <div v-else class="event-line mb-3">
                 <v-icon size="16" class="mr-1">mdi-account-group</v-icon>No
                 guests invited yet
               </div>
@@ -177,9 +177,9 @@
             <div
               v-for="gathering in invited"
               :key="gathering.id"
-              class="event-item pa-4 mb-3"
+              class="event-item pa-5 mb-4"
             >
-              <div class="d-flex align-center flex-wrap gap-2 mb-3">
+              <div class="d-flex align-center flex-wrap gap-3 mb-3">
                 <v-chip
                   :color="stateColor(gathering.state)"
                   size="small"
@@ -192,11 +192,11 @@
                   >{{ formatDatetime(gathering.datetime) }}</span
                 >
               </div>
-              <div class="event-line mb-2">
+              <div class="event-line mb-3">
                 <v-icon size="16" class="mr-1">mdi-account</v-icon>Hosted by
                 {{ names[gathering.host] ?? '…' }}
               </div>
-              <div v-if="gathering.games?.length" class="event-line mb-2">
+              <div v-if="gathering.games?.length" class="event-line mb-3">
                 <v-icon size="16" class="mr-1">mdi-rhombus-split</v-icon>
                 <v-chip
                   v-for="game in gathering.games"
@@ -526,11 +526,21 @@ function editGathering(gathering: GatheringWithId) {
     0 1px 4px rgba(200, 134, 10, 0.1);
 }
 .event-line {
-  font-size: 0.9rem;
+  font-size: 0.98rem;
+  line-height: 1.5;
   color: rgba(240, 223, 196, 0.85);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
+}
+/* Slightly larger, more legible chips inside the event cards */
+.event-item :deep(.v-chip) {
+  font-size: 0.8rem !important;
+}
+/* A touch more room around the action buttons */
+.event-item .event-actions {
+  gap: 6px;
+  margin-top: 12px;
 }
 </style>

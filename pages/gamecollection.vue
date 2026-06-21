@@ -27,7 +27,7 @@
                 size="small"
                 @click.stop="activeArea = 'addGame'"
               >
-                <v-icon start>mdi-plus-circle</v-icon>Add Game
+                <v-icon start>mdi-plus-circle</v-icon>Add game
               </v-btn>
               <v-btn
                 variant="elevated"
@@ -83,13 +83,13 @@
                 class="mt-4"
                 @click.stop="activeArea = 'addGame'"
               >
-                <v-icon start>mdi-plus-circle</v-icon>Add Games
+                <v-icon start>mdi-plus-circle</v-icon>Add games
               </v-btn>
             </div>
             <div v-else>
               <v-text-field
                 v-model="filterGames"
-                label="Filter Games"
+                label="Filter games"
                 prepend-inner-icon="mdi-magnify"
                 clearable
                 class="mb-4"
@@ -186,7 +186,7 @@
                   >
                     <v-textarea
                       :model-value="opinions[item.id]?.privateNote ?? ''"
-                      label="Private Note"
+                      label="Private note"
                       variant="outlined"
                       density="compact"
                       rows="2"
@@ -204,10 +204,10 @@
               </v-list>
             </div>
 
-            <!-- Also Rated: games with opinions but not in collection (owner only) -->
+            <!-- Also rated: games with opinions but not in collection (owner only) -->
             <template v-if="!isFriendView && alsoRatedGames.length">
               <v-divider class="my-4" />
-              <div class="section-label mb-3">Also Rated</div>
+              <div class="section-label mb-3">Also rated</div>
               <v-list>
                 <template v-for="entry in alsoRatedGames" :key="entry.gameId">
                   <v-list-item class="game-item mb-2">
@@ -275,7 +275,7 @@
                   >
                     <v-textarea
                       :model-value="entry.privateNote ?? ''"
-                      label="Private Note"
+                      label="Private note"
                       variant="outlined"
                       density="compact"
                       rows="2"
@@ -312,7 +312,7 @@
               :loading="opinionSearchLoading"
               item-title="displayname"
               item-value="id"
-              label="Board Game Search"
+              label="Board game search"
               placeholder="Start typing to search"
               :hint="`Type at least ${constants.MinSearchLength} characters`"
               prepend-icon="mdi-database-search"
@@ -344,7 +344,7 @@
               />
               <v-textarea
                 v-model="pendingNote"
-                label="Private Note"
+                label="Private note"
                 variant="outlined"
                 density="compact"
                 rows="3"
@@ -409,7 +409,7 @@ import type {
 } from '~/helpers/types'
 import constants from '~/helpers/constants'
 
-useHead({ title: 'Game Collection' })
+useHead({ title: 'Game collection' })
 
 type ActiveArea = 'collection' | 'addGame' | 'addOpinion'
 
@@ -441,9 +441,9 @@ let unsubOpinions: (() => void) | null = null
 const pageTitle = computed(() => {
   if (isFriendView.value)
     return friendName.value ? `${friendName.value}'s Collection` : 'Collection'
-  if (activeArea.value === 'addGame') return 'Add Game'
+  if (activeArea.value === 'addGame') return 'Add game'
   if (activeArea.value === 'addOpinion') return 'Rate a Game'
-  return 'Game Collection'
+  return 'Game collection'
 })
 
 const gamesMatchingFilter = computed<Record<string, Game>>(() => {

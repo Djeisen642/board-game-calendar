@@ -19,7 +19,7 @@
             }}
           </p>
           <v-btn color="primary" variant="elevated" to="/">
-            <v-icon start>mdi-home</v-icon>Go Home
+            <v-icon start>mdi-home</v-icon>Go home
           </v-btn>
         </v-col>
       </v-row>
@@ -33,7 +33,7 @@ defineProps<{ error: { statusCode?: number; message?: string } }>()
 
 <style scoped>
 .error-code {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 3.25rem;
   font-weight: 700;
   letter-spacing: 0.04em;

@@ -8,7 +8,7 @@
       :loading="isLoading"
       item-title="displayname"
       item-value="id"
-      label="Board Game Search"
+      label="Board game search"
       placeholder="Start typing to search"
       :hint="`Type at least ${constants.MinSearchLength} characters`"
       prepend-icon="mdi-database-search"
@@ -21,7 +21,11 @@
       <v-list-item v-for="(item, i) in entriesToShow" :key="i">
         <template #prepend>
           <v-avatar rounded="0" size="56" color="surface-variant">
-            <v-img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.name" />
+            <v-img
+              v-if="item.thumbnail"
+              :src="item.thumbnail"
+              :alt="item.name"
+            />
             <v-icon v-else size="32">mdi-gamepad-variant-outline</v-icon>
           </v-avatar>
         </template>
