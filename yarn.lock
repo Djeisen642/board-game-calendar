@@ -6242,7 +6242,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-prettier: "npm:^5.5.6"
     firebase: "npm:^12.15.0"
-    firebase-tools: "npm:^15.22.0"
+    firebase-tools: "npm:^15.22.2"
     husky: "npm:^9.1.7"
     jsdom: "npm:^29.1.1"
     lightningcss: "npm:^1.32.0"
@@ -9089,9 +9089,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-tools@npm:^15.22.0":
-  version: 15.22.0
-  resolution: "firebase-tools@npm:15.22.0"
+"firebase-tools@npm:^15.22.2":
+  version: 15.22.2
+  resolution: "firebase-tools@npm:15.22.2"
   dependencies:
     "@apphosting/common": "npm:^0.0.8"
     "@electric-sql/pglite": "npm:^0.3.3"
@@ -9161,11 +9161,10 @@ __metadata:
     winston-transport: "npm:^4.4.0"
     ws: "npm:^7.5.10"
     yaml: "npm:^2.8.3"
-    zod: "npm:^3.24.3"
-    zod-to-json-schema: "npm:^3.24.5"
+    zod: "npm:^4.0.0"
   bin:
     firebase: lib/bin/firebase.js
-  checksum: 10c0/a1b35d2bfdaaee5a47310ecb90131feb611de1c5b1a53225e5c38661ec6b0cc76c01d17e7645dda2a4448d45098f3cb93a60a9848111f85bd358eb3aef73591e
+  checksum: 10c0/d17f2bb7b9bb16b1af76e1848c1b181b29dcbf91b127a87373eb7fa63e768f43603b515c5b8ca0926005c49e09dbb66708d7f982d739fb0aefae3bc6960396e6
   languageName: node
   linkType: hard
 
@@ -17565,7 +17564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-to-json-schema@npm:^3.24.5, zod-to-json-schema@npm:^3.25.1":
+"zod-to-json-schema@npm:^3.25.1":
   version: 3.25.2
   resolution: "zod-to-json-schema@npm:3.25.2"
   peerDependencies:
@@ -17574,14 +17573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.24.3":
-  version: 3.25.76
-  resolution: "zod@npm:3.25.76"
-  checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
-  languageName: node
-  linkType: hard
-
-"zod@npm:^3.25 || ^4.0":
+"zod@npm:^3.25 || ^4.0, zod@npm:^4.0.0":
   version: 4.4.3
   resolution: "zod@npm:4.4.3"
   checksum: 10c0/7ea31b558e88f9faf44f31dd185e2e1cbf51fed3081787fb96cc2534749b50c0acfc6da7f0922a7353ed092dd358c7d50c28ea96c94d04af64191bd33152eca3
