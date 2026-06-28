@@ -65,8 +65,19 @@
     </v-main>
 
     <v-footer app class="bgc-footer">
-      <span>Jason Suttles &copy; {{ new Date().getFullYear() }}</span>
+      <div class="footer-inner">
+        <span>Jason Suttles &copy; {{ new Date().getFullYear() }}</span>
+        <nav class="footer-links" aria-label="Legal">
+          <NuxtLink :to="routes.privacy">Privacy</NuxtLink>
+          <NuxtLink :to="routes.terms">Terms</NuxtLink>
+          <button type="button" class="footer-link-btn" @click="reopen">
+            Cookie settings
+          </button>
+        </nav>
+      </div>
     </v-footer>
+
+    <CookieConsent />
   </v-app>
 </template>
 
@@ -82,6 +93,7 @@ enum PageType {
 
 const userStore = useUserStore()
 const router = useRouter()
+const { reopen } = useCookieConsent()
 
 const title = 'Board Game Calendar'
 const drawer = ref(false)
@@ -193,6 +205,43 @@ async function onSignoutClicked() {
 }
 
 .nav-list :deep(.v-list-item--active .v-icon) {
+  color: #c8860a;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  width: 100%;
+  font-size: 0.82rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-links a,
+.footer-link-btn {
+  color: rgba(240, 223, 196, 0.78);
+  text-decoration: underline;
+  font-size: 0.82rem;
+}
+
+.footer-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.footer-links a:hover,
+.footer-link-btn:hover {
   color: #c8860a;
 }
 </style>

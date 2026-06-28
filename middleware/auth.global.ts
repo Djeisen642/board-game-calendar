@@ -10,7 +10,9 @@ export default defineNuxtRouteMiddleware((to) => {
     }
   } else if (
     to.name &&
-    ![names.index, names.signIn].includes(to.name as string)
+    ![names.index, names.signIn, names.privacy, names.terms].includes(
+      to.name as string
+    )
   ) {
     // Preserve the intended destination (incl. query, e.g. email RSVP
     // deep-links) so sign-in can return the user there.

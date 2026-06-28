@@ -6,4 +6,6 @@ export default {
   profile: 'profile',
   calendar: 'calendar',
   newGathering: 'gatherings-new',
+  privacy: 'privacy',
+  terms: 'terms',
 }
