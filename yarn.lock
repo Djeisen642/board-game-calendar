@@ -556,16 +556,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:^21.0.2":
-  version: 21.0.2
-  resolution: "@commitlint/config-conventional@npm:21.0.2"
-  dependencies:
-    "@commitlint/types": "npm:^21.0.1"
-    conventional-changelog-conventionalcommits: "npm:^9.2.0"
-  checksum: 10c0/b399fc7b1b5d9964f24f040ecf4fd667556af3a24e49a40ac6b3f5724b24ce8a754201e8c75e7cd9517bad31655bc271be11912dcfa23ca728de332559fa15b7
-  languageName: node
-  linkType: hard
-
 "@commitlint/config-conventional@npm:^21.1.0":
   version: 21.1.0
   resolution: "@commitlint/config-conventional@npm:21.1.0"
@@ -720,16 +710,6 @@ __metadata:
   dependencies:
     escalade: "npm:^3.2.0"
   checksum: 10c0/8d236b37e14371370c00f90122dd386cfb3b1eb61304ec4b7814344ef9289b20a6d81e6dba24db16899c51ea809d3a8632b49fe3f759a61d988808360eb644ff
-  languageName: node
-  linkType: hard
-
-"@commitlint/types@npm:^21.0.1":
-  version: 21.0.1
-  resolution: "@commitlint/types@npm:21.0.1"
-  dependencies:
-    conventional-commits-parser: "npm:^6.3.0"
-    picocolors: "npm:^1.1.1"
-  checksum: 10c0/a9f46c2fc4d00e8970baea7bb7ad46422e16dcbda2e580003d65860e6cf5d98e48e60fc24aea9965a1e15174c2d945754dfb1efec69e1e38636a4f043d5116f9
   languageName: node
   linkType: hard
 
@@ -6272,7 +6252,7 @@ __metadata:
   resolution: "board-game-calendar@workspace:."
   dependencies:
     "@commitlint/cli": "npm:^21.1.0"
-    "@commitlint/config-conventional": "npm:^21.0.2"
+    "@commitlint/config-conventional": "npm:^21.1.0"
     "@firebase/rules-unit-testing": "npm:^5.0.1"
     "@nuxt/eslint": "npm:^1.16.0"
     "@nuxt/scripts": "npm:^1.2.1"

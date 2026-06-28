@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^21.1.0",
-    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/config-conventional": "^21.1.0",
     "@firebase/rules-unit-testing": "^5.0.1",
     "@nuxt/eslint": "^1.16.0",
     "@nuxt/scripts": "^1.2.1",
