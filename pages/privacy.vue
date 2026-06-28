@@ -130,6 +130,21 @@
             </li>
           </ul>
 
+          <h2 class="legal-h2">Fonts</h2>
+          <p>
+            We load the Fraunces and Lora typefaces from Google Fonts. When a
+            page loads, your browser fetches the font files from Google's servers
+            (<code>fonts.googleapis.com</code> / <code>fonts.gstatic.com</code>),
+            and Google receives your IP address as part of that request, subject
+            to Google's
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              >privacy policy</a
+            >. No cookies are set for this.
+          </p>
+
           <h2 class="legal-h2">What others can see</h2>
           <p>
             To make friend search work, your name, sign-in email and any phone
@@ -166,9 +181,8 @@
 
           <h2 class="legal-h2">Changes</h2>
           <p>
-            We'll update this page if our practices change and revise the date
-            above. Material changes that affect analytics consent will re-prompt
-            you.
+            We'll update this page and revise the date above if our practices
+            change.
           </p>
 
           <h2 class="legal-h2">Contact</h2>
