@@ -71,6 +71,14 @@ Check for: chip/text overlap, truncation, contrast issues, unintentional wrappin
 | `calendar.vue`       | `/calendar`       | `userGatherings/{uid}` (own index), `gatherings/{id}` (one listener per entry; splits hosting/invited client-side), `profiles/{uid}/name`                         |
 | `gatherings/new.vue` | `/gatherings/new` | `gatherings/{pushId}` (create; `?id=` edits in place) then `userGatherings/*` index sync, `users/{uid}` (own prefill), `profiles/{uid}/name` (friend/guest names) |
 | `index.vue`          | `/`               | none                                                                                                                                                              |
+| `privacy.vue`        | `/privacy`        | none — static privacy policy (public, no auth)                                                                                                                    |
+| `terms.vue`          | `/terms`          | none — static terms of service (public, no auth)                                                                                                                  |
+
+`/privacy` and `/terms` are public: they're whitelisted alongside `index`/`signin` in `middleware/auth.global.ts`, and linked from the footer in `layouts/default.vue`.
+
+### Privacy / cookie consent
+
+Analytics is **opt-in**. `composables/useCookieConsent.ts` holds the consent state (`'granted' | 'denied' | null`, persisted in `localStorage` under `bgc-cookie-consent`, shared via `useState`). `components/CookieConsent.vue` is the bottom banner (mounted in `layouts/default.vue`); the footer's "Cookie settings" button calls `reopen()` to re-prompt. `plugins/01-firebase.client.ts` does not import `firebase/analytics` until consent is `'granted'`, so no analytics cookies/gtag load otherwise. App Check/reCAPTCHA and the Firebase Auth session are strictly-necessary and always on (disclosed in the policy). When changing what data is collected or which processors are used, update `pages/privacy.vue`.
 
 ### Key files
 

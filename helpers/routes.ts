@@ -6,4 +6,6 @@ export default {
   newGathering: '/gatherings/new',
   index: '/',
   profile: '/profile',
+  privacy: '/privacy',
+  terms: '/terms',
 }

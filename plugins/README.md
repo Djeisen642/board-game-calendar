@@ -13,6 +13,13 @@ Initializes the Firebase app and provides the following to `useNuxtApp()`:
 
 Types for these are declared in `helpers/nuxt.d.ts`.
 
+**Analytics is consent-gated.** `firebase/analytics` is not imported until the
+visitor accepts the cookie banner. The plugin watches `useCookieConsent().consent`
+and only calls `getAnalytics()` when consent is `'granted'` (and
+`setAnalyticsCollectionEnabled(false)` if later denied). Until then `$logEvent`
+no-ops, so no analytics cookies or gtag script load. App Check/reCAPTCHA and the
+auth session are strictly-necessary and stay on regardless.
+
 ## 02-fireauth.client.ts
 
 Runs after `01-firebase.client.ts`. Waits for Firebase Auth to resolve the initial auth state before the app renders, ensuring `useUserStore().user` is populated on first load.

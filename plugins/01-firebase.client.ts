@@ -6,6 +6,7 @@ import { getFunctions } from 'firebase/functions'
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import type { Analytics } from 'firebase/analytics'
 import firebaseConf from '~/firebase.config'
+import type { ConsentValue } from '~/composables/useCookieConsent'
 
 export enum LogLevel {
   INFO = 'info',
@@ -34,10 +35,39 @@ export default defineNuxtPlugin(() => {
 
   let _analytics: Analytics | null = null
   let _pendingUserId: string | null | undefined = undefined
+  let _analyticsRequested = false
+  let _firebaseLogEvent:
+    | ((analytics: Analytics, name: string, params?: Record<string, string>) => void)
+    | null = null
+  let _firebaseSetUserId:
+    | ((analytics: Analytics, id: string | null) => void)
+    | null = null
+  let _firebaseSetCollectionEnabled:
+    | ((analytics: Analytics, enabled: boolean) => void)
+    | null = null
 
-  if (typeof window !== 'undefined') {
+  // Analytics is only loaded after the visitor grants consent (see the cookie
+  // banner). Until then nothing from firebase/analytics is imported, so no
+  // analytics cookies are set and no gtag script loads.
+  const enableAnalytics = () => {
+    if (typeof window === 'undefined') return
+    if (_analytics) {
+      _firebaseSetCollectionEnabled?.(_analytics, true)
+      return
+    }
+    if (_analyticsRequested) return
+    _analyticsRequested = true
     import('firebase/analytics').then(
-      ({ isSupported, getAnalytics, logEvent: fbLogEvent, setUserId: fbSetUserId }) => {
+      ({
+        isSupported,
+        getAnalytics,
+        logEvent: fbLogEvent,
+        setUserId: fbSetUserId,
+        setAnalyticsCollectionEnabled,
+      }) => {
+        _firebaseLogEvent = fbLogEvent
+        _firebaseSetUserId = fbSetUserId
+        _firebaseSetCollectionEnabled = setAnalyticsCollectionEnabled
         isSupported().then((yes) => {
           if (yes) {
             _analytics = getAnalytics(app)
@@ -46,18 +76,27 @@ export default defineNuxtPlugin(() => {
             }
           }
         })
-        _firebaseLogEvent = fbLogEvent
-        _firebaseSetUserId = fbSetUserId
       }
     )
   }
 
-  let _firebaseLogEvent:
-    | ((analytics: Analytics, name: string, params?: Record<string, string>) => void)
-    | null = null
-  let _firebaseSetUserId:
-    | ((analytics: Analytics, id: string | null) => void)
-    | null = null
+  const disableAnalytics = () => {
+    if (_analytics) {
+      _firebaseSetCollectionEnabled?.(_analytics, false)
+    }
+  }
+
+  if (import.meta.client) {
+    const { consent } = useCookieConsent()
+    watch(
+      consent,
+      (value: ConsentValue | null) => {
+        if (value === 'granted') enableAnalytics()
+        else if (value === 'denied') disableAnalytics()
+      },
+      { immediate: true }
+    )
+  }
 
   const logEvent = (
     eventName: string,
