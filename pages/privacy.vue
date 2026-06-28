@@ -161,7 +161,11 @@
             edit or clear your profile, delete gatherings, unfriend, and decline
             analytics. To request access or full account deletion, email
             <a href="mailto:privacy@jasonsuttles.dev">privacy@jasonsuttles.dev</a>
-            and we'll action it within a reasonable time.
+            and we'll action it within a reasonable time. See
+            <NuxtLink :to="routes.dataDeletion" class="legal-inline-link"
+              >data deletion</NuxtLink
+            >
+            for how account deletion works, including via Facebook.
           </p>
 
           <h2 class="legal-h2">Retention</h2>
