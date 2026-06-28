@@ -28,7 +28,7 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.0.2",
+    "@commitlint/cli": "^21.1.0",
     "@commitlint/config-conventional": "^21.0.2",
     "@firebase/rules-unit-testing": "^5.0.1",
     "@nuxt/eslint": "^1.16.0",
