@@ -16,15 +16,15 @@
           >.
         </p>
         <div class="cookie-consent__actions">
-          <v-btn variant="text" color="accent" size="small" @click="onReject">
+          <v-btn
+            variant="flat"
+            color="surface-variant"
+            size="small"
+            @click="onReject"
+          >
             Reject
           </v-btn>
-          <v-btn
-            variant="elevated"
-            color="primary"
-            size="small"
-            @click="onAccept"
-          >
+          <v-btn variant="flat" color="primary" size="small" @click="onAccept">
             Accept
           </v-btn>
         </div>
