@@ -65,6 +65,7 @@ export type Gathering = {
   maxGuests: number
   guests?: Record<string, GuestResponse> // keyed by guest uid
   games?: GatheringGame[]
+  emailInvites?: Record<string, string> // pushId → email address (non-user invitees)
 }
 
 export type DisplayableItemType = {

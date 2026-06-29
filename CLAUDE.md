@@ -173,6 +173,7 @@ type Gathering = {
   maxGuests: number
   guests?: Record<string, GuestResponse> // keyed by uid; 'invited' | 'accepted' | 'declined'; new invites require the guest to have friended the host
   games?: GatheringGame[] // { id, name } — denormalized from the host's collection
+  emailInvites?: Record<string, string> // pushId → email address; non-user invitees
 }
 
 // userGatherings/{uid}/{gatheringId}: true — per-user calendar index, owner-only read;
@@ -212,11 +213,12 @@ BoardGameGeek XML API v2 — proxied via Firebase Cloud Functions (`bggSearch`, 
 
 ## Email notifications & calendar export
 
-Transactional emails are sent server-side from `functions/src/index.ts` via Resend (`RESEND_API_KEY` secret; `FROM_EMAIL`; `APP_URL = https://bgc.jasonsuttles.dev` — keep this current with the deployed domain, it backs every email link). Triggers: `onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`.
+Transactional emails are sent server-side from `functions/src/index.ts` via Resend (`RESEND_API_KEY` secret; `FROM_EMAIL`; `APP_URL = https://bgc.jasonsuttles.dev` — keep this current with the deployed domain, it backs every email link). Triggers: `onFriendRequest`, `onGatheringInvite`, `onGatheringStateChange`, `onEmailInviteCreated`.
 
 - **Calendar export in-app**: the calendar page renders an "Add to calendar" menu (Google Calendar / Apple·Outlook `.ics`) on every non-canceled hosting and invited card, via `helpers/calendar.ts`.
 - **Calendar in emails**: invite + confirmation emails include an "Add to Google Calendar" link and attach a `.ics` invite (`sendEmail`'s optional `attachments: [{ filename, content }]`, content base64). Cancellation emails get neither.
 - **RSVP from email**: the invite email has Accept/Decline buttons that deep-link to `/calendar?id={gatheringId}&respond=accepted|declined`. The calendar page applies the RSVP on mount once the gathering loads and confirms the user is an invited guest (writes `gatherings/{id}/guests/{uid}` under the existing rules — login required, no new security surface), then strips the query. This relies on the `?redirect` sign-in flow above.
+- **Email invite for non-users**: the gathering form has an "Email invites" section where the host can enter any email address (friend not required). Each address is stored in `gatherings/{id}/emailInvites/{pushId}`. `onEmailInviteCreated` fires and sends an invite email with RSVP deep-links. When the recipient signs in and follows the link, `calendar.vue` detects they aren't yet a guest and calls the `acceptEmailInvite` Cloud Function, which verifies their email against `emailInvites`, writes `guests/{uid}` + `userGatherings/{uid}` as an atomic admin update (bypassing the mutual-friendship rule), and removes the consumed email invite entry. The existing RSVP watcher then finishes applying the response.
 
 ## Test Setup
 

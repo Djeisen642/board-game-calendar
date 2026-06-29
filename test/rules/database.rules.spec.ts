@@ -272,14 +272,12 @@ describe('private profile (users/) rules', () => {
       set(ref(db('alice'), 'users/alice/collection/g1'), {
         id: '13',
         name: 'Catan',
-        rating: 4.5,
       })
     )
     await assertFails(
       set(ref(db('alice'), 'users/alice/collection/g1'), {
-        id: '13',
+        id: '1'.repeat(21), // exceeds the 20-char id limit
         name: 'Catan',
-        rating: 11,
       })
     )
   })

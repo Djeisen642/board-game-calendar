@@ -268,6 +268,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ref as dbRef, onValue, update, set, remove } from 'firebase/database'
+import { httpsCallable } from 'firebase/functions'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
@@ -295,6 +296,7 @@ const route = useRoute()
 const nuxtApp = useNuxtApp()
 const db = nuxtApp.$db
 const logEvent = nuxtApp.$logEvent
+const functions = nuxtApp.$functions
 
 const snackbar = ref<InstanceType<typeof Snackbar> | null>(null)
 // gatherings are readable only by their participants, so the calendar follows
@@ -419,6 +421,39 @@ const invited = computed(() => sections.value.invited)
 
 watch(sections, (value) => {
   void resolveNames(value)
+})
+
+// When a user follows an email invite link but isn't yet a registered guest,
+// call the acceptEmailInvite Cloud Function to convert their email invite into
+// a proper guest entry. The userGatherings index update inside the function
+// then triggers the index listener, which calls watchGathering — after which
+// the RSVP watcher below processes the response normally.
+async function tryAcceptEmailInvite() {
+  const intent = pendingRsvp.value
+  if (!intent || gatheringsById.value[intent.id]) return
+  try {
+    const fn = httpsCallable<
+      { gatheringId: string; response: string },
+      { success: boolean }
+    >(functions, 'acceptEmailInvite')
+    await fn({ gatheringId: intent.id, response: intent.response })
+  } catch (err) {
+    pendingRsvp.value = null
+    clearRsvpQuery()
+    const code = (err as { code?: string })?.code
+    const msg =
+      code === 'functions/not-found'
+        ? 'No invitation found for your account.'
+        : code === 'functions/failed-precondition'
+          ? 'This gathering has been canceled.'
+          : helpers.handleError(err).message
+    snackbar.value?.showSnackbarWithMessage(msg, true)
+  }
+}
+
+watch(loading, (isLoading) => {
+  if (isLoading || !pendingRsvp.value) return
+  void tryAcceptEmailInvite()
 })
 
 // Apply an email-deep-linked RSVP once its gathering has loaded. Fires when

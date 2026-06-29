@@ -437,6 +437,118 @@ async function getProfileName(uid: string): Promise<string> {
   return typeof val === 'string' ? val : 'Someone'
 }
 
+// Sends an invite email when a new email address is added to a gathering's
+// emailInvites list. The recipient may not have an account yet; the email
+// includes RSVP deep-links that go through the normal sign-in redirect flow.
+export const onEmailInviteCreated = onValueCreated(
+  {
+    ref: 'gatherings/{gatheringId}/emailInvites/{inviteId}',
+    secrets: [RESEND_API_KEY],
+    instance: 'board-game-calendar-3ae94-default-rtdb',
+  },
+  async (event) => {
+    const email = event.data.val() as string | null
+    if (!email || typeof email !== 'string') return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+    const { gatheringId } = event.params
+    const gatheringSnap = await getDatabase()
+      .ref(`gatherings/${gatheringId}`)
+      .get()
+    const gathering = gatheringSnap.val() as Record<string, unknown> | null
+    if (!gathering) return
+    const hostName = await getProfileName(gathering.host as string)
+    const datetime = formatDatetime(
+      gathering.datetime as string,
+      gathering.timezone as string | undefined
+    )
+    const calEvent: CalendarEvent = {
+      gatheringId,
+      datetime: gathering.datetime as string,
+      hostName,
+      games: gathering.games as { name?: string }[] | undefined,
+    }
+    const safeHost = escapeHtml(hostName)
+    const safeDatetime = escapeHtml(datetime)
+    const gamesList = ((gathering.games as { name?: string }[] | null) ?? [])
+      .map((g) => escapeHtml(g.name ?? ''))
+      .filter(Boolean)
+    const gamesHtml = gamesList.length
+      ? `<p><strong>Games planned:</strong> ${gamesList.join(', ')}</p>`
+      : ''
+    await sendEmail(
+      email,
+      `You're invited to a board game night!`,
+      `<p>Hi there,</p>
+<p><strong>${safeHost}</strong> has invited you to a board game night on <strong>${safeDatetime}</strong>.</p>
+${gamesHtml}
+<p>Accept or decline (you'll be asked to sign in or create a free account):</p>
+${rsvpButtonsHtml(gatheringId)}
+<p><a href="${APP_URL}/calendar">View on your calendar after signing in</a></p>
+${calendarLinkHtml(calEvent)}`,
+      [icsAttachment(calEvent)]
+    )
+  }
+)
+
+// Converts an email invite into a proper guest entry. Called from the calendar
+// page when a user follows an email invite link and isn't yet in the guest list.
+// Runs as admin so it can bypass the mutual-friendship check in the DB rules.
+export const acceptEmailInvite = onCall(
+  { enforceAppCheck: true },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Must be signed in')
+    }
+    const { gatheringId, response } = request.data as {
+      gatheringId?: unknown
+      response?: unknown
+    }
+    if (typeof gatheringId !== 'string' || !gatheringId) {
+      throw new HttpsError('invalid-argument', 'Missing gatheringId')
+    }
+    if (response !== 'accepted' && response !== 'declined') {
+      throw new HttpsError('invalid-argument', 'Invalid response')
+    }
+    const userEmail = request.auth.token.email?.toLowerCase()
+    if (!userEmail) {
+      throw new HttpsError('failed-precondition', 'Account has no email address')
+    }
+    if (!request.auth.token.email_verified) {
+      throw new HttpsError('failed-precondition', 'Email address must be verified')
+    }
+    const uid = request.auth.uid
+    const db = getDatabase()
+    const gatheringSnap = await db.ref(`gatherings/${gatheringId}`).get()
+    const gathering = gatheringSnap.val() as Record<string, unknown> | null
+    if (!gathering) {
+      throw new HttpsError('not-found', 'Gathering not found')
+    }
+    if (gathering.state === 'canceled') {
+      throw new HttpsError('failed-precondition', 'Gathering has been canceled')
+    }
+    if (uid === gathering.host) {
+      throw new HttpsError('failed-precondition', 'Host cannot accept their own email invite')
+    }
+    const emailInvites = (gathering.emailInvites ?? {}) as Record<string, string>
+    const inviteEntry = Object.entries(emailInvites).find(
+      ([, inviteEmail]) => inviteEmail.toLowerCase() === userEmail
+    )
+    if (!inviteEntry) {
+      throw new HttpsError(
+        'not-found',
+        'No email invite found for your address'
+      )
+    }
+    const [inviteId] = inviteEntry
+    await db.ref().update({
+      [`gatherings/${gatheringId}/guests/${uid}`]: response,
+      [`userGatherings/${uid}/${gatheringId}`]: true,
+      [`gatherings/${gatheringId}/emailInvites/${inviteId}`]: null,
+    })
+    return { success: true }
+  }
+)
+
 export const onFriendRequest = onValueCreated(
   {
     ref: 'friendRequests/{toUid}/{fromUid}',
