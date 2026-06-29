@@ -26,9 +26,7 @@
         @click.stop="drawer = !drawer"
       />
       <v-toolbar-title class="app-bar-title">
-        <v-icon class="app-bar-title-icon" color="primary" size="20"
-          >mdi-hexagon-multiple</v-icon
-        >
+        <BGCLogoIcon :size="22" class="app-bar-title-icon" />
         <span class="d-none d-sm-inline">{{ title }}</span>
         <span class="d-inline d-sm-none">BGC</span>
       </v-toolbar-title>

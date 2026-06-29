@@ -2,7 +2,7 @@
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="5">
       <div class="text-center mb-6">
-        <v-icon size="48" color="primary" class="mb-2">mdi-chess-bishop</v-icon>
+        <BGCLogoIcon :size="52" class="mb-2" />
         <h1 class="signin-title">Welcome back</h1>
         <p class="signin-subtitle">Sign in to manage your game nights</p>
       </div>
