@@ -278,14 +278,20 @@ function escapeHtml(s: string): string {
 
 type EmailAttachment = { filename: string; content: string } // content: base64
 
-// Sends a single email and logs on failure without rethrowing, so one bad
-// address doesn't cause a function retry that re-sends to everyone else.
+// Sends a single email via Resend. Returns whether it succeeded; logs the
+// response body on failure either way. Callers with a single recipient
+// (friend requests, gathering invites, email invites) should throw on a
+// `false` return so Cloud Functions' built-in retry can recover from a
+// transient Resend error — 2nd-gen event-driven functions retry on a thrown
+// error by default. Callers that loop over multiple recipients (gathering
+// state changes) should NOT rethrow per-recipient failures, since a retry
+// would re-send to everyone, including recipients who already got it.
 async function sendEmail(
   to: string,
   subject: string,
   html: string,
   attachments?: EmailAttachment[]
-): Promise<void> {
+): Promise<boolean> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -303,7 +309,9 @@ async function sendEmail(
   if (!res.ok) {
     const body = await res.text()
     console.error(`Resend error ${res.status} for ${to}: ${body}`)
+    return false
   }
+  return true
 }
 
 function formatDatetime(iso: string, timezone?: string): string {
@@ -475,7 +483,7 @@ export const onEmailInviteCreated = onValueCreated(
     const gamesHtml = gamesList.length
       ? `<p><strong>Games planned:</strong> ${gamesList.join(', ')}</p>`
       : ''
-    await sendEmail(
+    const sent = await sendEmail(
       email,
       `You're invited to a board game night!`,
       `<p>Hi there,</p>
@@ -487,6 +495,7 @@ ${rsvpButtonsHtml(gatheringId)}
 ${calendarLinkHtml(calEvent)}`,
       [icsAttachment(calEvent)]
     )
+    if (!sent) throw new Error(`Failed to send invite email to ${email}`)
   }
 )
 
@@ -563,13 +572,14 @@ export const onFriendRequest = onValueCreated(
     ])
     if (!toUser.email) return
     const safeName = escapeHtml(fromName)
-    await sendEmail(
+    const sent = await sendEmail(
       toUser.email,
       `${fromName} sent you a friend request`,
       `<p>Hi there,</p>
 <p><strong>${safeName}</strong> has sent you a friend request on Board Game Calendar.</p>
 <p><a href="${APP_URL}/friends">View your friend requests</a></p>`
     )
+    if (!sent) throw new Error(`Failed to send friend request email to ${toUser.email}`)
   }
 )
 
@@ -604,7 +614,7 @@ export const onGatheringInvite = onValueWritten(
       hostName,
       games: gathering.games as { name?: string }[] | undefined,
     }
-    await sendEmail(
+    const sent = await sendEmail(
       guestUser.email,
       `You're invited to a board game night!`,
       `<p>Hi there,</p>
@@ -614,6 +624,7 @@ ${rsvpButtonsHtml(gatheringId)}
 ${calendarLinkHtml(calEvent)}`,
       [icsAttachment(calEvent)]
     )
+    if (!sent) throw new Error(`Failed to send invite email to ${guestUser.email}`)
   }
 )
 
