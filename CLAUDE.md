@@ -70,7 +70,8 @@ Analytics is **opt-in** — `plugins/01-firebase.client.ts` does not load `fireb
 
 ### Components
 
-- `BGCLogo.vue` — animated brass **meeple** SVG logo (bob + glow). The meeple is also the favicon (`public/favicon.svg` + `.png`: brass meeple on a felt-green tile).
+- `BGCLogo.vue` — animated brass **meeple** SVG logo (bob + glow), used in the navigation drawer header. The meeple is also the favicon (`public/favicon.svg` + `.png`: brass meeple on a felt-green tile).
+- `BGCLogoIcon.vue` — static inline meeple icon; accepts `size` (height in px, default 24) and `color` (fill hex, default `#C8860A`). Width is auto at 0.8× height (4:5 aspect ratio). Use anywhere a small static meeple is needed (app bar, signin header). The meeple SVG path is shared with `BGCLogo.vue` — keep them in sync.
 - `GameSearch.vue` — BGG API search + add-to-collection; hits `https://boardgamegeek.com/xmlapi2/`
 - `Snackbar.vue` — toast notification wrapper; uses `defineExpose` for parent `ref` access
 
