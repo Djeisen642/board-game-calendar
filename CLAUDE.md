@@ -73,12 +73,17 @@ Check for: chip/text overlap, truncation, contrast issues, unintentional wrappin
 | `index.vue`          | `/`               | none                                                                                                                                                              |
 | `privacy.vue`        | `/privacy`        | none — static privacy policy (public, no auth)                                                                                                                    |
 | `terms.vue`          | `/terms`          | none — static terms of service (public, no auth)                                                                                                                  |
+| `data-deletion.vue`  | `/data-deletion`  | none — data-deletion info + status page (public, no auth); echoes a `?code` hex confirmation                                                                      |
 
-`/privacy` and `/terms` are public: they're whitelisted alongside `index`/`signin` in `middleware/auth.global.ts`, and linked from the footer in `layouts/default.vue`.
+`/privacy`, `/terms` and `/data-deletion` are public: they're whitelisted alongside `index`/`signin` in `middleware/auth.global.ts`, and linked from the footer (`/privacy`, `/terms`) / the privacy policy (`/data-deletion`).
 
 ### Privacy / cookie consent
 
 Analytics is **opt-in**. `composables/useCookieConsent.ts` holds the consent state (`'granted' | 'denied' | null`, persisted in `localStorage` under `bgc-cookie-consent`, shared via `useState`). `components/CookieConsent.vue` is the bottom banner (mounted in `layouts/default.vue`); the footer's "Cookie settings" button calls `reopen()` to re-prompt. `plugins/01-firebase.client.ts` does not import `firebase/analytics` until consent is `'granted'`, so no analytics cookies/gtag load otherwise. App Check/reCAPTCHA and the Firebase Auth session are strictly-necessary and always on (disclosed in the policy). When changing what data is collected or which processors are used, update `pages/privacy.vue`.
+
+### Data deletion (Facebook + manual)
+
+`functions/src/index.ts` exports `facebookDataDeletion` (an `onRequest` HTTP function), Facebook's required data-deletion callback for Facebook Login. It verifies the `signed_request` HMAC with the `FACEBOOK_APP_SECRET` secret, maps the Facebook app-scoped user id to the Firebase account via `getUserByProviderUid('facebook.com', …)`, runs `deleteUserData(uid)` (a single multi-path RTDB update that removes the user's own subtrees plus the references others hold — reverse friend links, guest entries, pending requests, blocks — and deletes gatherings they host), then deletes the auth account and returns `{ url, confirmation_code }`. The `url` points at `/data-deletion?code=…`; `pages/data-deletion.vue` echoes the hex code and explains manual deletion paths. One-time setup: `firebase functions:secrets:set FACEBOOK_APP_SECRET` (the deploy needs it to exist), then set the function URL as the Facebook app's "Data Deletion Request URL". `deleteUserData` is also the natural home for any future in-app "delete my account" button.
 
 ### Key files
 
@@ -489,7 +494,7 @@ gcloud projects add-iam-policy-binding board-game-calendar-3ae94 \
   --role="roles/eventarc.eventReceiver"
 ```
 
-Secret access (`BGG_API_KEY`, `RESEND_API_KEY`) is auto-granted to the runtime SA at deploy time; this works in CD because the `github-action-…` deployer SA has `secretmanager.admin` and project-level `iam.serviceAccountUser` (so it can grant secrets and `actAs` the runtime SA). Each trigger also pins `instance: 'board-game-calendar-3ae94-default-rtdb'` so the RTDB instance is unambiguous.
+Secret access (`BGG_API_KEY`, `RESEND_API_KEY`, `FACEBOOK_APP_SECRET`) is auto-granted to the runtime SA at deploy time; this works in CD because the `github-action-…` deployer SA has `secretmanager.admin` and project-level `iam.serviceAccountUser` (so it can grant secrets and `actAs` the runtime SA). **Each secret must exist in Secret Manager before a deploy that references it** — a function declaring `secrets: [FACEBOOK_APP_SECRET]` fails to deploy if `FACEBOOK_APP_SECRET` is unset, so run `firebase functions:secrets:set FACEBOOK_APP_SECRET` before merging the data-deletion function. Each trigger also pins `instance: 'board-game-calendar-3ae94-default-rtdb'` so the RTDB instance is unambiguous.
 
 ### Cloud Functions dependencies — no lockfile, pin exact (important)
 

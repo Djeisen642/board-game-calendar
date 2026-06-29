@@ -1,5 +1,5 @@
 import { setGlobalOptions } from 'firebase-functions'
-import { onCall, HttpsError } from 'firebase-functions/v2/https'
+import { onCall, HttpsError, onRequest } from 'firebase-functions/v2/https'
 import {
   onValueCreated,
   onValueUpdated,
@@ -11,11 +11,13 @@ import { getAuth } from 'firebase-admin/auth'
 import { getDatabase } from 'firebase-admin/database'
 import { parseString } from 'xml2js'
 import { promisify } from 'util'
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
 
 initializeApp()
 
 const BGG_API_KEY = defineSecret('BGG_API_KEY')
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY')
+const FACEBOOK_APP_SECRET = defineSecret('FACEBOOK_APP_SECRET')
 
 const parseXml = promisify(parseString)
 
@@ -567,5 +569,190 @@ ${calendarLinkHtml(calEvent)}`
     await Promise.all(
       emails.map((email) => sendEmail(email, subject, html, attachments))
     )
+  }
+)
+
+// --- Facebook data deletion ---------------------------------------------------
+//
+// Facebook requires a data-deletion callback for apps that use Facebook Login.
+// When a user removes the app (or requests deletion) Facebook POSTs a
+// `signed_request` here. We verify it with the app secret, map the Facebook
+// app-scoped user id to the Firebase account that linked it, erase that
+// account's data, and return the JSON Facebook expects: a status URL + a
+// confirmation code.
+//
+// SETUP (one-time, before merging/deploying — the deploy needs the secret):
+//   1. Set the secret to your Facebook App Secret (Facebook App Dashboard →
+//      Settings → Basic → App Secret):
+//        firebase functions:secrets:set FACEBOOK_APP_SECRET
+//   2. After deploy, paste the function URL into the Facebook App Dashboard →
+//      Settings → Basic → "Data Deletion Request URL":
+//        https://us-central1-board-game-calendar-3ae94.cloudfunctions.net/facebookDataDeletion
+//   (Prefer no automation? Use the "Data Deletion Instructions URL" field with
+//    https://bgc.jasonsuttles.dev/data-deletion instead and skip the secret —
+//    deletion then happens by email request rather than automatically.)
+
+const FACEBOOK_PROVIDER_ID = 'facebook.com'
+
+// Verify Facebook's signed_request (`<sig>.<payload>`, both base64url) and
+// return the Facebook user id, or null if missing / forged / malformed.
+function parseSignedRequest(
+  signedRequest: string,
+  appSecret: string
+): string | null {
+  const parts = signedRequest.split('.')
+  if (parts.length !== 2) return null
+  const [encodedSig, encodedPayload] = parts
+
+  const sig = Buffer.from(encodedSig, 'base64url')
+  const expected = createHmac('sha256', appSecret)
+    .update(encodedPayload)
+    .digest()
+  if (sig.length !== expected.length || !timingSafeEqual(sig, expected)) {
+    return null
+  }
+
+  try {
+    const data = JSON.parse(
+      Buffer.from(encodedPayload, 'base64url').toString('utf8')
+    ) as { user_id?: string; algorithm?: string }
+    if (data.algorithm && data.algorithm.toUpperCase() !== 'HMAC-SHA256') {
+      return null
+    }
+    return typeof data.user_id === 'string' ? data.user_id : null
+  } catch {
+    return null
+  }
+}
+
+// Erase everything we hold for a user: their own subtrees plus the references
+// other members hold to them (reverse friend links, guest entries, pending
+// requests, blocks). Hosted gatherings are removed entirely. Applied as one
+// multi-path update; the caller then deletes the auth account.
+async function deleteUserData(uid: string): Promise<void> {
+  const db = getDatabase()
+  const updates: Record<string, null> = {}
+
+  // Reverse friend references on each friend's own list.
+  const friendsSnap = await db.ref(`users/${uid}/friends`).get()
+  const friends = (friendsSnap.val() as Record<string, unknown> | null) ?? {}
+  for (const friendId of Object.keys(friends)) {
+    updates[`users/${friendId}/friends/${uid}`] = null
+  }
+
+  // Walk the user's gathering index (avoids scanning every gathering).
+  const ugSnap = await db.ref(`userGatherings/${uid}`).get()
+  const userGatherings = (ugSnap.val() as Record<string, unknown> | null) ?? {}
+  for (const gid of Object.keys(userGatherings)) {
+    const gSnap = await db.ref(`gatherings/${gid}`).get()
+    const gathering = gSnap.val() as Record<string, unknown> | null
+    if (!gathering) continue
+    if (gathering.host === uid) {
+      // Host is leaving: delete the gathering and each guest's index entry. The
+      // user's own index entry is covered by the userGatherings/${uid} delete
+      // below, so skip it here or the update paths would nest illegally.
+      updates[`gatherings/${gid}`] = null
+      const guests = (gathering.guests as Record<string, unknown> | null) ?? {}
+      for (const guestUid of Object.keys(guests)) {
+        if (guestUid !== uid) {
+          updates[`userGatherings/${guestUid}/${gid}`] = null
+        }
+      }
+    } else {
+      // Guest is leaving: just drop them from the guest list.
+      updates[`gatherings/${gid}/guests/${uid}`] = null
+    }
+  }
+
+  // Friend requests: incoming (whole subtree) + any outgoing references.
+  updates[`friendRequests/${uid}`] = null
+  const frSnap = await db.ref('friendRequests').get()
+  const allRequests =
+    (frSnap.val() as Record<string, Record<string, unknown>> | null) ?? {}
+  for (const [toUid, fromMap] of Object.entries(allRequests)) {
+    if (toUid !== uid && fromMap && uid in fromMap) {
+      updates[`friendRequests/${toUid}/${uid}`] = null
+    }
+  }
+
+  // Blocks: owned by the user (whole subtree) + where others blocked them.
+  updates[`blocked/${uid}`] = null
+  const blockedSnap = await db.ref('blocked').get()
+  const allBlocked =
+    (blockedSnap.val() as Record<string, Record<string, unknown>> | null) ?? {}
+  for (const [ownerUid, blockedMap] of Object.entries(allBlocked)) {
+    if (ownerUid !== uid && blockedMap && uid in blockedMap) {
+      updates[`blocked/${ownerUid}/${uid}`] = null
+    }
+  }
+
+  // The user's own data.
+  updates[`profiles/${uid}`] = null
+  updates[`users/${uid}`] = null
+  updates[`userGatherings/${uid}`] = null
+
+  await db.ref().update(updates)
+}
+
+export const facebookDataDeletion = onRequest(
+  { secrets: [FACEBOOK_APP_SECRET] },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed')
+      return
+    }
+
+    const signedRequest = (
+      req.body as { signed_request?: unknown } | undefined
+    )?.signed_request
+    if (typeof signedRequest !== 'string' || !signedRequest) {
+      res.status(400).json({ error: 'Missing signed_request' })
+      return
+    }
+
+    const facebookUserId = parseSignedRequest(
+      signedRequest,
+      FACEBOOK_APP_SECRET.value()
+    )
+    if (!facebookUserId) {
+      res.status(400).json({ error: 'Invalid signed_request' })
+      return
+    }
+
+    const code = randomBytes(8).toString('hex')
+
+    try {
+      const userRecord = await getAuth().getUserByProviderUid(
+        FACEBOOK_PROVIDER_ID,
+        facebookUserId
+      )
+      await deleteUserData(userRecord.uid)
+      await getAuth().deleteUser(userRecord.uid)
+      console.log(
+        `Data deletion ${code}: erased user ${userRecord.uid} (fb ${facebookUserId})`
+      )
+    } catch (err) {
+      // No linked account means nothing to delete — still a success from
+      // Facebook's perspective. Other errors are logged, but we still return a
+      // 200 with the code so Facebook records the request; the status page and
+      // email contact cover any follow-up.
+      if ((err as { code?: string })?.code === 'auth/user-not-found') {
+        console.log(
+          `Data deletion ${code}: no account linked to fb ${facebookUserId}`
+        )
+      } else {
+        console.error(`Data deletion ${code} failed:`, err)
+      }
+    }
+
+    // Record the request so the status URL has something to confirm against.
+    await getDatabase()
+      .ref(`dataDeletionRequests/${code}`)
+      .set({ completedAt: Date.now() })
+
+    res.status(200).json({
+      url: `${APP_URL}/data-deletion?code=${code}`,
+      confirmation_code: code,
+    })
   }
 )

@@ -8,4 +8,5 @@ export default {
   newGathering: 'gatherings-new',
   privacy: 'privacy',
   terms: 'terms',
+  dataDeletion: 'data-deletion',
 }

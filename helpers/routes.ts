@@ -8,4 +8,5 @@ export default {
   profile: '/profile',
   privacy: '/privacy',
   terms: '/terms',
+  dataDeletion: '/data-deletion',
 }
