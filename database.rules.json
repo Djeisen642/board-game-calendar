@@ -171,6 +171,11 @@
             }
           }
         },
+        "emailInvites": {
+          "$inviteId": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 320"
+          }
+        },
         "$other": {
           ".validate": false
         }

@@ -65,8 +65,45 @@
                   : 'Add friends on the Friends page to invite them'
               "
               persistent-hint
-              class="mb-4"
+              class="mb-2"
             />
+            <div class="section-label mb-2 mt-4">Email invites</div>
+            <div class="d-flex align-start gap-2 mb-2">
+              <v-text-field
+                v-model="emailInput"
+                type="email"
+                label="Invite by email address"
+                prepend-inner-icon="mdi-email-outline"
+                hint="Invite someone who doesn't have an account yet"
+                persistent-hint
+                @keydown.enter.prevent="addEmailInvite"
+              />
+              <v-btn
+                color="primary"
+                variant="tonal"
+                height="56"
+                :disabled="!emailInput.trim()"
+                class="flex-shrink-0"
+                @click="addEmailInvite"
+              >
+                Add
+              </v-btn>
+            </div>
+            <div
+              v-if="emailInviteList.length"
+              class="d-flex flex-wrap gap-2 mb-4"
+            >
+              <v-chip
+                v-for="email in emailInviteList"
+                :key="email"
+                closable
+                prepend-icon="mdi-email-outline"
+                @click:close="removeEmailInvite(email)"
+              >
+                {{ email }}
+              </v-chip>
+            </div>
+            <div v-else class="mb-2" />
             <div class="section-label mb-2">Games</div>
             <v-select
               v-model="selectedGameIds"
@@ -104,7 +141,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ref as dbRef, get, push, set, update } from 'firebase/database'
+import { ref as dbRef, get, push, set, update, remove } from 'firebase/database'
 import Snackbar from '~/components/Snackbar.vue'
 import helpers from '~/helpers/helpers'
 import routes from '~/helpers/routes'
@@ -136,6 +173,40 @@ const selectedGameIds = ref<string[]>([])
 const friendItems = ref<{ title: string; value: string }[]>([])
 const gameItems = ref<{ title: string; value: string }[]>([])
 let gamesById: Record<string, Game> = {}
+
+// Email invite state (non-user invitees)
+const emailInput = ref('')
+const emailInviteList = ref<string[]>([])
+let existingEmailInvitesByKey: Record<string, string> = {}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+function addEmailInvite() {
+  const email = emailInput.value.trim().toLowerCase()
+  if (!email) return
+  if (!isValidEmail(email)) {
+    snackbar.value?.showSnackbarWithMessage(
+      'Please enter a valid email address.',
+      true
+    )
+    return
+  }
+  if (emailInviteList.value.includes(email)) {
+    snackbar.value?.showSnackbarWithMessage(
+      'This email has already been added.',
+      true
+    )
+    return
+  }
+  emailInviteList.value.push(email)
+  emailInput.value = ''
+}
+
+function removeEmailInvite(email: string) {
+  emailInviteList.value = emailInviteList.value.filter((e) => e !== email)
+}
 
 // Edit mode: /gatherings/new?id={gatheringId} prefills and updates in place
 const editId = typeof route.query.id === 'string' ? route.query.id : null
@@ -207,6 +278,10 @@ onMounted(async () => {
       existingState = gathering.state
       existingGuests = gathering.guests ?? {}
       existingInitiator = gathering.initiator
+      existingEmailInvitesByKey = gathering.emailInvites ?? {}
+      emailInviteList.value = Object.values(existingEmailInvitesByKey).map(
+        (e) => e.toLowerCase()
+      )
       const dt = new Date(gathering.datetime)
       const pad = (n: number) => String(n).padStart(2, '0')
       date.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`
@@ -306,9 +381,29 @@ async function createGathering() {
       }
     }
     await update(dbRef(db), indexUpdates)
+
+    // Sync email invites: delete removed ones, push new ones
+    // (onEmailInviteCreated Cloud Function fires only for genuinely new entries)
+    const originalEmails = new Set(
+      Object.values(existingEmailInvitesByKey).map((e) => e.toLowerCase())
+    )
+    const currentEmails = new Set(emailInviteList.value)
+    const emailDeleteOps = Object.entries(existingEmailInvitesByKey)
+      .filter(([, email]) => !currentEmails.has(email.toLowerCase()))
+      .map(([key]) =>
+        remove(dbRef(db, `gatherings/${gatheringId}/emailInvites/${key}`))
+      )
+    const emailAddOps = emailInviteList.value
+      .filter((email) => !originalEmails.has(email))
+      .map((email) =>
+        set(push(dbRef(db, `gatherings/${gatheringId}/emailInvites`)), email)
+      )
+    await Promise.all([...emailDeleteOps, ...emailAddOps])
+
     logEvent(editId ? 'edit_gathering' : 'create_gathering', {
       guests: selectedGuests.value.length,
       games: selectedGameIds.value.length,
+      emailInvites: emailInviteList.value.length,
     })
     await router.push(routes.calendar)
   } catch (err) {
