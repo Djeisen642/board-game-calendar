@@ -48,7 +48,7 @@
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
     "playwright": "^1.61.1",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.1",
     "sass-embedded": "^1.100.0",
     "typescript": "^6.0.3",
     "vite-plugin-vuetify": "^2.1.3",
