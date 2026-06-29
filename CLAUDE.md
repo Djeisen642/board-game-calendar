@@ -4,7 +4,7 @@ A Nuxt 4 / Vue 3 SPA that helps groups schedule board game nights around specifi
 
 ## Keeping this file up to date
 
-**When you change a convention documented here — a colour token, a component pattern, a CSS class, an accessibility rule, a Firebase path, a command — update the relevant section of this file in the same commit.** Treat CLAUDE.md as part of the changeset, not an afterthought. If you add a new reusable pattern (composable, layout class, data model field), document it here so future sessions have accurate context.
+When you change a convention documented here — a colour token, a component pattern, a CSS class, an accessibility rule, a Firebase path, a command — update the relevant section of this file in the same commit. If you add a new reusable pattern (composable, layout class, data model field), document it here.
 
 ## Commands
 
@@ -23,40 +23,11 @@ Pre-commit hooks run `yarn lint` via husky + lint-staged. Commits must follow Co
 
 ### Screenshots
 
-```bash
-yarn screenshot /calendar              # mobile + desktop
-yarn screenshot /gamecollection --mobile
-yarn screenshot /calendar --desktop --full-page
-yarn screenshot /gatherings/new --fixture scripts/fixtures/custom.json
-```
-
-Screenshots are saved to `screenshots/<route>-<viewport>.png` (git-ignored). No Firebase credentials needed — the dev server starts automatically with all Firebase modules mocked and a fake logged-in user (`screenshot-uid-1`, "Alex Johnson").
-
-Fixture data is in `scripts/fixtures/default.json` and mirrors the Firebase RTDB path structure (`profiles/`, `users/`, `gatherings/`, etc.). To use custom data, copy it, edit, and pass `--fixture scripts/fixtures/my-fixture.json`. The `/screenshot` slash command in Claude Code wraps `yarn screenshot`.
-
-### Visual verification after UI changes
-
-After editing any `.vue` file, take a mobile screenshot of the affected route and inspect it before committing:
-
-```bash
-yarn screenshot /<affected-route> --mobile
-```
-
-Check for: chip/text overlap, truncation, contrast issues, unintentional wrapping. Fix any visible problem in the same commit. Mobile is the critical viewport — most layout bugs hide on desktop. Fixture data must exercise the changed UI path; if the relevant data is missing from `scripts/fixtures/default.json`, add it first.
+`yarn screenshot /<route> --mobile` (or `--desktop`, `--full-page`). Saves to `screenshots/` (git-ignored). No Firebase credentials needed — dev server starts with all Firebase mocked, fake user `screenshot-uid-1` "Alex Johnson". Fixture data: `scripts/fixtures/default.json` (mirrors RTDB path structure); pass `--fixture path/to/custom.json` for overrides. After any `.vue` change, take a mobile screenshot before committing — most layout bugs hide on desktop.
 
 ## Stack
 
-| Layer     | Choice                                              | Notes                                                                                                     |
-| --------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Framework | Nuxt 4.4 + Vue 3.5                                  | `<script setup>` Composition API throughout                                                               |
-| UI        | Vuetify 4.1 (Material Design 3, dark theme)         | via `vuetify-nuxt-module`                                                                                 |
-| State     | Pinia 3 via `@pinia/nuxt`                           | `stores/user.ts`; replaces Vuex                                                                           |
-| DB        | Firebase Realtime Database                          | Not Firestore                                                                                             |
-| Auth      | Firebase Auth (custom sign-in UI)                   | Google, Facebook, email/password via `signInWithPopup` / `signInWithEmailAndPassword`; FirebaseUI removed |
-| Language  | TypeScript (strict)                                 | `<script setup lang="ts">` on all `.vue` files                                                            |
-| CSS       | Vuetify SCSS + `~/assets/variables.scss`            | configured in `nuxt.config.ts`                                                                            |
-| Linting   | ESLint 10 flat config via `@nuxt/eslint` + Prettier | `eslint.config.mjs` imports from `.nuxt/eslint.config.mjs`                                                |
-| Testing   | Vitest 4 + `@nuxt/test-utils`                       | `vitest.config.ts`; jsdom env                                                                             |
+Nuxt 4.4 + Vue 3.5 + Vuetify 4.1 (MD3, dark theme) + Pinia 3 + Firebase RTDB (not Firestore) + TypeScript strict. ESLint 10 flat config via `@nuxt/eslint` + Prettier. Vitest 4 + `@nuxt/test-utils` (jsdom).
 
 ## Architecture
 
@@ -79,29 +50,23 @@ Check for: chip/text overlap, truncation, contrast issues, unintentional wrappin
 
 ### Privacy / cookie consent
 
-Analytics is **opt-in**. `composables/useCookieConsent.ts` holds the consent state (`'granted' | 'denied' | null`, persisted in `localStorage` under `bgc-cookie-consent`, shared via `useState`). `components/CookieConsent.vue` is the bottom banner (mounted in `layouts/default.vue`); the footer's "Cookie settings" button calls `reopen()` to re-prompt. `plugins/01-firebase.client.ts` does not import `firebase/analytics` until consent is `'granted'`, so no analytics cookies/gtag load otherwise. App Check/reCAPTCHA and the Firebase Auth session are strictly-necessary and always on (disclosed in the policy). When changing what data is collected or which processors are used, update `pages/privacy.vue`.
+Analytics is **opt-in** — `plugins/01-firebase.client.ts` does not load `firebase/analytics` until consent is `'granted'` (stored in `localStorage` under `bgc-cookie-consent` via `useCookieConsent.ts`). App Check/reCAPTCHA and Auth are strictly-necessary and always on. Update `pages/privacy.vue` when changing what data is collected.
 
 ### Data deletion (Facebook + manual)
 
-`functions/src/index.ts` exports `facebookDataDeletion` (an `onRequest` HTTP function), Facebook's required data-deletion callback for Facebook Login. It verifies the `signed_request` HMAC with the `FACEBOOK_APP_SECRET` secret, maps the Facebook app-scoped user id to the Firebase account via `getUserByProviderUid('facebook.com', …)`, runs `deleteUserData(uid)` (a single multi-path RTDB update that removes the user's own subtrees plus the references others hold — reverse friend links, guest entries, pending requests, blocks — and deletes gatherings they host), then deletes the auth account and returns `{ url, confirmation_code }`. The `url` points at `/data-deletion?code=…`; `pages/data-deletion.vue` echoes the hex code and explains manual deletion paths. One-time setup: `firebase functions:secrets:set FACEBOOK_APP_SECRET` (the deploy needs it to exist), then set the function URL as the Facebook app's "Data Deletion Request URL". `deleteUserData` is also the natural home for any future in-app "delete my account" button.
+`facebookDataDeletion` Cloud Function (HTTP) verifies the Facebook `signed_request` HMAC, then calls `deleteUserData(uid)` — a multi-path RTDB update removing all user subtrees (friend links, guest entries, requests, blocks, hosted gatherings) — then deletes the auth account. Returns `{ url, confirmation_code }` pointing at `/data-deletion?code=…`. `deleteUserData` is also the right place for a future in-app "delete my account" button. One-time setup: `firebase functions:secrets:set FACEBOOK_APP_SECRET`, then set the function URL in the Facebook app dashboard.
 
 ### Key files
 
-- `plugins/firebase.ts` — exports `db`, `auth`, `logEvent`, `log`; uses Firebase 12 modular SDK (`firebase/app`, `/auth`, `/database`, `/analytics`)
-- `plugins/fireauth.client.ts` — Nuxt 4 client-only plugin; awaits first `onAuthStateChanged` callback to hydrate the Pinia store before navigation runs
-- `stores/user.ts` — Pinia store; state: `{ user: User | null }`; actions: `setUser`, `signInWithGoogle`, `signOut`
-- `middleware/auth.global.ts` — Nuxt 4 auto-global route middleware; redirects unauthenticated users to `/signin?redirect={intended fullPath}` (so email RSVP deep-links survive login), authenticated users away from `/signin`. `useAuthSignIn` reads `?redirect` after sign-in (internal paths only, open-redirect-guarded; falls back to `/gamecollection`)
-- `firebase.config.ts` — Firebase credentials (dev vs prod via `NODE_ENV`; committed; public project)
-- `helpers/types.ts` — shared TypeScript types including `FormInstance` for Vuetify 4 form refs
-- `helpers/routes.ts` — route path constants
-- `helpers/names.ts` — route name constants (lowercase; match Nuxt 4 file-based routing)
-- `helpers/constants.ts` — `LoadingTimeoutInMs`, `DebounceThrottleInMs`, BGG API constants
-- `helpers/helpers.ts` — `handleError()`, HTML entity decoding for BGG API responses
+- `plugins/firebase.ts` — exports `db`, `auth`, `logEvent`, `log` (Firebase 12 modular SDK)
+- `plugins/fireauth.client.ts` — one-shot `onAuthStateChanged` to hydrate Pinia before navigation
+- `stores/user.ts` — Pinia store; `{ user: User | null }`; actions: `setUser`, `signInWithGoogle`, `signOut`
+- `middleware/auth.global.ts` — redirects unauthenticated → `/signin?redirect={fullPath}`; `useAuthSignIn` reads `?redirect` post-login (internal paths only, open-redirect-guarded)
+- `helpers/types.ts` — shared TS types incl. `FormInstance` for Vuetify 4 form refs
 - `helpers/gatherings.ts` — `splitGatherings`, state/response color+icon maps, `formatDatetime`
-- `helpers/collection.ts` — `filterAndSortCollection` (text + genre filter, name/rating/recent sort → ordered `CollectionEntry[]`) and `collectionGenres`; pure + unit-tested (`test/collection.spec.ts`), drives the collection browse UI
-- `helpers/calendar.ts` — calendar-export builders: `googleCalendarUrl()`, `buildIcs()` (single-VEVENT `.ics`, `PUBLISH`, 3-hour default duration, RFC-5545 escaped, no location — host address is private), `downloadIcs()`, `toCalendarEventInput()`. Cloud Functions duplicate this logic server-side — keep both in sync.
-- `firebase.json` — Firebase Hosting config
-- `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml` on push to `main`, alongside functions)
+- `helpers/collection.ts` — `filterAndSortCollection` + `collectionGenres`; pure + unit-tested; returns ordered `CollectionEntry[]`
+- `helpers/calendar.ts` — `googleCalendarUrl()`, `buildIcs()` (3-hour VEVENT, no location), `downloadIcs()`, `toCalendarEventInput()`. Cloud Functions duplicate this — keep both in sync.
+- `database.rules.json` — Firebase Realtime DB security rules (deployed by `cd.yml`)
 
 ### Components
 
@@ -125,9 +90,7 @@ Pages own routing/layout, composables own data/logic (`composables/`, auto-impor
 
 ### Auth flow
 
-1. `fireauth.client.ts` runs on boot, awaits first `onAuthStateChanged` tick, sets `userStore.user`, then unsubscribes (one-shot initialization)
-2. After `signInWithPopup` / `signInWithEmailAndPassword`, sign-in handlers call `userStore.setUser(user)` manually before `router.push()` (since the listener is already unsubscribed)
-3. `signOut` action calls `firebaseSignOut(auth)` then sets `userStore.user = null`
+`fireauth.client.ts` does a one-shot `onAuthStateChanged` on boot to hydrate the store, then unsubscribes. Sign-in handlers call `userStore.setUser(user)` manually before `router.push()` since the listener is already gone. `signOut` calls `firebaseSignOut(auth)` then sets `userStore.user = null`.
 
 ## Data Model
 
@@ -245,8 +208,6 @@ The app uses a consistent **"Evening Game Table"** design system: a deep green f
 | `info` | `#5B8FAB` | Informational states. |
 | `on-surface` / `on-background` | `#E8D4A8` | Body text on dark backgrounds (warm parchment). ~12.4:1 on card. |
 
-> **Why success and error are brighter than typical dark-theme palettes:** `variant="text"` and `variant="tonal"` buttons use these colours directly as foreground text on the near-black card background. The values above are the minimum needed to reach WCAG AA 4.5:1. Do not darken them.
-
 **Semantic color rules:**
 - Destructive action → `color="error"`
 - Confirm / accept / save → `color="success"`
@@ -257,24 +218,21 @@ The app uses a consistent **"Evening Game Table"** design system: a deep green f
 
 ### Typography
 
-- Headings / display: **Fraunces** (serif) via `$heading-font-family` in `variables.scss`. A warm "old-style" serif loaded as a **variable font with its optical-size axis** (`opsz` `9..144`, weights 400/600/700) — the browser auto-renders small text with the legible *text* cut and large titles with the expressive *display* cut. Replaced Cinzel (a caps-only inscriptional face that was illegible on small all-caps chrome).
-- Body: **Lora** (serif) via `$body-font-family`. Also used on **chips/status tokens** (not the display face) so small tokens stay readable.
+- Headings / display: **Fraunces** (serif, variable font, `opsz` axis) via `$heading-font-family` in `variables.scss`.
+- Body: **Lora** (serif) via `$body-font-family`. Also used on **chips/status tokens** so small tokens stay readable.
 - Body text color: `#E8D4A8` (Vuetify `on-surface`)
 - Page title: `.page-title` → `1.4rem / 700`, Fraunces, `letter-spacing: 0.01em`, rendered as `<h1>` (not `<span>`)
 - Section label: `.section-label` → `0.82rem / 600`, Fraunces, uppercase, `letter-spacing: 0.1em`, `#c8860a` (full opacity); auto-prefixed with a small amber diamond "scoring marker" via `::before` (flex row)
 - Empty state title: `.empty-title` → `1.25rem / 600`, Fraunces
 - Empty state description: `.empty-desc` → `0.95rem`, Lora, `rgba(240,223,196,0.80)`
 - All buttons: `text-transform: none`, `font-family: Fraunces`, `letter-spacing: 0.01em` (global override in `global.scss`)
-- Chips: `font-family: Lora`, `0.78rem / 600`, `letter-spacing: 0.01em` (global override in `global.scss`) — deliberately the body serif, not the display face. **Keep tracking minimal**; the old wide letter-spacing existed only to space out Cinzel's caps.
-
-> **Why Fraunces, not Cinzel:** Cinzel has no real lowercase — it force-capped everything illegibly at small sizes. Fraunces has true lowercase, full weight range, and an optical-size axis. Prefer Fraunces with minimal letter-spacing; reserve uppercase for short single-word labels only.
+- Chips: `font-family: Lora`, `0.78rem / 600`, `letter-spacing: 0.01em` (global override in `global.scss`) — deliberately the body serif. **Keep tracking minimal.**
 
 ### UI copy (capitalization)
 
 All UI labels use **sentence case** — capitalize only the first word: buttons ("Add game", "Create gathering", "Sign in"), nav items, menu items, page titles (`.page-title` h1 and `useHead({ title })`), section labels, field labels/placeholders, and status text. This is the Material Design / Vuetify default.
 
-- **Exceptions — keep their own casing:** proper nouns (the "Board Game Calendar" brand and "BGC", product names like "Google Calendar" and "Apple / Outlook", "BoardGameGeek"/"BGG"), game names, and people's names.
-- This convention only became visible once the display font changed to Fraunces (Cinzel rendered everything as caps, hiding casing). When adding any new label, default to sentence case.
+- **Exceptions — keep their own casing:** proper nouns ("Board Game Calendar", "BGC", "Google Calendar", "Apple / Outlook", "BoardGameGeek"/"BGG"), game names, people's names.
 
 ### Spacing & shape
 
@@ -285,21 +243,11 @@ All UI labels use **sentence case** — capitalize only the first word: buttons 
 
 ### Cardstock card style (automatic via `global.scss`)
 
-All `v-card` elements are styled as walnut cardstock resting on the felt table:
-- Background: solid walnut `#241808` with a barely-there linen weave (two faint 1px cross-hatch `repeating-linear-gradient`s at ~1.4% parchment)
-- Border: `1px solid rgba(200, 134, 10, 0.22)` (hairline brass edge)
-- Shadow: a soft cast shadow onto the felt (`0 20px 44px -16px rgba(0,0,0,0.65)`) + a contact shadow + a top-edge bevel highlight (`inset 0 1px 0 rgba(240,223,196,0.05)`)
-- Hover: border brightens to `rgba(200,134,10,0.4)`, shadow deepens
-- No `backdrop-filter`, no corner-bracket ornaments (both removed — they read as 90s-RTS HUD chrome)
-
-The table surface itself (felt + lamp glow + fabric grain) is painted on `body::before` / `body::after`; the walnut frame is the app bar, navigation drawer, **and footer** — all three are opaque walnut so page content scrolls cleanly behind them (the footer must not be transparent, or long content shows through it). Do not override card backgrounds inline — the global style handles it.
+`v-card` elements are walnut cardstock (`#241808`) with a hairline brass border, soft shadow, and linen-weave texture — all via `global.scss`. The app bar, nav drawer, and footer are opaque walnut. Do not override card backgrounds inline and do not add `backdrop-filter` or corner-bracket ornaments.
 
 ### Collection browse (genre filter)
 
-`gamecollection.vue` is the reference pattern for browsing a large list: a toolbar row (text filter + sort `v-select`), a `v-chip-group multiple` of genre facets (`filter` chips, `color="info"`; the group's `v-model` is the selected-genre `string[]` — use the group, not hand-rolled click + `aria-pressed`, so selection state and keyboard nav are correct), a "Showing N of M" count, then the list. Genres beyond `GENRE_CHIP_LIMIT` (12) collapse behind a "+N more" toggle. Genres come from BGG `categories`; each card shows up to 4 genre chips (`size="x-small"` `variant="tonal"` `color="info"`) with a `+N` overflow count. Sort options: name, my rating (own collection only — hidden in friend view), recently added (Firebase push-ID order, newest first).
-
-- **The list is virtualized** (`v-virtual-scroll`, `max-height="72vh"`) because collections can be large — never render the whole list with a plain `v-list`. The per-row note `v-textarea` is folded into the same row item (not a sibling list row) so the virtual scroller measures each row's height correctly when expanded. Do not add per-row entry animations (e.g. a `deal-in` stagger) to virtualized rows — they replay on every scroll recycle.
-- Filter/sort logic is a pure, unit-tested helper: `helpers/collection.ts` (`filterAndSortCollection`, `collectionGenres`). Keep it returning an **ordered array** (`CollectionEntry[] = { id, game }[]`); do not smuggle display order through an object's key-iteration order.
+`gamecollection.vue` is the reference pattern: text filter + sort `v-select` toolbar, `v-chip-group multiple` for genre facets (`color="info"`; use the group — not hand-rolled `aria-pressed` — for correct keyboard nav), "Showing N of M" count, then a **virtualized list** (`v-virtual-scroll`, `max-height="72vh"` — never a plain `v-list`). Genres beyond `GENRE_CHIP_LIMIT` (12) collapse behind a "+N more" toggle. Do not add per-row entry animations on virtualized rows — they replay on every scroll recycle. Filter/sort lives in `helpers/collection.ts`; returns an **ordered array**, not a keyed object.
 
 ### Vuetify component defaults (set in `nuxt.config.ts`)
 
@@ -326,72 +274,19 @@ Override these per-instance only when there's a clear reason (e.g., `variant="te
 
 ### Page structure pattern
 
-Every authenticated page follows this shell:
-```html
-<v-row justify="center">
-  <v-col cols="12" sm="11" md="9" lg="6">   <!-- lg="7" for wider pages -->
-    <v-card>
-      <v-card-title class="page-card-title">
-        <div class="d-flex align-center">
-          <v-icon color="primary" class="mr-3 flex-shrink-0">mdi-icon</v-icon>
-          <span class="page-title">Page Title</span>
-        </div>
-        <div class="page-header-actions">
-          <v-btn color="primary" size="small">Primary Action</v-btn>
-        </div>
-      </v-card-title>
-      <v-divider />
-      <v-card-text v-if="loading" class="pa-8">
-        <v-progress-linear indeterminate color="primary" />
-      </v-card-text>
-      <v-card-text v-else class="pa-6">
-        <!-- content -->
-      </v-card-text>
-    </v-card>
-    <Snackbar ref="snackbar" />
-  </v-col>
-</v-row>
-```
+Every authenticated page: `v-row justify="center"` → `v-col cols="12" sm="11" md="9" lg="6"` (lg="7" for wider) → `v-card` → `v-card-title class="page-card-title"` (icon + `h1.page-title` + `.page-header-actions`) → `v-divider` → `v-card-text` with loading/content split → `<Snackbar ref="snackbar" />` after the card. See any existing page for the exact structure.
 
 ### Event / gathering card pattern
 
-```html
-<div class="event-item pa-4 mb-3">
-  <!-- metadata row: chip + datetime only -->
-  <div class="d-flex align-center flex-wrap gap-2 mb-2">
-    <v-chip :color="stateColor(state)" size="small" variant="tonal" class="text-capitalize">{{ state }}</v-chip>
-    <span class="event-line"><v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>{{ datetime }}</span>
-  </div>
-  <!-- info rows (host, games, guests) -->
-  <!-- actions on their own row — never mixed into the metadata row -->
-  <div class="event-actions">
-    <v-btn density="compact" size="small" variant="text" color="success">Accept</v-btn>
-    <v-btn density="compact" size="small" variant="text" color="error">Decline</v-btn>
-  </div>
-</div>
-```
+`.event-item pa-4 mb-3`: first row is chip + datetime only (never mix actions into the metadata row); action buttons go in a separate `.event-actions` div at the bottom. See `calendar.vue` for the canonical example.
 
 ### Icon-only action buttons
 
-Any button without visible text **must** have `aria-label` and `title`:
-```html
-<v-btn icon size="small" variant="text" color="accent"
-  aria-label="Open on BGG" title="Open on BGG"
-  :href="url" target="_blank" rel="noopener noreferrer">
-  <v-icon>mdi-open-in-new</v-icon>
-</v-btn>
-```
+Any button without visible text **must** have `aria-label` and `title` attributes.
 
 ### Empty states
 
-```html
-<div class="empty-state">
-  <v-icon size="64" color="primary" class="mb-4" style="opacity: 0.3">mdi-relevant-icon</v-icon>
-  <div class="empty-title">Nothing here yet</div>
-  <div class="empty-desc">One sentence explaining what to do next.</div>
-  <v-btn variant="elevated" color="primary" class="mt-4">Primary CTA</v-btn>
-</div>
-```
+Use `.empty-state` / `.empty-title` / `.empty-desc` classes with a large `color="primary"` icon at `opacity: 0.3`, a title, a one-sentence description, and a primary CTA button.
 
 ### Notifications
 
@@ -399,62 +294,18 @@ Use `<Snackbar ref="snackbar" />` (placed after the `v-card`, inside `v-col`). C
 
 ### Responsive / mobile
 
-All pages target mobile-first. Breakpoints:
-
-| Token | Width |
-|-------|-------|
-| `xs` | < 600 px — single-column mobile |
-| `sm` | 600–960 px — tablet portrait |
-| `md` | 960–1280 px — small desktop |
-| `lg`/`xl` | 1280 px+ — desktop |
-
-**`v-list-item-title` clipping**: Vuetify 4 clips titles to one line. When a list item has a prepend avatar and multiple append buttons the title truncates on mobile. Fix in scoped CSS:
-```scss
-.my-item :deep(.v-list-item-title) {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.35;
-}
-```
+All pages target mobile-first (xs < 600px, sm 600–960px, md 960–1280px, lg/xl 1280px+). **`v-list-item-title` clipping**: Vuetify 4 clips titles to one line — when a list item has a prepend avatar and multiple append buttons the title truncates on mobile. Fix with scoped `:deep(.v-list-item-title) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; }`.
 
 ### Accessibility
 
-The app targets WCAG 2.1 AA. Every new UI component must satisfy the rules below.
-
-#### Heading hierarchy
-Every page title must be an `<h1>`, not a `<span>`. Use the `.page-title` class on it — the CSS resets browser heading defaults so it renders identically:
-```html
-<h1 class="page-title">Calendar</h1>
-```
-
-#### Skip-to-main link
-`layouts/default.vue` has a `.skip-link` as the very first focusable element, targeting `#main-content` on the `<v-container>` inside `<v-main>`. Do not remove it.
-
-#### Loading states
-Every `<v-progress-linear indeterminate>` must have an `aria-label` describing what is loading:
-```html
-<v-progress-linear indeterminate color="primary" aria-label="Loading gatherings" />
-```
-
-#### Notifications
-`<Snackbar>` has `role="alert"` on its `<v-snackbar>` so screen readers announce messages. Do not remove it.
-
-#### Decorative avatars
-Avatar initials (the single letter in `v-avatar`) are decorative — the person's name is already in the adjacent `v-list-item-title`. Add `aria-hidden="true"` to the `v-avatar`:
-```html
-<v-avatar color="primary" size="36" aria-hidden="true">
-  <span class="avatar-initial">{{ name.charAt(0) }}</span>
-</v-avatar>
-```
-
-#### Links identifiable without colour
-Links must not rely on colour alone. Use `text-decoration: underline` in the default (non-hover) state.
-
-#### Motion
-`global.scss` includes a `@media (prefers-reduced-motion: reduce)` block that collapses all animation/transition durations to 0.01 ms. Do not add inline `animation` or `transition` styles that bypass this.
+Targets WCAG 2.1 AA. Rules for all new UI:
+- Page titles: `<h1 class="page-title">` — not `<span>`. CSS resets browser h1 defaults.
+- Skip link: `layouts/default.vue` has a `.skip-link` targeting `#main-content`. Do not remove.
+- Loading: every `<v-progress-linear indeterminate>` needs `aria-label` describing what loads.
+- Notifications: `<Snackbar>` has `role="alert"` on its `<v-snackbar>`. Do not remove.
+- Avatars: initials are decorative — add `aria-hidden="true"` to `v-avatar`.
+- Links: must have `text-decoration: underline` in default state (not colour alone).
+- Motion: `global.scss` has `prefers-reduced-motion: reduce` collapsing all durations. Don't bypass with inline styles.
 
 #### Contrast quick-reference
 
