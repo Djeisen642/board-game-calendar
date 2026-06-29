@@ -447,6 +447,7 @@ export const onEmailInviteCreated = onValueCreated(
   async (event) => {
     const email = event.data.val() as string | null
     if (!email || typeof email !== 'string') return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
     const { gatheringId } = event.params
     const gatheringSnap = await getDatabase()
       .ref(`gatherings/${gatheringId}`)
@@ -510,6 +511,10 @@ export const acceptEmailInvite = onCall(
     if (!userEmail) {
       throw new HttpsError('failed-precondition', 'Account has no email address')
     }
+    if (!request.auth.token.email_verified) {
+      throw new HttpsError('failed-precondition', 'Email address must be verified')
+    }
+    const uid = request.auth.uid
     const db = getDatabase()
     const gatheringSnap = await db.ref(`gatherings/${gatheringId}`).get()
     const gathering = gatheringSnap.val() as Record<string, unknown> | null
@@ -518,6 +523,9 @@ export const acceptEmailInvite = onCall(
     }
     if (gathering.state === 'canceled') {
       throw new HttpsError('failed-precondition', 'Gathering has been canceled')
+    }
+    if (uid === gathering.host) {
+      throw new HttpsError('failed-precondition', 'Host cannot accept their own email invite')
     }
     const emailInvites = (gathering.emailInvites ?? {}) as Record<string, string>
     const inviteEntry = Object.entries(emailInvites).find(
@@ -530,7 +538,6 @@ export const acceptEmailInvite = onCall(
       )
     }
     const [inviteId] = inviteEntry
-    const uid = request.auth.uid
     await db.ref().update({
       [`gatherings/${gatheringId}/guests/${uid}`]: response,
       [`userGatherings/${uid}/${gatheringId}`]: true,

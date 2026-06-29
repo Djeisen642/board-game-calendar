@@ -437,13 +437,17 @@ async function tryAcceptEmailInvite() {
       { success: boolean }
     >(functions, 'acceptEmailInvite')
     await fn({ gatheringId: intent.id, response: intent.response })
-  } catch {
+  } catch (err) {
     pendingRsvp.value = null
     clearRsvpQuery()
-    snackbar.value?.showSnackbarWithMessage(
-      'No invitation found for your account.',
-      true
-    )
+    const code = (err as { code?: string })?.code
+    const msg =
+      code === 'functions/not-found'
+        ? 'No invitation found for your account.'
+        : code === 'functions/failed-precondition'
+          ? 'This gathering has been canceled.'
+          : helpers.handleError(err).message
+    snackbar.value?.showSnackbarWithMessage(msg, true)
   }
 }
 
