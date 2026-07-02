@@ -12,7 +12,7 @@
         </v-card-title>
         <v-divider />
         <v-card-text class="pa-6 legal">
-          <p class="legal-updated">Last updated: 27 June 2026</p>
+          <p class="legal-updated">Last updated: 28 June 2026</p>
 
           <p>
             This policy explains what personal data Board Game Calendar ("BGC",
@@ -49,7 +49,15 @@
               the cookie banner, Firebase Analytics records page views, your
               device and browser type, approximate (city-level) location, and a
               pseudonymous analytics identifier, linked to your account ID while
-              signed in. If you decline, none of this loads.
+              signed in. If you decline, none of this loads. For how Google uses
+              this data, see
+              <a
+                href="https://policies.google.com/technologies/partner-sites"
+                target="_blank"
+                rel="noopener noreferrer"
+                >How Google uses information from sites or apps that use our
+                services</a
+              >.
             </li>
           </ul>
 
@@ -111,6 +119,17 @@
             </li>
           </ul>
           <p>
+            <strong>International transfers.</strong> For personal data
+            transferred out of the EEA/UK, Google is certified under the
+            <a
+              href="https://policies.google.com/privacy/frameworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              >EU–US Data Privacy Framework</a
+            >, and Resend provides GDPR transfer safeguards (standard
+            contractual clauses) through its data processing agreement.
+          </p>
+          <p>
             If you sign in with Google or Facebook, that provider processes your
             login under its own terms. Board game data is fetched from
             BoardGameGeek on our server without sending them anything about you.
@@ -129,6 +148,14 @@
               "Cookie settings" in the footer.
             </li>
           </ul>
+          <p>
+            <strong>Do Not Track.</strong> Because analytics only runs when you
+            opt in on the banner, your choice there is the control we honor; we
+            do not respond separately to browser "Do Not Track" or Global
+            Privacy Control signals. If you consent to analytics, Google (a
+            third party) may collect information about your activity over time
+            as described above.
+          </p>
 
           <h2 class="legal-h2">Fonts</h2>
           <p>
@@ -166,6 +193,28 @@
               >data deletion</NuxtLink
             >
             for how account deletion works, including via Facebook.
+          </p>
+          <p>
+            If you're in the EEA or UK, you also have the right to lodge a
+            complaint with your local data protection supervisory authority (in
+            the UK, the
+            <a
+              href="https://ico.org.uk/make-a-complaint/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Information Commissioner's Office</a
+            >). We don't use your data for automated decision-making or
+            profiling that produces legal or similarly significant effects.
+          </p>
+
+          <h2 class="legal-h2">Security</h2>
+          <p>
+            All traffic to BGC is encrypted with HTTPS. Your data lives in
+            Google Firebase behind database security rules that restrict each
+            record to the people who need it (for example, only you can read
+            your address, and only a gathering's host and invited guests can see
+            that gathering). No security is perfect, but we keep the attack
+            surface small.
           </p>
 
           <h2 class="legal-h2">Retention</h2>
