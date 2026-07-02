@@ -28,6 +28,12 @@
             <v-icon start>mdi-facebook</v-icon>
             Continue with Facebook
           </v-btn>
+          <p class="signin-terms">
+            By continuing, you agree to the
+            <NuxtLink :to="routes.terms">terms of service</NuxtLink> and
+            acknowledge the
+            <NuxtLink :to="routes.privacy">privacy policy</NuxtLink>.
+          </p>
         </v-card-text>
       </v-card>
       <Snackbar ref="snackbar" />
@@ -96,5 +102,19 @@ const signInWithFacebook = () => handleOAuthSignIn(new FacebookAuthProvider())
 .google-btn,
 .facebook-btn {
   color: #e8d4a8;
+}
+
+.signin-terms {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  text-align: center;
+  color: rgba(240, 223, 196, 0.8);
+  margin: 4px 4px 0;
+}
+
+.signin-terms a {
+  color: #c0a870;
+  text-decoration: underline;
 }
 </style>
